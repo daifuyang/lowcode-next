@@ -45,7 +45,10 @@ export const landingSchema: PageSchema = {
         minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: '#ffffff',
+        // 白底由画布文档 canvas.css 的 html/body 提供，这里不要再写 background
+        // 简写：属性面板会写 backgroundSize 这类非简写属性，React 不允许简写与
+        // 非简写混用（删除 backgroundSize 时会报 warning）；写 backgroundColor
+        // 也不行，会让背景模块每次 style 变化都把 bgType 反推成「颜色填充」。
       },
     },
     children: [

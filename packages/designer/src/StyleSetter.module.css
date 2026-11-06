@@ -226,13 +226,19 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* 图标单选组（引擎 RadioGroup shape="button"）                           */
+/* 分段单选组：shadcn/ui ToggleGroup（Radix）+ 引擎 Fusion 视觉规格        */
 /* ------------------------------------------------------------------ */
 
+/* 引擎 components/radio-group/index.less 的 .radiogroup-style 是 flex:1 +
+   white-space:nowrap：分段组永远排成一行，靠 flex-shrink 收进容器。
+   绝不能 flex-wrap:wrap —— 内容宽度 48/66/66 合计 180 略大于 176 的行宽时，
+   第三项会掉到第二行，边框就散成上下两截（本轮用户截图的问题）。 */
 .radioGroup {
   display: flex;
   flex: 1;
   min-width: 0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 /* Fusion Radio.Group shape="button" 的 medium 档：高 28、边框 #C4C6CF、
@@ -257,6 +263,18 @@
   transition: all 100ms linear;
 }
 
+/* 纯文字项（背景「尺寸」、flex「换行」）：引擎 row/index.less 的
+   `.next-radio-wrapper { flex: 1 }` 只让图标项等分；Fusion RadioButton 的
+   label 本身按内容宽度排（min-width 48 + padding 0 8），三等分会把 4 字的
+   「等比填充」压在 58px 里只剩 5px 边距。原 setter 实测 48 / 64 / 64；
+   容器略窄时按 flex-shrink 收到一行内，不换行。 */
+.radioItemText {
+  flex: 0 1 auto;
+  min-width: 48px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
 .radioItem:first-child {
   border-radius: 3px 0 0 3px;
 }
@@ -275,8 +293,11 @@
   color: #333333;
 }
 
-.radioItemChecked,
-.radioItemChecked:hover {
+/* shadcn ToggleGroup 用 data-state="on" 表达选中：Root role="radiogroup"、
+   Item role="radio" + aria-checked 都由 Radix 维护，再点已选中项会收到空串
+   （引擎 onRadioItemClick 提交 null 的同款行为）。 */
+.radioItem[data-state='on'],
+.radioItem[data-state='on']:hover {
   color: #5584ff;
   border-color: #5584ff;
   background: #ffffff;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { EngineIcon, engineIcons } from './EngineIcons';
 import { Button } from './ui/button';
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import {
@@ -499,8 +500,15 @@ export function Row({
 }
 
 /**
- * 图标单选组（引擎 RadioGroup shape="button"）。
- * 再点已选中项 = 取消（引擎 onRadioItemClick 提交 null 的同款行为）。
+ * 分段单选组：shadcn/ui ToggleGroup 的 `type="single"` 变体（radio 语义的
+ * 按钮组），视觉规格仍按引擎 Fusion Radio.Group shape="button"。
+ *
+ * - Root/Item 的 role=radiogroup/radio、aria-checked、方向键漫游由 Radix 负责，
+ *   不用再手写 button + checked 状态；再点已选中项 Radix 会给空串，对应引擎
+ *   `onRadioItemClick` 提交 null 的取消行为。
+ * - 图标项沿用引擎 row/index.less 的等分（flex:1）；纯文字项按内容宽度排
+ *   （min-width 48 + padding 0 8），整组 nowrap，窄面板下靠 flex-shrink 收进
+ *   一行，不会掉成上下两截。
  */
 export function IconRadioGroup({
   items,
@@ -514,25 +522,25 @@ export function IconRadioGroup({
   value: unknown;
   onChange: (value: string | undefined) => void;
 }) {
+  const textOnly = !icons;
   return (
-    <div className={styles.radioGroup} role="radiogroup">
-      {items.map((item) => {
-        const checked = String(value ?? '') === item.value;
-        return (
-          <button
-            key={item.value}
-            type="button"
-            role="radio"
-            aria-checked={checked}
-            title={item.tips}
-            className={cn(styles.radioItem, checked && styles.radioItemChecked)}
-            onClick={() => onChange(checked ? undefined : item.value)}
-          >
-            {icons?.[item.value] ?? item.label ?? item.value}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      type="single"
+      value={String(value ?? '')}
+      onValueChange={(next) => onChange(next || undefined)}
+      className={styles.radioGroup}
+    >
+      {items.map((item) => (
+        <ToggleGroupItem
+          key={item.value}
+          value={item.value}
+          title={item.tips}
+          className={cn(styles.radioItem, textOnly && styles.radioItemText)}
+        >
+          {icons?.[item.value] ?? item.label ?? item.value}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 

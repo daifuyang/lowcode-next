@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import type { DocumentImpl } from '@lowcode-next/model';
 import { followTransitions, nearestScroller, rectToHost } from './dom';
@@ -62,6 +62,9 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
 
   const [selected, setSelected] = useState<Box | null>(null);
   const [hovered, setHovered] = useState<Box | null>(null);
+  // 滚动时要能绕过 React 直接改 style（见下面 onScroll 的说明）
+  const selectedElRef = useRef<HTMLDivElement | null>(null);
+  const hoveredElRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
     const host = overlayRef.current;
@@ -178,6 +181,11 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
 
       const fittedSelected = nextSelected ? fitInsideClip(nextSelected) : null;
       const fittedHovered = nextHovered ? fitInsideClip(nextHovered) : null;
+      // 先直接写 DOM，再同步 state。滚动路径靠这一步做到「同一帧」：
+      // 只走 setState 的话，React 的渲染/提交要排到本帧绘制之后，框就慢内容一帧。
+      // state 仍要更新，否则下次任何一次重渲染都会用旧值把这里写的 style 盖回去。
+      writeBox(selectedElRef.current, fittedSelected);
+      writeBox(hoveredElRef.current, fittedHovered);
       setSelected((prev) => (sameBox(prev, fittedSelected) ? prev : fittedSelected));
       setHovered((prev) => (sameBox(prev, fittedHovered) ? prev : fittedHovered));
     };
@@ -224,10 +232,18 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
 
     // 画布滚动有两层：宿主的 stage（横向）+ iframe 文档自己的滚动条。
     // scroll 不冒泡，只能捕获；frame 内的滚动宿主文档收不到，必须单独挂。
+    //
+    // **滚动必须同步跟进，不能过 rAF**：内容在 iframe 的合成层里已经滚完并绘制，
+    // 而边框层画在宿主文档里。原来的 scroll → rAF → sync → setState 链路要等下
+    // 一帧才把 transform 写上去，实测每帧滚 10px 时框恒差 10px（整整慢一帧）；
+    // 滚轮步长忽大忽小（惯性）时这个差值来回变，肉眼就是"虚线框抖得厉害"。
+    // 现在改成 scroll 事件里同步量、同步写 style，和内容在同一帧提交。
+    // 其余触发器（resize / mutation / transition）仍走 rAF 合并，避免一帧多算。
     const canvasDoc = canvas.ownerDocument;
+    const onScroll = () => sync();
     globalThis.addEventListener('resize', schedule);
-    globalThis.addEventListener('scroll', schedule, true);
-    canvasDoc.addEventListener('scroll', schedule, true);
+    globalThis.addEventListener('scroll', onScroll, true);
+    canvasDoc.addEventListener('scroll', onScroll, true);
 
     // 物料自己的 hover 动效会让节点连续位移（.lc-feature:hover 上浮 2px）。
     // 那既不是 scroll 也不是 resize，更不改属性 —— 上面三个触发器全哑，
@@ -240,8 +256,8 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
       resize.disconnect();
       mutate.disconnect();
       globalThis.removeEventListener('resize', schedule);
-      globalThis.removeEventListener('scroll', schedule, true);
-      canvasDoc.removeEventListener('scroll', schedule, true);
+      globalThis.removeEventListener('scroll', onScroll, true);
+      canvasDoc.removeEventListener('scroll', onScroll, true);
     };
   }, [doc, overlayRef, getCanvas, getFrame, frameReady, selectedId, hoveredId]);
 
@@ -251,6 +267,7 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
     <div className={styles.borders} aria-hidden="true">
       {hovered ? (
         <div
+          ref={hoveredElRef}
           className={`${styles.border} ${styles.detecting}`}
           style={boxStyle(hovered)}
           data-border="detecting"
@@ -258,6 +275,7 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
       ) : null}
       {selected ? (
         <div
+          ref={selectedElRef}
           className={`${styles.border} ${styles.selecting}`}
           style={boxStyle(selected)}
           data-border="selecting"
@@ -265,6 +283,14 @@ export function SelectionBorders({ document: doc, overlayRef, getCanvas, getFram
       ) : null}
     </div>
   );
+}
+
+/** 不经过 React 直接把量到的矩形写进边框层（滚动同帧同步用） */
+function writeBox(el: HTMLDivElement | null, box: Box | null) {
+  if (!el || !box) return;
+  el.style.width = `${box.w}px`;
+  el.style.height = `${box.h}px`;
+  el.style.transform = `translate3d(${box.x}px, ${box.y}px, 0)`;
 }
 
 function boxStyle(box: Box) {

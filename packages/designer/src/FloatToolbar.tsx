@@ -176,11 +176,16 @@ export function FloatToolbar({
     };
 
     // 滚动有两层：宿主文档（stage 横向 / 面板）+ iframe 文档自己的滚动条，
-    // scroll 不冒泡只能捕获，frame 内的滚动必须单独挂
-    globalThis.document.addEventListener('scroll', schedule, true);
+    // scroll 不冒泡只能捕获，frame 内的滚动必须单独挂。
+    //
+    // 和 SelectionBorders 一样：画布内容在 iframe 里滚动，工具条却画在宿主文档，
+    // 过 rAF 会稳定慢一帧（每帧滚 10px 就恒差 10px，滚轮惯性下就是来回抖）。
+    // 滚动路径同步量、同步 setState；resize / transition 仍走 rAF 合并。
+    const onScroll = () => sync();
+    globalThis.document.addEventListener('scroll', onScroll, true);
     const canvas = getCanvas();
     const canvasDoc = canvas?.ownerDocument;
-    canvasDoc?.addEventListener('scroll', schedule, true);
+    canvasDoc?.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onResize);
 
     // 物料的 hover 动效（上浮 2px）只产生 transition，不产生 scroll / resize：
@@ -190,8 +195,8 @@ export function FloatToolbar({
     return () => {
       if (frame) cancelAnimationFrame(frame);
       stopFollow?.();
-      globalThis.document.removeEventListener('scroll', schedule, true);
-      canvasDoc?.removeEventListener('scroll', schedule, true);
+      globalThis.document.removeEventListener('scroll', onScroll, true);
+      canvasDoc?.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', onResize);
     };
   }, [sync, getCanvas, getFrame]);

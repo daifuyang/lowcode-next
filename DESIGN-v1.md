@@ -933,10 +933,18 @@ class DesignerDropContext implements DropContext {
 | 层 | `.borders`（`position: absolute; z-index: 5; pointer-events: none`），`SelectionBorders` 渲染 |
 | 定位 | 相对 `.canvasRoot`；`x = rect.left - hostRect.left - host.clientLeft`（absolute 原点是 padding box） |
 | 尺寸 | `width/height` + `transform: translate3d()`，只动合成层，不触发重排 |
-| 更新时机 | 选区 / hover 变化 → `useLayoutEffect` **同步**重测一次（换节点要当帧画对）；滚动（capture）、resize、`ResizeObserver`（容器 + 目标）、`MutationObserver`（结构 / class / style）走 rAF 合并；**CSS 过渡 / 动画期间按帧跟随**（`followTransitions`） |
+| 更新时机 | 选区 / hover 变化 → `useLayoutEffect` **同步**重测一次（换节点要当帧画对）；**滚动（capture）同步重测 + 同步直接写 `transform`**；resize、`ResizeObserver`（容器 + 目标）、`MutationObserver`（结构 / class / style）走 rAF 合并；**CSS 过渡 / 动画期间按帧跟随**（`followTransitions`） |
 | 取元素 | **每次 `sync` 重新 `querySelector`**，不缓存元素引用。选中没变但元素被 React 重建（改样式导致重挂、撤销后整棵子树重渲染）时 effect 不会重跑，抓死的旧引用已经脱离文档，量出来是 0×0 —— 就是"有时候选中框没了" |
-| 防抖 | rAF 合并；测量只读布局，值不变不 `setState`，否则 MutationObserver 会和自己的 style 变化互相触发 |
+| 防抖 | 除滚动外都用 rAF 合并；测量只读布局，值不变不 `setState`，否则 MutationObserver 会和自己的 style 变化互相触发 |
 | 过渡 | **没有** `width/height` 过渡（引擎也没有）。`transform` 不过渡而尺寸过渡，换选中节点时就会"位置先跳、框再长大"，是可见的闪烁 |
+
+**滚动不能过 rAF**（§7.4.1 实测）：内容在 iframe 的合成层里滚完并绘制，边框层却
+画在宿主文档。`scroll → rAF → sync → setState` 要等下一帧才把 transform 写上去，
+实测每帧滚 10px 时框**恒差 10px**（整整慢一帧）；滚轮惯性下步长忽大忽小，这个差值
+来回变就是「虚线框抖得厉害」。现在 scroll 事件里同步量、同步写 `style`（state 同步
+跟进，避免后续重渲染用旧值盖回去），同一实测偏差 10px → 0。`FloatToolbar` 是同一条
+链路，一并同步化；其余触发器仍走 rAF 合并，避免一帧多算。滚动时鼠标下的组件会变，
+虚线框跳到新组件是预期语义，不是抖动。
 
 `data-selected` / `data-hovered` 仍然写在 DOM 上 —— 供自动化测试、调试和
 "选中元素同时也是 hover 元素时只画选中框"这一判断用，但不再承载视觉。
@@ -1709,11 +1717,43 @@ ghost 文本；7.12 时代的 gap/maxWidth/minHeight 本地字段从界面移除
 "Microsoft YaHei"`）——之前不设 font-size，继承了宿主 14px，所有没显式
 写字号的 `<button>` 都大 2px，分段组尤其明显。按钮单选组按
 `.next-radio-button-medium`（高 28、label 12px/400/#333、边框 #C4C6CF、
-hover #F2F3F7、选中 #5584FF）对齐；激活页签按
+hover #F2F3F7、选中 #5584FF）对齐。**文字项不与图标项共用等分规则**：
+引擎 `components/row/index.less` 的 `.next-radio-wrapper { flex:1 }` 只让
+图标项均分整行；Fusion RadioButton 的 label 本身按内容宽度排，实测原 setter
+「尺寸」组是 48 / 64 / 64px（合计 176，行内右侧留白），即 `min-width:48px`
++ `padding:0 8px` + `flex:0 1 auto`（不 grow，剩余空间留在行尾）。本地此前
+三项等分各 58.7px，4 字的「等比填充」两侧只剩 5px，视觉拥挤；现改为按内容
+宽度，图标组仍按引擎 less 等分。
+
+**分段组的组件来源（16:58）**：用户指出它本质上是 radio 的 group 变体，
+改用 shadcn/ui `ToggleGroup`（Radix，`@radix-ui/react-toggle-group`，
+`ui/toggle-group.tsx`）。`type="single"` 时 Root 是 `role="radiogroup"`、
+Item 是 `role="radio"` + `aria-checked` + 方向键漫游；再点已选中项 Radix
+会把 value 置空并触发 `onValueChange('')`，与引擎 `onRadioItemClick` 提交
+null 同款，故删掉手写 button 与 `checked` 状态，选中态 CSS 改用
+`[data-state='on']`。**整组 `flex-wrap:nowrap` + `white-space:nowrap`**
+（引擎 `.radiogroup-style` 同款）：文字项 `flex:0 1 auto` 在窄面板下靠
+flex-shrink 收进一行（176px 行宽实测 48 / 65 / 65，三项 y 全等），此前误加
+`flex-wrap:wrap` 让第三项掉到第二行、边框散成上下两截。视觉规格仍由
+`StyleSetter.module.css` 覆盖成 Fusion 色值/尺寸，不套 shadcn 默认外观。
+
+激活页签按
 `.next-tabs-tab.active { font-weight: normal }` 去掉 500（12px 中文用 500
 会合成加粗反而糊）。折叠分组头保留引擎 `lc-field-head` 的 500。
-**本轮没有新增组件或依赖**：面包屑仍是原生 button + CSS Module，盒模型
-8 个透明输入改为复用现有 shadcn `Input`（`cn()` 覆盖边框/圆角/ring）。
+**16:00 那轮没有新增组件或依赖**：面包屑仍是原生 button + CSS Module，
+盒模型 8 个透明输入改为复用现有 shadcn `Input`（`cn()` 覆盖边框/圆角/ring）；
+16:58 这轮按用户要求新增 shadcn `ToggleGroup`（1 个组件文件 + 1 个 Radix
+依赖），仍不引入 Fusion 或自造控件。
+
+**demo 根节点不写 `background` 简写（17:16）**：`apps/playground/src/schemas/landing.ts`
+根节点原有一行 `background:'#ffffff'`，而属性面板会写 `backgroundSize` 这类
+非简写属性，React dev 在删除 `backgroundSize` 时必报
+`Removing backgroundSize when conflicting property background is set`。白底
+本就由画布文档 `canvas.css` 的 `html/body { background:#fff }` 提供，这行是
+冗余的，删掉即可。**不能**改成 `backgroundColor`：背景模块的
+`useEffect([signature])` 按引擎 `initData()` 在每次 style 变化反推 `bgType`，
+`backgroundColor` 恒有值会把用户选的「背景图片」弹回「颜色填充」。删掉后
+`bgType` 初始仍为 null，UI 初始态不变。
 
 **CSS 结构收敛**：LayoutBox 原本按上/下/左/右各写一条 hover 与有值态规则
 （8 条重复），改为每个面共用一个 `--face-color` 变量，`faceSet` /
