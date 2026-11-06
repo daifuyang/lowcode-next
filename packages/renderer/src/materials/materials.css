@@ -1,0 +1,727 @@
+/**
+ * 内置物料的样式表。
+ *
+ * 为什么用 CSS 而不是 schema 里的 inline style：
+ * hover / transition / mask / gradient text 这些效果 inline style 表达不了，
+ * 而一个"能当落地页用"的物料必须自带完成度，否则示例页只能靠手写一堆
+ * 内联样式撑起来，schema 会变成不可读的样式垃圾场。
+ *
+ * 类名统一 `lc-` 前缀，避免和宿主页面冲突；
+ * 所有设计变量也用 `--lc-` 前缀，宿主可以覆盖做主题。
+ */
+
+:root {
+  --lc-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --lc-mono: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  --lc-ink: #070b18;
+  --lc-ink-2: #0b1122;
+  --lc-fg: #101828;
+  --lc-fg-soft: #33405a;
+  --lc-muted: #5a6478;
+  --lc-subtle: #8a94a8;
+  --lc-line: #e5e9f2;
+  --lc-bg: #ffffff;
+  --lc-bg-muted: #f6f7fb;
+
+  --lc-accent: #4f46e5;
+  --lc-accent-strong: #4338ca;
+  --lc-accent-soft: #eef2ff;
+  --lc-accent-2: #06b6d4;
+}
+
+.lc-mono {
+  font-family: var(--lc-mono) !important;
+  font-variant-ligatures: none;
+}
+
+/* ---------- 对齐 ---------- */
+
+.lc-ta--left {
+  text-align: left;
+}
+.lc-ta--center {
+  text-align: center;
+}
+.lc-ta--right {
+  text-align: right;
+}
+
+/* ---------- 文本 ---------- */
+
+.lc-text {
+  margin: 0;
+  font-family: var(--lc-font);
+  font-size: 14.5px;
+  line-height: 1.72;
+  color: var(--lc-fg-soft);
+  letter-spacing: 0.002em;
+}
+
+.lc-text--xs {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.lc-text--sm {
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.lc-text--base {
+  font-size: 14.5px;
+}
+.lc-text--lg {
+  font-size: 16.5px;
+  line-height: 1.72;
+}
+.lc-text--xl {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.lc-text--strong {
+  font-weight: 600;
+  color: var(--lc-fg);
+}
+
+/* ---------- 色调 ---------- */
+
+.lc-tone--default {
+  color: var(--lc-fg-soft);
+}
+.lc-tone--muted {
+  color: var(--lc-muted);
+}
+.lc-tone--subtle {
+  color: var(--lc-subtle);
+}
+.lc-tone--primary {
+  color: var(--lc-accent);
+}
+.lc-tone--invert {
+  color: #c8d2e8;
+}
+.lc-tone--invert-strong {
+  color: #f2f5ff;
+}
+
+/* ---------- 标题 ---------- */
+
+.lc-heading {
+  margin: 0;
+  font-family: var(--lc-font);
+  font-weight: 660;
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+  color: var(--lc-fg);
+}
+
+.lc-heading--1 {
+  font-size: 46px;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+}
+.lc-heading--2 {
+  font-size: 31px;
+  line-height: 1.22;
+}
+.lc-heading--3 {
+  font-size: 19px;
+  line-height: 1.36;
+}
+.lc-heading--4 {
+  font-size: 15.5px;
+  line-height: 1.44;
+  letter-spacing: -0.01em;
+}
+
+.lc-heading--gradient {
+  background: linear-gradient(96deg, #ffffff 8%, #cdd7ff 44%, #7be3f5 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lc-heading--invert {
+  color: #f4f7ff;
+}
+
+.lc-heading--mono {
+  font-family: var(--lc-mono);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- 按钮 ---------- */
+
+.lc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  /* 同上：不加这句，纵向 Stack 里的按钮会被拉成通栏 */
+  width: fit-content;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--lc-font);
+  font-size: 13.5px;
+  font-weight: 560;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.lc-btn:hover {
+  transform: translateY(-1px);
+}
+.lc-btn:active {
+  transform: translateY(0);
+}
+
+.lc-btn--primary {
+  background: linear-gradient(135deg, #4f46e5, #6d5ef0);
+  color: #ffffff;
+  box-shadow: 0 7px 20px rgba(79, 70, 229, 0.28);
+}
+.lc-btn--primary:hover {
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.36);
+}
+
+.lc-btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #e6ecfb;
+}
+.lc-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.lc-btn--default {
+  background: #ffffff;
+  border-color: var(--lc-line);
+  color: var(--lc-fg);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+.lc-btn--default:hover {
+  border-color: #cfd5e3;
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.08);
+}
+
+.lc-btn--outline {
+  background: transparent;
+  border-color: #cbd2e0;
+  color: var(--lc-fg);
+}
+.lc-btn--outline:hover {
+  border-color: var(--lc-accent);
+  color: var(--lc-accent);
+}
+
+.lc-btn--sm {
+  padding: 7px 13px;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+.lc-btn--lg {
+  padding: 13px 24px;
+  font-size: 14.5px;
+  border-radius: 12px;
+}
+.lc-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ---------- 链接 ---------- */
+
+.lc-link {
+  font-family: var(--lc-font);
+  font-size: 13.5px;
+  color: var(--lc-fg-soft);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.16s ease;
+}
+.lc-link:hover {
+  color: var(--lc-accent);
+}
+.lc-link--invert {
+  color: #b9c6e4;
+}
+.lc-link--invert:hover {
+  color: #ffffff;
+}
+.lc-link--muted {
+  color: var(--lc-subtle);
+}
+
+/* ---------- 标签 ---------- */
+
+.lc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* 作为 flex 子项时默认会被 align-items: stretch 拉满整行，
+     fit-content 让「标签」永远是标签，而不是一条通栏色带 */
+  width: fit-content;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: var(--lc-font);
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.lc-badge--accent {
+  background: var(--lc-accent-soft);
+  color: var(--lc-accent-strong);
+}
+.lc-badge--neutral {
+  background: #f1f3f8;
+  color: #4b5565;
+}
+.lc-badge--success {
+  background: #e7f8ef;
+  color: #067647;
+}
+.lc-badge--invert {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #c9d4f5;
+}
+.lc-badge--outline {
+  border-color: var(--lc-line);
+  color: var(--lc-muted);
+}
+
+/* ---------- 图标字 ---------- */
+
+.lc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lc-mono);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--lc-accent);
+}
+
+/* ---------- 分割线 ---------- */
+
+.lc-divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--lc-line);
+}
+.lc-divider--invert {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- 图片 ---------- */
+
+.lc-image {
+  display: block;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.lc-image--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  background: repeating-linear-gradient(
+    45deg,
+    #f4f6fa,
+    #f4f6fa 8px,
+    #eef1f7 8px,
+    #eef1f7 16px
+  );
+  border: 1px dashed #d5dbe7;
+  color: var(--lc-subtle);
+  font-family: var(--lc-font);
+  font-size: 12px;
+}
+
+/* ---------- 撑开 ---------- */
+
+.lc-spacer {
+  flex: 0 0 auto;
+}
+.lc-spacer--grow {
+  flex: 1 1 auto;
+}
+
+/* ---------- 布局容器 ---------- */
+
+.lc-stack {
+  display: flex;
+  min-width: 0;
+  font-family: var(--lc-font);
+}
+.lc-stack--row {
+  flex-direction: row;
+}
+.lc-stack--column {
+  flex-direction: column;
+}
+.lc-stack--wrap {
+  flex-wrap: wrap;
+}
+.lc-stack--full {
+  width: 100%;
+}
+
+.lc-align--start {
+  align-items: flex-start;
+}
+.lc-align--center {
+  align-items: center;
+}
+.lc-align--end {
+  align-items: flex-end;
+}
+.lc-align--stretch {
+  align-items: stretch;
+}
+
+.lc-justify--start {
+  justify-content: flex-start;
+}
+.lc-justify--center {
+  justify-content: center;
+}
+.lc-justify--end {
+  justify-content: flex-end;
+}
+.lc-justify--between {
+  justify-content: space-between;
+}
+
+.lc-grid {
+  display: grid;
+  min-width: 0;
+  font-family: var(--lc-font);
+}
+
+.lc-section {
+  font-family: var(--lc-font);
+}
+.lc-section--light {
+  background: var(--lc-bg);
+}
+.lc-section--muted {
+  background: var(--lc-bg-muted);
+}
+.lc-section--dark {
+  background: var(--lc-ink);
+  color: #e6ecfb;
+}
+.lc-section--accent {
+  background: linear-gradient(180deg, #eef2ff 0%, #f9fbff 100%);
+}
+.lc-section__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.lc-card {
+  font-family: var(--lc-font);
+  min-width: 0;
+}
+.lc-card--white {
+  background: #ffffff;
+  border: 1px solid var(--lc-line);
+}
+.lc-card--muted {
+  background: var(--lc-bg-muted);
+  border: 1px solid var(--lc-line);
+}
+.lc-card--dark {
+  background: var(--lc-ink-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e6ecfb;
+}
+.lc-card--outline {
+  background: transparent;
+  border: 1px dashed #d3d9e6;
+}
+.lc-card--shadow {
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.07);
+}
+
+/* ---------- 导航栏 ---------- */
+
+.lc-navbar {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 15px 56px;
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid var(--lc-line);
+  backdrop-filter: blur(10px);
+  font-family: var(--lc-font);
+}
+
+.lc-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 660;
+  letter-spacing: -0.015em;
+  color: var(--lc-fg);
+}
+
+.lc-navbar__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4f46e5, #22d3ee);
+  color: #ffffff;
+  font-family: var(--lc-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lc-navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+/* ---------- Hero ---------- */
+
+.lc-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 460px at 50% -8%, rgba(99, 102, 241, 0.34), transparent 68%),
+    linear-gradient(180deg, #060916 0%, #0a1124 58%, #070b18 100%);
+  color: #e9edfa;
+  font-family: var(--lc-font);
+}
+
+.lc-hero__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.13) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(720px 400px at 50% 0%, #000 26%, transparent 76%);
+  mask-image: radial-gradient(720px 400px at 50% 0%, #000 26%, transparent 76%);
+  pointer-events: none;
+}
+
+.lc-hero__glow {
+  position: absolute;
+  left: 50%;
+  top: -170px;
+  width: 760px;
+  height: 380px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(56, 189, 248, 0.2), transparent);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+.lc-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 88px 56px 68px;
+  min-width: 0;
+}
+
+/* ---------- 特性卡 ---------- */
+
+.lc-feature {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid var(--lc-line);
+  border-radius: 14px;
+  font-family: var(--lc-font);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.lc-feature:hover {
+  transform: translateY(-2px);
+  border-color: #d7dceb;
+  box-shadow: 0 16px 36px rgba(16, 24, 40, 0.08);
+}
+
+.lc-feature__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--lc-accent-soft);
+  color: var(--lc-accent-strong);
+  font-family: var(--lc-mono);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.lc-feature__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 640;
+  letter-spacing: -0.012em;
+  color: var(--lc-fg);
+}
+
+.lc-feature__desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.72;
+  color: var(--lc-muted);
+}
+
+.lc-feature__tag {
+  align-self: flex-start;
+  margin-bottom: 2px;
+}
+
+/* ---------- 数据块 ---------- */
+
+.lc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-family: var(--lc-font);
+}
+
+.lc-stat__value {
+  font-size: 27px;
+  font-weight: 660;
+  letter-spacing: -0.028em;
+  line-height: 1.1;
+  color: var(--lc-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-stat__suffix {
+  margin-left: 2px;
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--lc-accent);
+}
+
+.lc-stat__label {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lc-subtle);
+}
+
+.lc-stat--invert .lc-stat__value {
+  color: #ffffff;
+}
+.lc-stat--invert .lc-stat__suffix {
+  color: #8fa8ff;
+}
+.lc-stat--invert .lc-stat__label {
+  color: #9aa6c2;
+}
+
+/* ---------- 代码块 ---------- */
+
+.lc-code {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #080d1c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 26px 64px rgba(3, 7, 18, 0.45);
+  font-family: var(--lc-mono);
+}
+
+.lc-code__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.lc-code__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2a3450;
+}
+
+.lc-code__file {
+  margin-left: 6px;
+  font-size: 11.5px;
+  color: #7b89a8;
+  letter-spacing: 0.01em;
+}
+
+.lc-code__body {
+  margin: 0;
+  padding: 18px 20px;
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: #c6d2f5;
+  white-space: pre;
+  overflow: auto;
+}
+
+/* ---------- 页脚 ---------- */
+
+.lc-footer {
+  background: #060a15;
+  color: #8b96ad;
+  padding: 26px 56px;
+  font-family: var(--lc-font);
+}
+
+.lc-footer__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 1080px;
+  margin: 0 auto;
+  font-size: 12.5px;
+  min-width: 0;
+}
+
+.lc-footer__copy {
+  color: #8b96ad;
+}
+
+.lc-footer__extra {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  min-width: 0;
+}

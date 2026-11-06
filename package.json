@@ -1,0 +1,24 @@
+{
+  "name": "lowcode-next",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @lowcode-next/playground dev",
+    "build": "pnpm build:types && pnpm --filter @lowcode-next/playground build",
+    "build:types": "tsc -b",
+    "typecheck": "tsc -b && tsc -p apps/playground --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf packages/*/dist apps/*/dist *.tsbuildinfo packages/*/*.tsbuildinfo"
+  },
+  "devDependencies": {
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

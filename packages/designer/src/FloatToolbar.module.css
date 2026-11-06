@@ -1,0 +1,144 @@
+/*
+ * 选中工具条。
+ *
+ * 逐条对照 lowcode-engine 的两个样式文件，不做二次发挥：
+ *   packages/designer/src/builtin-simulator/bem-tools/borders.less
+ *   packages/designer/src/builtin-simulator/node-selector/index.less
+ *
+ * 色值与尺寸同样取自引擎：
+ *   --color-brand            rgba(0, 108, 255, 1)
+ *   --color-brand-light      rgba(25, 122, 255, 1)
+ *   --color-layer-tooltip-bg rgba(44, 47, 51, .8)
+ *   条高 20 / 按钮 20×20 / 图标 16 / 圆角 3
+ */
+
+/* .lc-borders-actions */
+.actions {
+  position: fixed;
+  display: flex;
+  /* row-reverse：DOM 里动作在前、标题在后，视觉上标题在最左 */
+  flex-direction: row-reverse;
+  align-items: stretch;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: all;
+  z-index: 20;
+}
+
+/* .lc-borders-action */
+.action {
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-brand, #006cff);
+  color: var(--color-icon-reverse, #fff);
+  border: 0;
+  padding: 0;
+  max-height: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.action:hover {
+  background: var(--color-brand-light, #197aff);
+}
+
+.action:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* .instance-node-selector */
+.selector {
+  position: relative;
+  margin-right: 2px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+/* .instance-node-selector-current */
+.chip {
+  background: var(--color-brand, #006cff);
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 3px;
+  color: var(--color-icon-white, #fff);
+  font: inherit;
+}
+
+.chipTitle {
+  padding-right: 6px;
+  white-space: nowrap;
+}
+
+/* 引擎在容器 hover 时给标题换色（`&:hover .instance-node-selector-current`）；
+   这里用同族的 brand-light 提亮底色，和动作按钮 hover 一个口径 */
+.selector:hover .chip {
+  background: var(--color-brand-light, #197aff);
+}
+
+/* .instance-node-selector svg */
+.selector svg,
+.popupRowContent svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+/* 引擎用 Fusion Popup 承载祖先列表，这里用 fixed 层对齐同一位置 */
+.popup {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: max-content;
+  z-index: 21;
+}
+
+/* .instance-node-selector-node
+   引擎这里写的是 `margin-top: 2px`，行高 20 —— 视觉一致，但两行之间留出 2px
+   **点不到的空隙**：行只有 20px 高，鼠标又在行间移动，落点差一像素就掉进空隙里，
+   表现是"点了没反应"。改成 22px 的行盒 + 2px 上内边距：胶囊还是 20px、间距还是 2px，
+   但整个面板的命中区连成一片（面板总高也不变：n × 22）。 */
+.popupRow {
+  box-sizing: border-box;
+  height: 22px;
+  padding-top: 2px;
+}
+
+/* .instance-node-selector-node-content */
+.popupRowContent {
+  padding-left: 6px;
+  background: var(--color-layer-tooltip-background, rgba(44, 47, 51, 0.8));
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  border-radius: 3px;
+  color: var(--color-icon-white, #fff);
+  cursor: pointer;
+  overflow: visible;
+}
+
+.popupRow:hover {
+  opacity: 0.8;
+}
+
+/* .instance-node-selector-node-title */
+.popupRowTitle {
+  padding-right: 6px;
+  white-space: nowrap;
+}

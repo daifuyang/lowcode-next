@@ -1,0 +1,146 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--lowcode-next-bg, #f5f6f7);
+  color: var(--lowcode-next-fg, #1f2329);
+}
+
+/* 顶栏三区照引擎 workbench.less 的 .lc-top-area：
+   高 48、padding 8 12 8 16、无下边框（靠 body 的灰底隔出 2px 缝），
+   左区自适应、中区 flex:1 居中（margin 0 8px）、右区自适应。 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 48px;
+  padding: 8px 12px 8px 16px;
+  margin-bottom: 2px;
+  background: #fff;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.toolbarCenter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+  min-width: 0;
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.body {
+  position: relative;
+  display: grid;
+  /* 宽度口径照 lowcode 的 workbench：--left-area-width 48 + 面板宽度。
+     引擎里 --dock-pane-width（悬浮）与 --dock-fixed-pane-width（占位）默认同为 300，
+     这里合并成一个变量；它 1860 以上会放大到 452 / 350，那是给代码编辑类面板的，
+     本项目的树 / 物料都是窄列内容，放大只剩留白，所以统一 300。
+     这里 49 = 48 图标栏 + 1px 面板右边框（引擎浮层的 left 也是 48 + 1）；
+     --left-width 由 leftOpen 行内覆盖，收起时退回 var(--rail-width)。 */
+  --rail-width: 49px;
+  --dock-pane-width: 300px;
+  --left-width: calc(var(--rail-width) + var(--dock-pane-width));
+  grid-template-columns: var(--left-width) minmax(0, 1fr) 300px;
+  flex: 1;
+  min-height: 0;
+  /* **不做宽度过渡**：引擎固定 / 悬浮两种装载是各自渲染、瞬切的，
+     画布宽度跟着跳变。加 transition 会变成画布"抽动"一下，比瞬切更晃眼。 */
+}
+
+.panel,
+.panelRight {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.panel {
+  border-right: 1px solid #e5e6eb;
+}
+
+.panelRight {
+  border-left: 1px solid #e5e6eb;
+}
+
+/* 悬浮面板：与图标栏同高、贴在其右缘，盖在画布上（lowcode 的 leftFloatArea）。
+   阴影只往右下打，避免在左侧形成第二道边界。 */
+.floatPane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--rail-width);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  width: var(--dock-pane-width);
+  background: #fff;
+  border-right: 1px solid #e5e6eb;
+  box-shadow: 10px 0 24px rgba(31, 56, 88, 0.12);
+}
+
+/* 详情浮层（引擎 datasource-pane 的 detail）：从面板右缘往画布展开一整块白板。
+   - left 固定 rail + pane 宽度：无论面板是占位还是悬浮，它的右缘都在这个位置；
+   - z-index 压过画布里的浮动工具条（20）与选中框，编辑中的表单不该被它们戳穿；
+   - 宽度按引擎的 min-width: 600px，窄屏时退到剩余可用宽度，不做横向撑破。 */
+.detailPane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--rail-width) + var(--dock-pane-width));
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  max-width: calc(100% - var(--rail-width) - var(--dock-pane-width));
+  background: #fff;
+  border-left: 1px solid #e5e6eb;
+  border-right: 1px solid #e5e6eb;
+  box-shadow: 10px 0 24px rgba(31, 56, 88, 0.12);
+}
+
+.canvasWrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvasStage {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.canvas {
+  position: relative;
+  /* 纸张高度 = stage 可视高度：内容在 iframe 文档里滚动，纸本身不生长 */
+  height: 100%;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  /* 整幅区块（Hero / Footer）贴到画布边缘时要把圆角裁出来 */
+  overflow: hidden;
+}
+
+.footer {
+  flex: 0 0 auto;
+  padding: 0 14px;
+  height: 34px;
+  border-top: 1px solid #eef0f4;
+  background: #fff;
+}

@@ -1,0 +1,55 @@
+/* 深色小气泡：形态照 lowcode 用的 @alifd/next Balloon（深底白字、12px、圆角 4、
+   8px 内边距），但用品牌无关的中性色，和顶栏 / 面板的灰白界面更搭。 */
+.bubble {
+  position: fixed;
+  z-index: 2000;
+  max-width: 280px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: rgba(31, 35, 41, 0.94);
+  box-shadow: 0 4px 14px rgba(15, 22, 33, 0.18);
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  word-break: break-word;
+  /* 提示只负责看，不该抢走指针事件（否则一碰气泡就触发 pointerout） */
+  pointer-events: none;
+  animation: tipIn 0.12s ease-out;
+}
+
+/* 箭头：用 CSS 变量 --tip-arrow-x 定位在目标中心的延长线上 */
+.bubble::before {
+  content: '';
+  position: absolute;
+  left: var(--tip-arrow-x, 12px);
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  transform: translateX(-4px);
+}
+
+.bubble[data-side='bottom']::before {
+  top: -8px;
+  border-bottom-color: rgba(31, 35, 41, 0.94);
+}
+
+.bubble[data-side='top']::before {
+  bottom: -8px;
+  border-top-color: rgba(31, 35, 41, 0.94);
+}
+
+@keyframes tipIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble {
+    animation: none;
+  }
+}

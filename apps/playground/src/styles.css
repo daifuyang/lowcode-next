@@ -1,0 +1,79 @@
+/*
+ * Tailwind v4 入口（为 shadcn/ui setter 控件引入，见 DESIGN-v1 §7.13）。
+ *
+ * - preflight 会全局 reset：宿主壳样式全部是显式声明的 CSS Modules，
+ *   画布在 iframe 里有自己的文档，不受这里影响。
+ * - @source 把 designer 包源码纳入扫描：designer 以源码形态被 alias 进来，
+ *   它的 ui 组件用的 Tailwind 类名也要在这里编译。
+ * - shadcn 主题令牌映射到引擎 DPL 色板（editor-skeleton less-variables.less）：
+ *   品牌蓝 #006cff、中性色 rgba(31,56,88,α)、文本 rgba(0,0,0,α)。
+ */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* designer 以源码 alias 进 bundle；这里用显式 @source（仓库没有 git 根，
+   v4 的自动源探测不可靠，干脆 playground 自己的源码也一并声明） */
+@source '../../../packages/designer/src';
+@source './';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-placeholder: var(--lc-placeholder);
+}
+
+:root {
+  /* 引擎 Fusion Next 输入框 placeholder：#999999（next.css .next-input input::placeholder）。
+     样式面板/搜索框/宽度输入过去各写各的灰，全部统一到这个令牌。 */
+  --lc-placeholder: #999999;
+  /* 引擎 DPL：N-8 块底、N-5 输入边框、N-4 图标、D-2/D-3 文本 */
+  --background: #ffffff;
+  --foreground: rgba(0, 0, 0, 0.8);
+  --primary: #006cff; /* @brand-color-1 */
+  --primary-foreground: #ffffff;
+  --secondary: rgba(31, 56, 88, 0.06);
+  --secondary-foreground: rgba(0, 0, 0, 0.8);
+  --muted: rgba(31, 56, 88, 0.06);
+  --muted-foreground: rgba(31, 56, 88, 0.4);
+  --accent: rgba(31, 56, 88, 0.06);
+  --accent-foreground: rgba(0, 0, 0, 0.8);
+  --destructive: #f04631; /* @brand-danger */
+  --popover: #ffffff;
+  --popover-foreground: rgba(0, 0, 0, 0.8);
+  --border: rgba(31, 56, 88, 0.15);
+  --input: rgba(31, 56, 88, 0.3); /* @input-bdcolor = N-5 */
+  --ring: rgba(0, 108, 255, 0.25);
+}
+
+/* preflight 之上保留宿主基座：Tailwind 的 preflight 已 reset margin / border，
+   这里只补 body 字体与画布外的灰底 */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2329;
+  background: #f5f6f7;
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}

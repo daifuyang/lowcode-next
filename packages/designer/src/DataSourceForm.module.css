@@ -1,0 +1,253 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+
+/* 页头：标题 + 确认/取消（引擎的表单头形态） */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  height: 48px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm {
+  height: 26px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 3px;
+  background: #006cff;
+  font-size: 12px;
+  font-family: inherit;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.confirm:hover {
+  background: #197aff;
+}
+
+.cancel {
+  height: 26px;
+  padding: 0 10px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-family: inherit;
+  color: #4e5969;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.cancel:hover {
+  color: #006cff;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+/* 行：右对齐 label + 控件（引擎表单是 label 右贴控件的栅格） */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.rowLabel {
+  flex: 0 0 96px;
+  padding-top: 6px;
+  font-size: 12px;
+  color: #4e5969;
+  text-align: right;
+}
+
+.required {
+  margin-right: 1px;
+  color: #f53f3f;
+  font-weight: 400;
+}
+
+.rowControl {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input,
+.select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #c4c6cf;
+  border-radius: 3px;
+  outline: none;
+  background: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  color: #1f2329;
+  transition: border-color 0.12s ease;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #006cff;
+}
+
+.input::placeholder {
+  color: var(--lc-placeholder, #999999);
+}
+
+.input[data-invalid] {
+  border-color: #f53f3f;
+}
+
+.error {
+  font-size: 11px;
+  color: #f53f3f;
+}
+
+/* 开关（是否自动请求） */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.switchThumb {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: #c9cdd4;
+  transition: background 0.14s ease;
+}
+
+.switchThumb::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.14s ease;
+}
+
+.switch[data-on] .switchThumb {
+  background: #006cff;
+}
+
+.switch[data-on] .switchThumb::after {
+  transform: translateX(14px);
+}
+
+.switchLabel {
+  font-size: 12px;
+  color: #4e5969;
+}
+
+/* 键值对编辑器 */
+.kv {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kvRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kvRow .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.kvRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: #86909c;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.kvRemove:hover {
+  color: #f53f3f;
+  background: #f2f3f5;
+}
+
+.kvAdd {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  align-self: flex-start;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px dashed #c4c6cf;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  color: #4e5969;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.kvAdd:hover {
+  color: #006cff;
+  border-color: #006cff;
+}
+
+.hint {
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: #f7f8fa;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #86909c;
+}

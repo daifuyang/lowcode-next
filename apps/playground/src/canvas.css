@@ -1,0 +1,73 @@
+/* 画布文档的全局样式（DESIGN-v1 §7.3）。
+   这份文档只装被编辑的页面 —— 物料样式随 builtinMaterials 打进 bundle，
+   这里只负责文档基座 + 原本挂在宿主 canvasRoot 上的编辑态标记样式。 */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #fff;
+}
+
+#canvas-root {
+  min-height: 100%;
+}
+
+/* 画布根（原宿主 Designer.module.css 的 .canvasRoot，随 iframe 迁入） */
+[data-lc-canvas] {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+[data-lc-canvas] > [data-node-id]:first-child {
+  flex: 1 1 auto;
+}
+
+[data-lc-canvas] [data-node-id] {
+  position: relative;
+}
+
+/* 编辑态标记（视觉由宿主的边框层画，这里只做调试/测试用的可见性） */
+[data-lc-canvas] [data-edit-flags~='hidden'] {
+  opacity: 0.4;
+}
+
+[data-lc-canvas] [data-edit-flags~='condition-false'] {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+[data-lc-canvas] [data-edit-flags~='loop'] {
+  outline: 1px dashed #f59e0b;
+  outline-offset: 1px;
+}
+
+[data-lc-canvas] [data-edit-flags~='unknown'] {
+  outline: 1px dashed #ef4444;
+}
+
+/* 空容器占位（照抄 lowcode react-simulator-renderer/src/renderer.less 的
+   .lc-container-placeholder）。没有它，空 Stack / Grid 的高度是 0：
+   选不中、看不见、也拖不进去。只在编辑态存在。 */
+[data-lc-canvas] .lc-container-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  border: 1px dotted;
+  background-color: rgb(240, 240, 240);
+  color: rgb(167, 177, 189);
+  font-family: inherit;
+  font-size: 14px;
+  /* 纯视觉提示，不参与命中：落点始终是容器本体 */
+  pointer-events: none;
+}
+
+[data-lc-canvas] .lc-container-locked {
+  background: #eccfcf;
+}

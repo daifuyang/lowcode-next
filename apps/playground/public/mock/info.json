@@ -1,0 +1,10 @@
+{
+  "title": "lowcode-next 示例数据源",
+  "version": "1.0.1",
+  "features": [
+    { "name": "协议校验", "status": "GA" },
+    { "name": "拖拽引擎", "status": "GA" },
+    { "name": "数据源", "status": "beta" }
+  ],
+  "generatedAt": "2026-11-05"
+}

@@ -1,0 +1,24 @@
+/*
+ * setter 布局辅助 —— 控件壳已交给 shadcn/ui（ui/input、ui/textarea、
+ * ui/switch、ui/select），这里只留 JSON 编辑器的组合结构。
+ */
+
+.jsonWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mono {
+  font-family: Monaco, 'PingFang SC', 'Microsoft YaHei', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.error {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #f04631; /* @brand-danger */
+  word-break: break-all;
+}

@@ -1,0 +1,48 @@
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex: 0 0 auto;
+  width: 48px;
+  padding: 12px 0;
+  border-right: 1px solid #f0f1f4;
+  background: #fafbfc;
+}
+
+/* 46×46 的无圆角方块：引擎 `.lc-title` 就是这个尺寸（栏宽 48 减两侧 1px），
+   图标 20。项与项之间不留空隙，鼠标沿栏上下扫时命中区是连续的 */
+.item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  /* 引擎的未激活态就是正文色（`color: var(--color-text)`），不是浅灰：
+     图标是这一栏唯一的元素，太淡会让 48px 的窄栏看起来像空的 */
+  color: #4e5969;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+/* 引擎里 hover 只有 cursor + tooltip，没有底色。这里把反馈全交给图标颜色：
+   46px 的方块一旦铺底色就变成"按钮块"，和 lowcode 那种克制感不是一回事 */
+.item:hover {
+  color: #1f2329;
+}
+
+/* 激活只染图标：引擎 `.lc-title.actived { color: var(--color-brand) }`。
+   底色块 + 左侧指示条是 VSCode 的做法，在 48px 的窄栏里显得很重 */
+.item[data-active],
+.item[data-active]:hover {
+  color: #006cff;
+}
+
+.item svg {
+  display: block;
+}

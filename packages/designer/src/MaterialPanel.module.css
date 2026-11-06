@@ -1,0 +1,207 @@
+.root {
+  padding-bottom: 20px;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+}
+
+.searchWrap {
+  /* 页头 34 高且 sticky，搜索框贴在它下面继续吸顶 */
+  position: sticky;
+  top: 34px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: #fff;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 21px;
+  display: flex;
+  transform: translateY(-50%);
+  color: #a9aeb8;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 10px 0 30px;
+  border: 1px solid #e5e6eb;
+  border-radius: 7px;
+  background: #f7f8fa;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: #1f2329;
+  outline: none;
+  transition:
+    border-color 0.14s ease,
+    background 0.14s ease;
+}
+
+.search::placeholder {
+  color: var(--lc-placeholder, #999999);
+}
+
+.search:focus {
+  border-color: #c7ccf8;
+  background: #fff;
+}
+
+/* 分组头是一段"标题"，不是标签。
+   之前是 11px + 全大写 + 浅灰 #98a0ad，中文在这套规则下只剩"糊成一条小字"，
+   既压不住下面三列宫格，也没有可点的样子。现在：
+   13/600 + 正文色，行高 32 做成整行可点，hover 给一层极淡底；
+   折叠箭头 14px lucide（原来是一个 8px 的 ▸ 字符，几乎看不清）
+   左右内边距 2 与宫格对齐，所以分组标题、卡片、数量都在同一条竖线上。 */
+.group {
+  padding: 0 8px;
+}
+
+.group + .group {
+  margin-top: 8px;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 32px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #1f2329;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s ease;
+}
+
+.groupTitle:hover {
+  background: #f5f6f8;
+}
+
+/* 16 见方的盒子托住 14px 图标：旋转时占位不变，标题不会跟着抖 */
+.groupCaret {
+  display: inline-flex;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #8b93a1;
+  transition: transform 0.14s ease;
+}
+
+.groupCaret[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+.groupName {
+  flex: 1 1 auto;
+}
+
+/* 数量靠右，与卡片右缘对齐；11px 比标题小一号，读作"计数"而不是标题的一部分 */
+.groupCount {
+  flex: 0 0 auto;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #eef0f4;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #6b7280;
+  letter-spacing: 0;
+}
+
+/* 扁平宫格：等宽等高的小方块，图标在上、名称在下，格子间距 16。
+   用 1px 边框划边界而不是阴影/底色 —— 扁平的边界感来自「线」，一旦加投影，
+   一排格子就变成一堆浮起来的小卡片，在 300px 的窄栏里特别吵。
+   面板宽 300 时三列、每格约 76 见方，是这个名字长度下最稳的密度。
+   间距单独提成变量：它会跟着面板宽度变，300 宽三列时 16 已偏松，
+   真觉得空就改这一行（12 更紧凑），别去动卡片尺寸 */
+.grid {
+  display: grid;
+  --grid-gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  margin: 0;
+  padding: 6px 2px 10px;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  aspect-ratio: 1 / 1;
+  padding: 0 2px;
+  border: 1px solid #e8eaef;
+  border-radius: 10px;
+  background: #fff;
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.card:hover {
+  border-color: #bcd2ff;
+  background: #f7faff;
+}
+
+.card:active {
+  cursor: grabbing;
+  border-color: #006cff;
+  background: #f0f5ff;
+}
+
+/* 卡片已经是容器了，图标不再套一层灰底方块，否则格子内是「框套框」 */
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4e5969;
+  transition: color 0.12s ease;
+}
+
+.card:hover .cardIcon {
+  color: #006cff;
+}
+
+.cardName {
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #1f2329;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  margin: 0;
+  padding: 24px 16px;
+  font-size: 12.5px;
+  color: #a9aeb8;
+  text-align: center;
+}

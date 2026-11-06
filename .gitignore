@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.vite/
+.DS_Store
+*.log
+
+# 本地会话记忆与工作日志（非代码基线）
+.workbuddy/

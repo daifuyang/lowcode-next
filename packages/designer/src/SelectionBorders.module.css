@@ -1,0 +1,41 @@
+/* 选中 / 悬停边框层，对齐 lowcode 的 bem-tools/borders.less。
+   整层不接收指针事件：它盖在内容上方，但所有点击都要穿透到画布节点。 */
+.borders {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* 边框画在自己盒子内部（border-box）：尺寸等于目标元素，所以贴边被裁也不怕。
+   **不加 width/height 过渡**：引擎那层是直接写尺寸，没有 transition。
+   加了过渡而 transform 不过渡，换选中节点时位置会瞬间跳过去、尺寸却还在路上，
+   视觉上就是一个"从小框长大"的闪烁。 */
+.border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  will-change: transform, width, height;
+}
+
+/* hover：虚线 + 极淡底（引擎 rgba(0,121,242,.04)） */
+.detecting {
+  border: 1px dashed #006cff;
+  background: rgba(0, 108, 255, 0.04);
+}
+
+/* 选中：2px 实线，压在 hover 之上。
+   和引擎（borders.less 的 selecting 只有边框）有一处**有意的偏离**：这里补一层
+   淡底。引擎的选中框在画布坐标系里、且节点名/动作条画在框的左上角，框被
+   裁掉一半也还能认出来；我们的工具条是 fixed 层，选中的又是「区块」这种比画布
+   可视区还大的节点时，左边框被浮动面板压住、右边框贴着画布边缘，只剩一条竖线，
+   看起来就像「没有选中」。底色把选区铺满，有没有框都认得出来。
+   6% 在 `lc-section--muted` 这种浅灰底上几乎读不出来，取 9%（比 hover 的 4%
+   深一档，刚好能一眼分辨"选中"和"悬停"）。 */
+.selecting {
+  border: 2px solid #006cff;
+  background: rgba(0, 108, 255, 0.09);
+}

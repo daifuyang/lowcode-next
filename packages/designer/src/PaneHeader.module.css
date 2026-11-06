@@ -1,0 +1,73 @@
+/* 左栏面板页头：标题 + 工具 + 窗口动作。
+ * 34 高、左 12 右 6 的内边距 —— 左边留出与内容对齐的呼吸，
+ * 右边贴着面板边缘，图标按钮才不会被"顶"离出视觉重心。 */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  /* 面板变成纵向 flex 后，页头必须拒绝收缩 —— 否则树内容一长，
+     flex 会按比例把这块固定的 34px 也压扁（实测压到 23px，标题被裁） */
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 6px 0 12px;
+  box-sizing: border-box;
+  background: #fff;
+  /* 一条 6% 的分隔线：页头与内容分层，但不抢视觉 */
+  border-bottom: 1px solid rgba(31, 56, 88, 0.06);
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #1f2329;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.extra {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.chrome {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.iconBtn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #9aa3b0;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.iconBtn:hover {
+  background: #f2f3f5;
+  color: #1f2329;
+}
+
+/* 图钉不染品牌色：lowcode 的固定 / 悬浮图标本身就是一对反义图形
+   （图钉 ↔ 划斜线的图钉），再叠一层高亮反而看不出"点下去是什么" */

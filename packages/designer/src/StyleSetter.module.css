@@ -1,0 +1,960 @@
+/*
+ * 样式面板（引擎 lowcode-engine-ext style-setter 的 less 逐值移植）。
+ *
+ * 依据（DESIGN-v1 §7.14）：
+ * - pro/layout/index.less：LayoutBox 3D 盒模型（#d6e4ff / hover #bfd4fb /
+ *   选中 #bcd1fa，20px 梯形边框，margin 内缩 0、padding 内缩 25px）
+ * - components/row/index.less：行骨架（标题 50/55px、12px、rgba(0,0,0,.6)、
+ *   选中 #5584ff）与按钮单选组
+ * - index.less：.lowcode-setter-style-v2 top-bar 间距
+ */
+
+.setter {
+  display: flex;
+  flex-direction: column;
+  /* 引擎设置面板的 12px 边距节奏：页签下方 12px 起、左右 12px
+     （属性/高级页签的行自带 margin，样式页签统一在这里给） */
+  padding: 12px 12px 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 源码（CssCode）                                                       */
+/* ------------------------------------------------------------------ */
+
+.cssSection {
+  margin-bottom: 10px;
+}
+
+.cssToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cssToggleTitle {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.cssToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid rgba(31, 56, 88, 0.15);
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.cssToggleBtn code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: rgba(31, 56, 88, 0.4);
+}
+
+.cssToggleBtn:hover code {
+  color: #006cff;
+}
+
+.cssEditorWrap {
+  margin-bottom: 2px;
+}
+
+.cssHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.cssIcon {
+  color: rgba(31, 56, 88, 0.4);
+}
+
+/* Monaco 容器：字体/行高/padding 交给 editor options，这里只管边框与聚焦态 */
+.cssEditor {
+  width: 100%;
+  min-height: 84px;
+  border: 1px solid rgba(31, 56, 88, 0.15);
+  border-radius: 3px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.cssEditor:focus-within {
+  border-color: #006cff;
+  box-shadow: 0 0 0 2px rgba(0, 108, 255, 0.25);
+}
+
+.monacoLoading {
+  padding: 10px 8px;
+  font-size: 12px;
+  color: rgba(31, 56, 88, 0.5);
+}
+
+.cssError {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #f04631;
+}
+
+/* ------------------------------------------------------------------ */
+/* 折叠模块卡片                                                          */
+/* 逐值照抄 Fusion Next Collapse（@alifd/next/dist/next.css）：            */
+/*   .next-collapse { border:1px solid #DCDEE3; border-radius:3px }       */
+/*   .next-collapse-panel-title { background:#F2F3F7; padding:8px 0 8px 28px; */
+/*     font-size:14px; font-weight:normal; color:#333333 }                 */
+/*   :hover { background:#EBECF0 }；icon 绝对定位 left:12px                */
+/*   .next-collapse-panel-content { background:#FFF; padding:12px 16px }   */
+/* 每个模块是独立 Collapse（引擎 pro 各模块的 index.tsx 各自包一个 Collapse），*/
+/* 所以卡片之间留 8px 间隙。                                              */
+/* ------------------------------------------------------------------ */
+
+.moduleCard {
+  margin-bottom: 8px;
+  border: 1px solid #dcdde3;
+  border-radius: 3px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.moduleHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 12px 8px 28px;
+  border: none;
+  background: #f2f3f7;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.5;
+  color: #333333;
+  text-align: left;
+  user-select: none;
+  transition: background 100ms linear;
+}
+
+.moduleHeader:hover {
+  background: #ebecf0;
+}
+
+.chevron {
+  position: absolute;
+  left: 12px;
+  color: #333333;
+  transition: transform 100ms linear;
+}
+
+.chevronClosed {
+  transform: rotate(-90deg);
+}
+
+.moduleBody {
+  min-width: 0;
+  padding: 12px 16px;
+  background: #ffffff;
+}
+
+/* ------------------------------------------------------------------ */
+/* 行骨架（引擎 components/row）                                         */
+/* ------------------------------------------------------------------ */
+
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rowTitle {
+  flex: none;
+  width: 50px;
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.rowTitleLong {
+  width: 56px;
+}
+
+/* 有值时标题变蓝（引擎 title-text-active） */
+.rowTitleActive {
+  color: #5584ff;
+}
+
+.rowContent {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 一行双字段（引擎 inner-row-contaienr：宽度/高度、字号/行高） */
+.innerRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.innerItem {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.innerTitle {
+  flex: none;
+  width: 38px;
+  margin-right: 3px;
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.offsetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------------------ */
+/* 图标单选组（引擎 RadioGroup shape="button"）                           */
+/* ------------------------------------------------------------------ */
+
+.radioGroup {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fusion Radio.Group shape="button" 的 medium 档：高 28、边框 #C4C6CF、
+   label 12px / #333333 / 常规字重，选中 #5584FF，hover 底 #F2F3F7。
+   旧实现没写 font-size，继承了宿主 14px，分段组（尤其「尺寸」的文字项）
+   比 12px 行标题明显大一圈。 */
+.radioItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #c4c6cf;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  color: #333333;
+  cursor: pointer;
+  transition: all 100ms linear;
+}
+
+.radioItem:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.radioItem:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.radioItem + .radioItem {
+  margin-left: -1px;
+}
+
+.radioItem:hover {
+  border-color: #a0a2ad;
+  background: #f2f3f7;
+  color: #333333;
+}
+
+.radioItemChecked,
+.radioItemChecked:hover {
+  color: #5584ff;
+  border-color: #5584ff;
+  background: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* 通用字段                                                             */
+/* ------------------------------------------------------------------ */
+
+.growField {
+  width: 100%;
+}
+
+/* 引擎 Fusion NumberPicker innerAfter：input + 单位是同一行内的两个布局单元。
+   旧实现把 24px 原生 select 绝对定位盖在 input 上，浏览器自带箭头占掉约
+   14px，"px" 被裁成 "p"；且 input 要预留 26px 右内边距，窄面板下
+   placeholder 也会被挤断。这里改成真实的 flex 后缀，文字不再被裁。 */
+.numberField {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 视觉令牌全部来自 shadcn Input 自带的 Tailwind 类，这里只负责 flex 收缩 */
+.numberFieldInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+/* 引擎 .next-input-inner-text：#666 / 12px；.next-input-control 右内边距 4px */
+.numberSuffix {
+  flex: 0 0 auto;
+  padding-right: 4px;
+  font-size: 12px;
+  line-height: 1;
+  color: #666666;
+  white-space: nowrap;
+}
+
+/* 引擎 unit=['px','%'] 分支：Select hasArrow=false / hasBorder=false /
+   autoWidth=false / width 24px，只显示单位文字，点击可切换，无箭头。 */
+.numberUnitSelect {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  color: #666666;
+  text-align: center;
+  cursor: pointer;
+}
+
+.numberUnitSelect::-ms-expand {
+  display: none;
+}
+
+.numberUnitSelect:focus-visible {
+  outline: 1px solid #006cff;
+  outline-offset: -2px;
+}
+
+.numberUnitSelect option {
+  color: #333333;
+}
+
+.numberUnitSelect:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 圆角滑杆旁的数值右对齐（旧实现类名挂在 input 上，现在挂在外壳上） */
+.radiusNumber .numberFieldInput {
+  text-align: right;
+}
+
+.unitInput {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.colorInput {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.colorField {
+  padding-left: 26px;
+}
+
+.colorSwatch {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(31, 56, 88, 0.2);
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.colorSwatch input[type='color'] {
+  position: absolute;
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.opacityWrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.opacityWrap > :first-child {
+  flex: 1;
+}
+
+.opacityInput {
+  flex: none;
+  width: 52px;
+}
+
+/* LayoutBox（引擎 pro/layout/index.less 逐值移植） */
+
+.box {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  margin-bottom: 10px;
+}
+
+/* 内容区：引擎透出面板底色，这里给白底（对齐截图观感） */
+.boxCenter {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  right: 50px;
+  bottom: 50px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+/*
+ * 引擎用 4 组重复规则分别写 hover / css-var-bind 的四个方向边框色，
+ * 这里收敛成一个 --face-color 变量：每个面只声明自己的彩色边框引用变量，
+ * .faceSet / :hover 改变量即可（:hover 特异性更高，天然盖过有值态，
+ * 与引擎 less 里 hover 规则写在 css-var-bind 之后的效果一致）。
+ */
+.face {
+  --face-color: #d6e4ff;
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.faceSet {
+  --face-color: #bcd1fa; /* 引擎 css-var-bind */
+}
+
+.face:hover {
+  --face-color: #bfd4fb;
+}
+
+/* margin 面外圈、padding 面内缩 25px（引擎 25/30 定值） */
+.faceTop {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 20px solid var(--face-color);
+}
+
+.faceTopInset {
+  top: 25px;
+  left: 25px;
+  right: 25px;
+}
+
+.faceBottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 20px solid var(--face-color);
+}
+
+.faceBottomInset {
+  bottom: 25px;
+  left: 25px;
+  right: 25px;
+}
+
+.faceLeft {
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-left: 20px solid var(--face-color);
+}
+
+.faceLeftInset {
+  top: 30px;
+  bottom: 30px;
+  left: 25px;
+}
+
+.faceRight {
+  top: 5px;
+  bottom: 5px;
+  right: 0;
+  width: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-right: 20px solid var(--face-color);
+}
+
+.faceRightInset {
+  top: 30px;
+  bottom: 30px;
+  right: 25px;
+}
+
+/* 盒模型输入：透明无边框、居中（引擎 LayoutInput next-noborder） */
+.boxInput {
+  position: absolute;
+  width: 100%;
+  height: 20px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.boxInput::placeholder {
+  color: var(--lc-placeholder, #999999);
+}
+
+/* 上下面：输入盖在梯形边上 */
+.faceTop .boxInput {
+  top: -20px;
+}
+
+.faceBottom .boxInput {
+  bottom: -20px;
+}
+
+/*
+ * 左右面的输入：引擎 layoutBox.less 里 margin 侧 input 宽 60px、
+ * padding 侧宽 30px，都是**绝对定位并显式给宽度**的独立输入。
+ * 旧实现只写了 `width: 100%`，而左右面自身 width:0，于是这 4 个
+ * 输入实际宽 0px —— 截图里左右边距完全没有输入框的根因。
+ * 这里按面的几何分别对中到 20px 蓝色梯形的中心：
+ *   左面 padding box 起点 = 面 left + 20（border-left），
+ *   右面 padding box 起点 = 容器右 - 20（border-right），
+ *   inset 面再各内缩 25px。
+ */
+.faceLeft .boxInput,
+.faceRight .boxInput {
+  top: 50%;
+  width: 60px;
+  padding: 0 8px;
+  transform: translateY(-50%);
+}
+
+.faceLeft .boxInput {
+  left: -40px;
+}
+
+.faceRight .boxInput {
+  left: -20px;
+}
+
+.faceLeftInset .boxInput,
+.faceRightInset .boxInput {
+  width: 30px;
+  padding: 0 5px;
+}
+
+.faceLeftInset .boxInput {
+  left: -25px;
+}
+
+.faceRightInset .boxInput {
+  left: -5px;
+}
+
+/* 内边距 / 外边距标签：引擎是英文 help-txt + scale(.75)，中文再缩放会
+   糊成 7.5px，改为不缩放的 11px 常规字重，文案更清晰 */
+.helpTxt {
+  position: absolute;
+  left: -14px;
+  bottom: -17px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  /* 比 placeholder 深一档：与 12px 行标题同色，中文标签才不糊 */
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* 背景 / 位置 / 边框（引擎 pro/{background,position,border}/*.less）     */
+/* ------------------------------------------------------------------ */
+
+/* 多值字段：数值 + 单位下拉（引擎 Number 的 innerAfter Select） */
+.multiNumber {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 一行双字段（引擎 inner-row-contaienr-bgsize：margin-left 46px） */
+.pairRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 10px 46px;
+}
+
+.pairItem {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pairTitle {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* 背景图 URL（引擎 Input innerBefore icon-suffix-url） */
+.urlInput {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.urlPrefix {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: rgba(31, 56, 88, 0.4);
+  pointer-events: none;
+}
+
+.urlField {
+  padding-left: 30px;
+}
+
+/* 背景定位：左 9 宫格 + 右 左/顶 两输入（引擎 background-position-container） */
+.bgPosition {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.bgPositionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 16px);
+  grid-template-rows: repeat(3, 16px);
+  gap: 4px;
+  align-content: center;
+  width: 60px;
+  height: 64px;
+  margin-right: 30px;
+  flex: 0 0 auto;
+}
+
+.bgPositionNums {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 图标按钮（引擎 .sel-icon / .icon-container：选中 #5584ff + 淡蓝底） */
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.iconBtn:hover {
+  color: #5584ff;
+}
+
+.iconBtnActive {
+  color: #5584ff;
+  background: rgba(32, 119, 255, 0.12);
+}
+
+/* 位置 3D 盒（引擎 pro/position/index.less：30px 梯形边框） */
+.positionBox {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  margin-bottom: 10px;
+}
+
+.posFace {
+  --face-color: #d6e4ff;
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.posFace:hover {
+  --face-color: #bfd4fb;
+}
+
+.posFaceTop {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-top: 30px solid var(--face-color);
+}
+
+.posFaceBottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-bottom: 30px solid var(--face-color);
+}
+
+.posFaceLeft,
+.posFaceRight {
+  top: 5px;
+  bottom: 5px;
+  width: 0;
+  border-top: 30px solid transparent;
+  border-bottom: 30px solid transparent;
+}
+
+.posFaceLeft {
+  left: 0;
+  border-left: 30px solid var(--face-color);
+}
+
+.posFaceRight {
+  right: 0;
+  border-right: 30px solid var(--face-color);
+}
+
+.posInput {
+  position: absolute;
+  height: 30px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.posInput::placeholder {
+  color: var(--lc-placeholder, #999999);
+}
+
+.posFaceTop .posInput {
+  top: -30px;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.posFaceBottom .posInput {
+  bottom: -30px;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.posFaceLeft .posInput,
+.posFaceRight .posInput {
+  top: 50%;
+  width: 60px;
+  transform: translateY(-50%);
+}
+
+.posFaceLeft .posInput {
+  left: -15px;
+}
+
+.posFaceRight .posInput {
+  right: -15px;
+}
+
+/* 圆角：滑杆 + 数值（引擎 radius-container）；分角两行 */
+.radiusRange {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+}
+
+.radiusRange > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.radiusRange > .unitInput {
+  flex: 0 0 80px;
+}
+
+/* 圆角数值右对齐由 .radiusNumber .numberFieldInput 承担（见通用字段区） */
+
+.cornerRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cornerItem {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cornerIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: rgba(31, 56, 88, 0.4);
+}
+
+/* 边框方向十字（引擎 border-icon-container：上 / 左 / 全 / 右 / 下） */
+.borderLayout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.borderIconGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  grid-template-rows: repeat(3, 20px);
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.borderIconGrid .iconBtn {
+  width: 20px;
+  height: 20px;
+}
+
+.borderCell0 {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.borderCell1 {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.borderCell2 {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.borderCell3 {
+  grid-row: 2;
+  grid-column: 3;
+}
+
+.borderCell4 {
+  grid-row: 3;
+  grid-column: 2;
+}
+
+.borderFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 108px;
+  width: 108px;
+}
+
+/* 列方向里 .unitInput / .colorInput 自带的 flex:1 会拉伸高度，改回固定高 */
+.borderFields > div {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+/* 阴影：颜色 / x y / 模糊 扩展（引擎 shadow-container） */
+.shadowGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 10px 20px;
+}
+
+.shadowRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.shadowItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.shadowLabel {
+  flex: 0 0 24px;
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.shadowGrid > .shadowRow:first-child .shadowLabel {
+  flex: 0 0 56px;
+}

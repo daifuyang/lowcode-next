@@ -1,0 +1,430 @@
+/* 大纲树 —— 标准树组件的画法（不是手风琴列表）。
+ *
+ * 三条和"折叠面板"划清界限的规则：
+ * 1. 行与行之间**没有** border-bottom，靠 hover / 选中底色切分；
+ * 2. 层级靠**常驻**的竖向参考线（.branch::before）+ 16px 缩进表达；
+ * 3. 右侧节点摘要默认透明，只在 hover / 选中时出现。
+ *
+ * 尺寸：行高 26、步长 16、箭头 12、图标 16、动作 22。 */
+
+.root {
+  /* 页头 / 搜索框固定，只有树自己滚 —— 所以 root 要撑满面板并纵向排布，
+     否则 .tree 拿不到可分配的高度，横向滚动条会跑到面板最底部之外 */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+}
+
+/* 页头由 PaneHeader 统一渲染，这里只留面板自己的工具按钮，
+   尺寸与页头的窗口动作按钮一致（22 见方 / 圆角 4），视觉上连成一簇 */
+.toolBtn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #9aa3b0;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.toolBtn:hover {
+  background: #f2f3f5;
+  color: #1f2329;
+}
+
+/* 搜索：夹在页头与树之间。滚动容器是下面的 .tree，所以它天然常驻，
+   不需要 sticky（横向滚动时也不会跟着跑掉） */
+.searchWrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background: #fff;
+  border-bottom: 1px solid rgba(31, 56, 88, 0.06);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  display: inline-flex;
+  color: #a9aeb8;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  height: 26px;
+  box-sizing: border-box;
+  padding: 0 22px 0 25px;
+  border: 1px solid #e9ebef;
+  border-radius: 6px;
+  background: #f7f8fa;
+  font-family: inherit;
+  font-size: 12px;
+  color: #1f2329;
+  outline: none;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.search::placeholder {
+  color: var(--lc-placeholder, #999999);
+}
+
+.search:focus {
+  background: #fff;
+  border-color: #b9d4ff;
+  box-shadow: 0 0 0 2px rgba(0, 108, 255, 0.1);
+}
+
+.searchClear {
+  position: absolute;
+  right: 14px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #dfe3e9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+.searchClear:hover {
+  background: #c3c9d2;
+}
+
+/* 空结果：不要只写一行小字，给出下一步动作 */
+/* 命中片段：只加一层淡淡的品牌色底，字色不变 ——
+   连字一起染蓝会让整行看着像超链接 */
+.hit {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: rgba(0, 108, 255, 0.12);
+  color: inherit;
+}
+
+.empty {
+  margin: 0;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #8a94a8;
+  text-align: center;
+}
+
+.emptyHint {
+  font-size: 11px;
+  color: #b6bcc6;
+}
+
+/* 树本体就是滚动容器（对应 lowcode 的 .lc-outline-tree-container）：
+   横向允许滚动 —— 深层的长节点名不再被省略号吃掉，而是滚出来看。
+
+   注意 .row 上的 padding-left / margin-left 让行盒子从树的左边界起算，
+   所以横向滚动时整行底色会跟着内容一起延伸，不会出现"底色只到面板宽"的断口。 */
+.tree {
+  /* basis 给 0：高度只由父容器剩余空间决定，不拿内容高度去参与 flex 分配
+     （否则内容一长就会反过来挤压页头） */
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 6px;
+  outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: #d3d7de transparent;
+}
+
+/* 定宽层：宽度 = 最宽那行的内容宽度（至少铺满面板）。所有行都跟它同宽，
+   横向滚动时底色连成一片，而不是"滚过去只剩一行" */
+.treeInner {
+  width: max-content;
+  min-width: 100%;
+}
+
+/* 面板窄，滚动条压细一点，别把行挤得太矮 */
+.tree::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tree::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #d3d7de;
+}
+
+.tree::-webkit-scrollbar-thumb:hover {
+  background: #bfc5cf;
+}
+
+.tree::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 键盘进入树时给一圈很淡的焦点框（鼠标点选不出现） */
+.tree:focus-visible {
+  outline: 1px solid #b9d4ff;
+  outline-offset: -1px;
+}
+
+/* 拖拽中：整棵树换成抓取光标，避免指针滑过按钮时闪成手的形状 */
+.tree[data-dragging='true'],
+.tree[data-dragging='true'] * {
+  cursor: grabbing !important;
+}
+
+/* 插入块（引擎 `.insertion`）：一个行高的虚线占位，松手后节点就落在这里 */
+.insertion {
+  height: 26px;
+  box-sizing: border-box;
+  margin: 1px 0;
+  border: 1px dashed #006cff;
+  border-radius: 3px;
+  background: rgba(0, 108, 255, 0.04);
+  pointer-events: none;
+}
+
+.insertion[data-invalid] {
+  border-color: #f53f3f;
+  background: rgba(245, 63, 63, 0.06);
+}
+
+/* 被拖起来的行：淡下去，表示"它正在被搬走"（引擎 drag 态的 opacity 同款） */
+.row[data-dragging='true'] {
+  opacity: 0.4;
+}
+
+/* 分支：缩进就长在这里，参考线画在每层 6px 处。
+   参考线常驻 —— 这是"树"和"列表"最直观的分界。 */
+.branch {
+  position: relative;
+  padding-left: 16px;
+}
+
+.branch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 1px;
+  background: #edeff3;
+  pointer-events: none;
+  transition: background-color 0.14s ease;
+}
+
+/* 鼠标在树里时参考线略微加深，结构更清楚 */
+.tree:hover .branch::before {
+  background: #e2e6ec;
+}
+
+/* 选中节点自己下面那条分支转品牌色：视线顺着线就知道孩子挂在哪 */
+.tree .branch[data-selected='true']::before {
+  background: #b9d4ff;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  /* 行横贯面板：padding-left / margin-left 由行内缩进成对给出，见 TreePanel.tsx。
+     宽度补回缩进量（--row-indent），行的左右缘才能对齐到定宽层 —— 
+     面板窄、树很宽时，整行底色跟着横向滚动一起延伸。 */
+  width: calc(100% + var(--row-indent, 0px));
+  height: 26px;
+  box-sizing: border-box;
+  /* 没有分隔线；右内边距留给行内动作按钮 */
+  padding-right: 4px;
+  font-size: 12px;
+  color: #1f2329;
+  cursor: default;
+  user-select: none;
+}
+
+.row:hover {
+  background: rgba(31, 56, 88, 0.045);
+}
+
+/* 画布 / 属性面板共用的 hover 通道：树里对应的那行也会亮起来。
+   属性名用 detecting 而不是 hovered —— 画布元素上的 data-hovered 是给高亮用的，
+   两边同名会让全文档查询互相串台。 */
+.row[data-detecting='true'] {
+  background: rgba(31, 56, 88, 0.055);
+}
+
+.row[data-selected='true'] {
+  background: rgba(0, 108, 255, 0.08);
+}
+
+.row[data-selected='true'] .name {
+  color: #006cff;
+}
+
+.row[data-selected='true'] .icon {
+  color: #006cff;
+}
+
+.row[data-hidden='true'] .name {
+  color: #9b9b9b;
+}
+
+/* 展开箭头：收起 -90°、展开 0° */
+.caret,
+.caretEmpty {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caret {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 0;
+  color: rgba(31, 56, 88, 0.4);
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.row:hover .caret {
+  color: rgba(31, 56, 88, 0.65);
+}
+
+.caret:hover {
+  color: #1f2329 !important;
+}
+
+/* lucide 的 ChevronRight 本身朝右：收起不转，展开转 90° 变成朝下 */
+.caret svg {
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform 0.12s ease;
+}
+
+.caret[data-open='true'] svg {
+  transform: rotate(90deg);
+}
+
+.icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  color: rgba(31, 56, 88, 0.45);
+}
+
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  /* 不裁剪：节点全名要靠横向滚动看，裁掉就永远看不到了 */
+  overflow: visible;
+}
+
+.name {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* 行尾不再挂摘要：它参与 intrinsic 宽度计算，会让本来放得下的名字
+   也把行撑宽、无端冒出横向滚动条。完整文案由行的 title 提示承载。 */
+
+/* 行内动作：常驻但透明，hover 才浮出来，避免文字跳动 */
+.actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-self: stretch;
+}
+
+.act {
+  width: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #4e5969;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+/* 只在 hover 行时浮出：引擎里选中行也不常驻按钮，
+   否则树里总有几行插着一排图标，视线会被拽走 */
+.row:hover .act {
+  opacity: 0.5;
+}
+
+.act:hover {
+  opacity: 1 !important;
+}
+
+/* 已隐藏 / 已锁定：那个按钮常亮（引擎 .hidden / .locked 同款） */
+.act[data-on='true'] {
+  opacity: 0.8;
+}
+
+/* 删除是唯一不可"再点一次撤销"的动作，hover 时才给红色警示 */
+.act[data-danger='true']:hover {
+  color: #e34d59;
+}
+
+/* 编辑态整组收起：输入框旁边摆一排按钮，点歪一次就把节点删了 */
+.row[data-editing='true'] .actions {
+  display: none;
+}
+
+/* 行内重命名输入框：尺寸照引擎 .tree-node-title-input，
+   但它要撑满名字那一栏，所以不写死宽度 */
+.renameInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid #006cff;
+  border-radius: 3px;
+  background: #fff;
+  color: #1f2329;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 20px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 108, 255, 0.12);
+}
