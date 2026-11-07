@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DocumentImpl } from '@lowcode-next/model';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 
 import MaterialPanel from './MaterialPanel.vue';
 import TreePanel from './TreePanel.vue';
@@ -17,7 +17,7 @@ import styles from '@lowcode-next/designer-ui/Designer.module.css';
 withDefaults(
   defineProps<{
     document: DocumentImpl;
-    registry: MaterialRegistry;
+    registry: MaterialMetaRegistry;
     leftTab: string;
     pinned?: boolean;
     selectedId: string | null;

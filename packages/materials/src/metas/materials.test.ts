@@ -1,16 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { builtinMaterials } from './index';
+import { builtinMaterialPackage } from './index';
 
 /**
- * 物料协议守卫。
+ * 物料协议守卫（DESIGN-v1 §12.4）。
  *
  * 属性面板完全依赖 meta 生成控件，所以 meta 写错不会报错，只会静默退化：
  * - 枚举 prop 没有 options → 面板渲染成自由输入，打错一个字就回落到默认值
  * - prop 没有 title → 面板上出现 `flexDirection` 这种原始键名
  * - options 里有重复值 → React 复用 key 出错，下拉行为诡异
  *
- * 这些都不会在运行时抛异常，只会在几周后被人发现"面板怎么不对劲"。
+ * 这些都不会在运行时抛异常，只会在几周后被人发现「面板怎么不对劲」。
+ *
+ * 拆包之后这些断言的覆盖面变大了：`propOptions()` 与实现里的 `pick()` 读的是
+ * **同一份导出常量**，所以「meta 的选项」与「实现认的值」不可能不同步 —— 这里只需
+ * 守住 meta 自身的完整性。
  */
+
+const metas = builtinMaterialPackage.metas;
 
 const EXPECTED_ENUMS: Record<string, string[]> = {
   Heading: ['level', 'tone', 'align', 'weight'],
@@ -26,7 +32,7 @@ const EXPECTED_ENUMS: Record<string, string[]> = {
 describe('物料协议', () => {
   it('每个 prop 都有 title，面板不会出现原始键名', () => {
     const missing: string[] = [];
-    for (const { meta } of builtinMaterials) {
+    for (const meta of metas) {
       for (const [key, prop] of Object.entries(meta.props)) {
         if (!prop.title) missing.push(`${meta.componentName}.${key}`);
       }
@@ -37,11 +43,11 @@ describe('物料协议', () => {
   it('枚举 prop 都有 options，且值与实现里的常量同源可用', () => {
     const missing: string[] = [];
     for (const [componentName, keys] of Object.entries(EXPECTED_ENUMS)) {
-      const meta = builtinMaterials.find((item) => item.meta.componentName === componentName);
+      const meta = metas.find((item) => item.componentName === componentName);
       expect(meta, `${componentName} 未注册`).toBeTruthy();
 
       for (const key of keys) {
-        const prop = meta!.meta.props[key];
+        const prop = meta!.props[key];
         expect(prop, `${componentName}.${key} 未声明`).toBeTruthy();
         if (!prop.options || prop.options.length < 2) missing.push(`${componentName}.${key}`);
       }
@@ -51,7 +57,7 @@ describe('物料协议', () => {
 
   it('options 的值唯一，且包含 defaultValue', () => {
     const problems: string[] = [];
-    for (const { meta } of builtinMaterials) {
+    for (const meta of metas) {
       for (const [key, prop] of Object.entries(meta.props)) {
         if (!prop.options) continue;
 
@@ -71,21 +77,31 @@ describe('物料协议', () => {
   });
 
   it('defaultSchema 的 componentName 与 meta 一致', () => {
-    const problems = builtinMaterials
-      .filter(({ meta }) => {
+    const problems = metas
+      .filter((meta) => {
         const name = (meta.defaultSchema as { componentName?: string } | undefined)?.componentName;
         return name !== undefined && name !== meta.componentName;
       })
-      .map(({ meta }) => meta.componentName);
+      .map((meta) => meta.componentName);
     expect(problems).toEqual([]);
   });
 
   it('容器能力的唯一判据是 configure.component.isContainer', () => {
-    const containers = builtinMaterials
-      .filter(({ meta }) => meta.configure.component.isContainer)
-      .map(({ meta }) => meta.componentName);
+    const containers = metas
+      .filter((meta) => meta.configure.component.isContainer)
+      .map((meta) => meta.componentName);
 
     // 布局与整段区块都应该是容器；基础物料（按钮/标题）不是
-    expect(containers).toEqual(['Div', 'Stack', 'Grid', 'Section', 'Card', 'Navbar', 'Hero', 'FeatureCard', 'Footer']);
+    expect(containers).toEqual([
+      'Div',
+      'Stack',
+      'Grid',
+      'Section',
+      'Card',
+      'Navbar',
+      'Hero',
+      'FeatureCard',
+      'Footer',
+    ]);
   });
 });

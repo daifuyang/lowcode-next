@@ -3,7 +3,12 @@
   "references": [
     { "path": "./packages/protocol" },
     { "path": "./packages/model" },
+    { "path": "./packages/renderer-core" },
+    { "path": "./packages/materials" },
+    { "path": "./packages/materials-react" },
+    { "path": "./packages/materials-vue" },
     { "path": "./packages/renderer" },
+    { "path": "./packages/renderer-vue" },
     { "path": "./packages/drag" },
     { "path": "./packages/designer-core" },
     { "path": "./packages/designer-react" },

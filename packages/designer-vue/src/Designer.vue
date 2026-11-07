@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import type { CSSProperties, Component } from 'vue';
 import { LayoutGrid, ListTree, Monitor, Smartphone, Tablet } from '@lucide/vue';
 import type { DocumentImpl } from '@lowcode-next/model';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 import { CANVAS_DEVICES, DesignerSession } from '@lowcode-next/designer-core';
 import type { CanvasDevice } from '@lowcode-next/designer-core';
 
@@ -31,7 +31,7 @@ import styles from '@lowcode-next/designer-ui/Designer.module.css';
 const props = withDefaults(
   defineProps<{
     document: DocumentImpl;
-    registry: MaterialRegistry;
+    registry: MaterialMetaRegistry;
     /** 画布内边距，默认 20；做整幅落地页时设 0，让区块自己贴边 */
     canvasPadding?: number;
     /**

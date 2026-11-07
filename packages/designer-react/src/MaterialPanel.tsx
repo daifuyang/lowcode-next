@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 import type { ComponentMeta } from '@lowcode-next/protocol';
 import { ChevronRight, Search } from 'lucide-react';
 import { MatIcon } from './icons';
@@ -8,7 +8,7 @@ import { PaneHeader } from './PaneHeader';
 import styles from '@lowcode-next/designer-ui/MaterialPanel.module.css';
 
 export interface MaterialPanelProps {
-  registry: MaterialRegistry;
+  registry: MaterialMetaRegistry;
   onDragStart: (componentName: string, event: ReactPointerEvent<HTMLElement>) => void;
   /** 页头的窗口动作，由宿主（Designer）提供状态 */
   pinned?: boolean;
@@ -38,16 +38,26 @@ export function MaterialPanel({
   const [keyword, setKeyword] = useState('');
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
 
+  /**
+   * 订阅注册表版本号：宿主在编辑过程中 `use()` 一个新物料包，面板立刻重算。
+   *
+   * 这行是「运行期插拔物料」的关键 —— 上一版物料表没有任何通知机制，
+   * `list()` 结果变了也只有一个 `useMemo` 守着 `[registry]`，实例没换就永远不重算。
+   * 现在与属性面板订阅 setter 注册表是同一套写法。
+   */
+  const version = useSyncExternalStore(registry.subscribe, registry.getVersion);
+
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, ComponentMeta[]>();
-    for (const definition of registry.list()) {
-      const name = definition.meta.group ?? '其他';
+    for (const meta of registry.list()) {
+      const name = meta.group ?? '其他';
       const bucket = map.get(name);
-      if (bucket) bucket.push(definition.meta);
-      else map.set(name, [definition.meta]);
+      if (bucket) bucket.push(meta);
+      else map.set(name, [meta]);
     }
     return [...map.entries()].map(([name, items]) => ({ name, items }));
-  }, [registry]);
+    // version 参与依赖：物料增删后 groups 必须重算，registry 实例本身是不变的
+  }, [registry, version]);
 
   const query = keyword.trim().toLowerCase();
 

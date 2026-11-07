@@ -160,15 +160,15 @@ importers:
       '@lowcode-next/drag':
         specifier: workspace:*
         version: link:../drag
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
       '@lowcode-next/model':
         specifier: workspace:*
         version: link:../model
       '@lowcode-next/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@lowcode-next/renderer':
-        specifier: workspace:*
-        version: link:../renderer
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.57.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -226,15 +226,15 @@ importers:
       '@lowcode-next/designer-ui':
         specifier: workspace:*
         version: link:../designer-ui
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
       '@lowcode-next/model':
         specifier: workspace:*
         version: link:../model
       '@lowcode-next/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@lowcode-next/renderer':
-        specifier: workspace:*
-        version: link:../renderer
       '@lucide/vue':
         specifier: ^1.69.0
         version: 1.69.0(vue@3.5.45(typescript@7.0.2))
@@ -243,6 +243,40 @@ importers:
         version: 3.5.45(typescript@7.0.2)
 
   packages/drag: {}
+
+  packages/materials:
+    dependencies:
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/materials-react:
+    dependencies:
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+
+  packages/materials-vue:
+    dependencies:
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      vue:
+        specifier: ^3.5.45
+        version: 3.5.45(typescript@7.0.2)
 
   packages/model:
     dependencies:
@@ -261,6 +295,9 @@ importers:
       '@lowcode-next/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@lowcode-next/renderer-core':
+        specifier: workspace:*
+        version: link:../renderer-core
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -268,6 +305,24 @@ importers:
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
+
+  packages/renderer-core:
+    dependencies:
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/renderer-vue:
+    dependencies:
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@lowcode-next/renderer-core':
+        specifier: workspace:*
+        version: link:../renderer-core
+      vue:
+        specifier: ^3.5.45
+        version: 3.5.45(typescript@7.0.2)
 
 packages:
 

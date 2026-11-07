@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parsePageSchema } from '@lowcode-next/protocol';
 import type { NodeSchema } from '@lowcode-next/protocol';
-import { builtinMaterials, createMaterialRegistry } from '@lowcode-next/renderer';
+import { builtinMaterialPackage, createMetaRegistry } from '@lowcode-next/materials';
+import { builtinReactComponents } from '@lowcode-next/materials-react';
 import { landingSchema } from './landing';
 
 /**
@@ -41,7 +42,7 @@ describe('landingSchema', () => {
   });
 
   it('树里用到的组件都已注册', () => {
-    const registry = createMaterialRegistry(builtinMaterials);
+    const registry = createMetaRegistry([builtinMaterialPackage]);
     const missing = [...collectTypes(landingSchema.componentsTree)].filter(
       (name) => !registry.has(name),
     );
@@ -57,35 +58,36 @@ describe('landingSchema', () => {
   });
 });
 
-describe('builtinMaterials', () => {
+describe('builtinMaterialPackage', () => {
   it('componentName 无重复', () => {
-    const names = builtinMaterials.map((definition) => definition.meta.componentName);
+    const names = builtinMaterialPackage.metas.map((meta) => meta.componentName);
     expect(names.length).toBe(new Set(names).size);
   });
 
   it('每个物料的 defaultSchema 指向自己', () => {
-    const mismatched = builtinMaterials
-      .filter((definition) => {
-        const template = definition.meta.defaultSchema as NodeSchema | undefined;
-        return template ? template.componentName !== definition.meta.componentName : false;
+    const mismatched = builtinMaterialPackage.metas
+      .filter((meta) => {
+        const template = meta.defaultSchema as NodeSchema | undefined;
+        return template ? template.componentName !== meta.componentName : false;
       })
-      .map((definition) => definition.meta.componentName);
+      .map((meta) => meta.componentName);
     expect(mismatched).toEqual([]);
   });
 
   it('每个物料都分了组', () => {
-    const ungrouped = builtinMaterials
-      .filter((definition) => !definition.meta.group)
-      .map((definition) => definition.meta.componentName);
+    const ungrouped = builtinMaterialPackage.metas
+      .filter((meta) => !meta.group)
+      .map((meta) => meta.componentName);
     expect(ungrouped).toEqual([]);
   });
 
   it('容器物料一定注册了组件实现', () => {
-    const registry = createMaterialRegistry(builtinMaterials);
-    const broken = builtinMaterials
-      .filter((definition) => definition.meta.configure.component.isContainer)
-      .map((definition) => definition.meta.componentName)
-      .filter((name) => !registry.resolve(name));
+    // 描述与实现拆成两个包之后，这条守卫比以前更重要：meta 有了、组件没跟上
+    // 不会报错，只会渲染成「未注册物料」兜底块
+    const broken = builtinMaterialPackage.metas
+      .filter((meta) => meta.configure.component.isContainer)
+      .map((meta) => meta.componentName)
+      .filter((name) => !builtinReactComponents[name]);
     expect(broken).toEqual([]);
   });
 });

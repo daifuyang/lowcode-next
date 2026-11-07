@@ -1,13 +1,13 @@
 import { createApp } from 'vue';
 import type { Component } from 'vue';
 import type { DocumentImpl } from '@lowcode-next/model';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 
 import Designer from './Designer.vue';
 
 export interface MountDesignerOptions {
   document: DocumentImpl;
-  registry: MaterialRegistry;
+  registry: MaterialMetaRegistry;
   canvasPadding?: number;
   preview?: () => void;
 }

@@ -1,0 +1,26 @@
+{
+  "name": "@lowcode-next/materials-react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "内置物料的 React 实现。与 materials-vue 对等：描述来自 @lowcode-next/materials，本包只提供组件与样式入口。",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@lowcode-next/materials": "workspace:*",
+    "@lowcode-next/protocol": "workspace:*",
+    "react": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0"
+  }
+}

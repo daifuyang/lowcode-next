@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'r
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Monitor, Redo2, Smartphone, Tablet, Undo2 } from 'lucide-react';
 import type { Command, DocumentImpl } from '@lowcode-next/model';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 import type { PageSchema } from '@lowcode-next/protocol';
 import { CANVAS_DEVICES, DesignerSession } from '@lowcode-next/designer-core';
 import type { CanvasDevice, SetterRegistry } from '@lowcode-next/designer-core';
@@ -20,7 +20,7 @@ import styles from '@lowcode-next/designer-ui/Designer.module.css';
 
 export interface DesignerProps {
   document: DocumentImpl;
-  registry: MaterialRegistry;
+  registry: MaterialMetaRegistry;
   /** 右区「预览」回调：宿主自己决定怎么开预览（引擎 demo 是开 preview.html）。缺省按钮置灰 */
   onPreview?: () => void;
   /** 覆盖右栏内容；缺省是内置属性面板 */

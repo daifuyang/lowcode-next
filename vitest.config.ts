@@ -8,6 +8,9 @@ export default defineConfig({
     alias: {
       '@lowcode-next/protocol': r('./packages/protocol/src/index.ts'),
       '@lowcode-next/model': r('./packages/model/src/index.ts'),
+      '@lowcode-next/materials': r('./packages/materials/src/index.ts'),
+      '@lowcode-next/materials-react': r('./packages/materials-react/src/index.ts'),
+      '@lowcode-next/materials-vue': r('./packages/materials-vue/src/index.ts'),
       '@lowcode-next/renderer': r('./packages/renderer/src/index.ts'),
       '@lowcode-next/drag': r('./packages/drag/src/index.ts'),
       '@lowcode-next/designer-core': r('./packages/designer-core/src/index.ts'),

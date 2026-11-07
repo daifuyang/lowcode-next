@@ -1,0 +1,21 @@
+{
+  "name": "@lowcode-next/renderer-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "渲染层契约与求值器。零框架依赖 —— React / Vue 两套 Driver 都只依赖它（DESIGN-v1 §5.1）。",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@lowcode-next/protocol": "workspace:*"
+  }
+}

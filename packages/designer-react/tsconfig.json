@@ -11,7 +11,7 @@
   "references": [
     { "path": "../protocol" },
     { "path": "../model" },
-    { "path": "../renderer" },
+    { "path": "../materials" },
     { "path": "../drag" },
     { "path": "../designer-core" }
   ]

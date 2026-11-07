@@ -1,0 +1,26 @@
+{
+  "name": "@lowcode-next/materials",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "物料描述层：ComponentMeta 与注册表。零框架依赖 —— 不含任何 React/Vue 代码，两套视图层各自绑定实现（DESIGN-v1 §12.4）。",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@lowcode-next/protocol": "workspace:*"
+  },
+  "files": [
+    "src",
+    "dist"
+  ]
+}

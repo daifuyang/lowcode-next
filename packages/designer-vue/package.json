@@ -18,9 +18,9 @@
   "dependencies": {
     "@lowcode-next/designer-core": "workspace:*",
     "@lowcode-next/designer-ui": "workspace:*",
+    "@lowcode-next/materials": "workspace:*",
     "@lowcode-next/model": "workspace:*",
     "@lowcode-next/protocol": "workspace:*",
-    "@lowcode-next/renderer": "workspace:*",
     "@lucide/vue": "^1.69.0",
     "vue": "^3.5.45"
   }

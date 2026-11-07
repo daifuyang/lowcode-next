@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { builtinMaterials, createMaterialRegistry, createReactDriver, evaluate } from '@lowcode-next/renderer';
+import { createReactDriver, evaluate } from '@lowcode-next/renderer';
 import { parsePageSchema } from '@lowcode-next/protocol';
 import type { PageSchema } from '@lowcode-next/protocol';
-import { PREVIEW_KEY } from './preview-route';
-import styles from './shell.module.css';
+import '@lowcode-next/materials/styles.css';
+import { createReactEditorMaterials } from './materials';
+import { PREVIEW_KEY } from '@pg/preview-route';
+import styles from '@pg/shell.module.css';
 
 /**
  * 预览页入口（`preview.html` → `/preview`），对应引擎 demo 的 preview.html。
@@ -18,7 +20,7 @@ import styles from './shell.module.css';
  */
 
 function PreviewApp() {
-  const [registry] = useState(() => createMaterialRegistry(builtinMaterials));
+  const [materials] = useState(() => createReactEditorMaterials());
   const schema = useMemo<PageSchema | null>(() => {
     try {
       const raw = sessionStorage.getItem(PREVIEW_KEY);
@@ -26,7 +28,7 @@ function PreviewApp() {
     } catch {
       return null;
     }
-  }, [registry]);
+  }, []);
 
   if (!schema) {
     return (
@@ -38,8 +40,12 @@ function PreviewApp() {
   }
 
   // 运行态 driver：不注入空容器占位等编辑态元素
-  const driver = createReactDriver(registry);
-  const ir = evaluate(schema.componentsTree, { mode: 'runtime', scope: {}, resolver: registry });
+  const driver = createReactDriver(materials.renderer);
+  const ir = evaluate(schema.componentsTree, {
+    mode: 'runtime',
+    scope: {},
+    resolver: materials.registry,
+  });
   const content = driver.renderRoot(ir);
 
   return (

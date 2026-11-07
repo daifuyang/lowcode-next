@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import type { MaterialRegistry } from '@lowcode-next/renderer';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 import type { ComponentMeta } from '@lowcode-next/protocol';
 import { ChevronRight, Search } from '@lucide/vue';
 
@@ -15,7 +15,7 @@ import styles from '@lowcode-next/designer-ui/MaterialPanel.module.css';
  * 判据是「无可写入口」，拖入会构造 `InsertNode` 进历史栈，属于写操作。
  * 分组折叠、搜索自动展开全部分组这些行为照旧（纯 UI 状态）。
  */
-const props = withDefaults(defineProps<{ registry: MaterialRegistry; pinned?: boolean }>(), {
+const props = withDefaults(defineProps<{ registry: MaterialMetaRegistry; pinned?: boolean }>(), {
   pinned: false,
 });
 
@@ -29,13 +29,33 @@ interface Group {
 const keyword = ref('');
 const collapsed = ref<ReadonlySet<string>>(new Set());
 
+/**
+ * 订阅注册表版本号：宿主在编辑过程中 `use()` 一个新物料包，面板立刻重算。
+ *
+ * 与 React 版（`useSyncExternalStore`）等价。没有这层订阅时，`list()` 结果变了
+ * 面板也不会刷新 —— `computed` 只依赖 `props.registry` 这个对象，实例是不变的。
+ */
+const version = ref(props.registry.getVersion());
+let stopWatching: (() => void) | null = null;
+
+onMounted(() => {
+  stopWatching = props.registry.subscribe(() => {
+    version.value = props.registry.getVersion();
+  });
+});
+onBeforeUnmount(() => {
+  stopWatching?.();
+});
+
 const groups = computed<Group[]>(() => {
+  // 读一次 version 建立依赖，物料增删后这里必须重算
+  void version.value;
   const map = new Map<string, ComponentMeta[]>();
-  for (const definition of props.registry.list()) {
-    const name = definition.meta.group ?? '其他';
+  for (const meta of props.registry.list()) {
+    const name = meta.group ?? '其他';
     const bucket = map.get(name);
-    if (bucket) bucket.push(definition.meta);
-    else map.set(name, [definition.meta]);
+    if (bucket) bucket.push(meta);
+    else map.set(name, [meta]);
   }
   return [...map.entries()].map(([name, items]) => ({ name, items }));
 });

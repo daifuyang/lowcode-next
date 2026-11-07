@@ -1,9 +1,22 @@
 import { createElement } from 'react';
-import type { ReactNode } from 'react';
-import { isContainerMeta } from '@lowcode-next/protocol';
+import type { ComponentType, ReactNode } from 'react';
 import type { ComponentMeta } from '@lowcode-next/protocol';
-import type { Driver, IRNode } from './index';
-import type { MaterialRegistry } from './registry';
+import { flagString, shouldPlacePlaceholder } from '@lowcode-next/renderer-core';
+import type { Driver, IRNode } from '@lowcode-next/renderer-core';
+
+/**
+ * Driver 需要知道的两件事（DESIGN-v1 §12.4）。
+ *
+ * 刻意收成两个**函数**而不是一个注册表类：描述与实现分属两个包
+ * （`@lowcode-next/materials` 与 `@lowcode-next/materials-react`），
+ * Driver 不关心它们怎么存、是否同一对象，只关心「给我名字，我给你东西」。
+ */
+export interface ReactRendererInput {
+  /** 组件名 → 组件。未命中时渲染可见兜底块，不白屏 */
+  resolve: (componentName: string) => ComponentType<Record<string, unknown>> | null;
+  /** 组件名 → meta。容器判定与空容器占位要用 */
+  getMeta: (componentName: string) => ComponentMeta | null;
+}
 
 export interface ReactDriverOptions {
   /**
@@ -23,19 +36,19 @@ const PLACEHOLDER_TEXT = '拖拽组件或模板到这里';
 const LOCKED_PLACEHOLDER_TEXT = '锁定元素及其子元素不可编辑';
 
 /**
- * React Driver（DESIGN-v1 §5.1）—— 整个系统唯一的框架相关层。
+ * React Driver（DESIGN-v1 §5.1）—— 渲染机制本身，不知道自己有哪些物料。
  *
  * 关键点：`data-node-id` 直接传给组件，由组件透传到根 DOM，
  * 而不是外面包一层 `display: contents`。原因是后者不生成盒子，
  * `getBoundingClientRect()` 全是 0，命中框和指示线会整个失效。
  */
 export function createReactDriver(
-  registry: MaterialRegistry,
+  input: ReactRendererInput,
   options: ReactDriverOptions = {},
 ): Driver<ReactNode> {
   function render(node: IRNode): ReactNode {
-    const Component = registry.resolve(node.type);
-    const meta = registry.getMeta(node.type);
+    const Component = input.resolve(node.type);
+    const meta = input.getMeta(node.type);
 
     const props: Record<string, unknown> = {
       key: node.key,
@@ -79,27 +92,6 @@ export function createReactDriver(
 }
 
 /**
- * 空容器要不要塞占位 —— 三个条件缺一不可（照抄 engine 的判断）。
- *
- * 第三条容易被当成废话删掉：显式写了 `style` 的容器是用户主动定义了尺寸
- * （宽高、内边距、甚至背景），此时它不会塌成 0，再塞一块灰底提示反而盖住用户的样式。
- */
-export function shouldPlacePlaceholder(input: {
-  meta: ComponentMeta | null;
-  childCount: number;
-  props: Record<string, unknown>;
-}): boolean {
-  if (!isContainerMeta(input.meta)) return false;
-  if (input.meta?.configure.component.emptyPlaceholder === false) return false;
-  if (input.childCount > 0) return false;
-
-  const style = input.props.style;
-  if (style && typeof style === 'object' && Object.keys(style).length > 0) return false;
-
-  return true;
-}
-
-/**
  * 占位块。**不是节点**：没有 `data-node-id`，所以 `closest()` 会把点击/悬停
  * 冒泡回容器本体，命中语义不会被它篡改；它也不在 schema 里，不会被导出。
  */
@@ -119,7 +111,6 @@ function createPlaceholder(node: IRNode): ReactNode {
     text,
   );
 }
-
 
 interface UnknownNodeProps {
   node: IRNode;
@@ -145,13 +136,4 @@ function UnknownNode({ node, children }: UnknownNodeProps) {
     `未注册物料：${node.type}`,
     children,
   );
-}
-
-export function flagString(flags: NonNullable<IRNode['editFlags']>): string {
-  const list: string[] = [];
-  if (flags.hidden) list.push('hidden');
-  if (flags.loop) list.push('loop');
-  if (flags.conditionFalse) list.push('condition-false');
-  if (flags.locked) list.push('locked');
-  return list.join(' ');
 }

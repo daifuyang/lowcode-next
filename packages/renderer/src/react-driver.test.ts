@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { ReactElement } from 'react';
 import { defineMaterial } from '@lowcode-next/protocol';
-import { createReactDriver, shouldPlacePlaceholder } from './react-driver';
-import { createMaterialRegistry } from './registry';
+import type { ComponentMeta } from '@lowcode-next/protocol';
+import { shouldPlacePlaceholder } from '@lowcode-next/renderer-core';
+import { createReactDriver } from './react-driver';
+import type { ReactRendererInput } from './react-driver';
 import type { IRNode } from './index';
 
 /**
@@ -38,11 +40,26 @@ const blockMeta = defineMaterial({
   configure: { component: { isContainer: true, emptyPlaceholder: false }, supports: {} },
 });
 
-const registry = createMaterialRegistry([
-  { meta: containerMeta, component: Box },
-  { meta: leafMeta, component: Label },
-  { meta: blockMeta, component: Box },
+/**
+ * Driver 只收「名字 → 组件 / 名字 → meta」两个函数（§12.4 拆分后不再依赖
+ * 具体注册表类）。测试里用两张 Map 就够了，反而把契约看得更清楚。
+ */
+const metas = new Map<string, ComponentMeta>([
+  [containerMeta.componentName, containerMeta],
+  [leafMeta.componentName, leafMeta],
+  [blockMeta.componentName, blockMeta],
 ]);
+
+const components = new Map<string, () => null>([
+  [containerMeta.componentName, Box],
+  [leafMeta.componentName, Label],
+  [blockMeta.componentName, Box],
+]);
+
+const registry: ReactRendererInput = {
+  resolve: (componentName) => components.get(componentName) ?? null,
+  getMeta: (componentName) => metas.get(componentName) ?? null,
+};
 
 function node(type: string, children: IRNode[] = [], extra: Partial<IRNode> = {}): IRNode {
   return { id: 'n1', key: 'n1', type, props: {}, children, ...extra };

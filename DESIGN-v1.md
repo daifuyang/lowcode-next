@@ -1958,6 +1958,16 @@ renderer-react | renderer-vue   ← 只在画布 / 预览入口加载
 
 ### 12.4 物料接口（本规范的核心）
 
+> **已落地（2026-11-07）。** 本节下面的接口是按理想形态写的，实现时的命名与它有两处差异，
+> 以 §12.13.10 为准：
+> - `createMetaRegistry(packages)` 收的是**物料包**（`{ id, metas }`）而不是裸 `ComponentMeta[]`；
+> - `createBindingRegistry` 没有出现 —— 绑定由各框架包自己提供（`materials-react` 的
+>   `reactPackage()` / `materials-vue` 的 `vuePackage()`），两边共用 `assertMetaBindings()` 校验。
+>
+> 另外 `MaterialMetaSource` / `FrameworkKind` 也没有单独定义：注册表就是
+> `MaterialMetaRegistry`，宿主要以「有没有这个物料」注入时用 `designer-core` 的
+> 结构化子类型 `MaterialLookup`（§12.13.2）就够了。
+
 **描述与实现必须分离。** 现状 `builtinMaterials: MaterialDefinition[]` 把
 `{ meta, component: ReactComponentType }` 绑在一个数组里，`component` 还是 React
 的 `ComponentType` —— 这是 designer 无法脱离 React 的直接原因。
@@ -3346,3 +3356,69 @@ session，比对序列化输出**，完全不依赖 UI。也就是说，正确�
 | D-L3-4 | 共享 CSS Module 文件 + token，而非「两套样式对齐」 | 版式靠人肉对齐必然漂移；同一文件 → 同一 hash，天然一致 |
 | D-L3-5 | 正确性测在 core（命令序列 → schema 比对），不测两套 UI | 双份 UI 测试成本高且测不到逻辑；core 是唯一行为源 |
 | D-L3-6 | flavor 的载体是**包**：两个 app 各自依赖一个 `designer-*`，**不做** URL 运行时切换、**也不做** `__DESIGNER_KIND__` 编译期常量 | 前两版分别错在「运行时切换」（一份产物两套编辑器）和「在一个包里模拟包边界」（`if` 的唯一职责是选装哪个包，本该由 `package.json` 表达）；包级形态与 Ark UI 同构，互斥由依赖图保证而不是 DCE（§12.13.6） |
+
+#### 12.13.10 物料包化落地（M-L3-3c，2026-11-07）
+
+§12.4 写的是目标态，这一轮把它做了。起点很具体：
+
+```ts
+// packages/designer-vue/src/mount.ts（拆之前）
+import type { MaterialRegistry } from '@lowcode-next/renderer';
+```
+
+`renderer` 的 dependencies 里实实在在写着 `react` —— Vue 包为了一个类型依赖了 React 包，而且 `resolve()` 返回的是 React 的 `ComponentType`，Vue 侧拿到手用不了，只好只读 meta、根本不碰 `resolve`（一个半边失灵的接口）。
+
+**拆成六层，依赖单向：**
+
+```text
+protocol
+  ├─ materials          ComponentMeta + 注册表 + styles.css（零框架）
+  │    ├─ materials-react    20 个组件
+  │    └─ materials-vue      SFC（首批 3 个）
+  └─ renderer-core      IRNode / Driver / evaluate / 占位判定（零框架）
+       ├─ renderer          React Driver
+       └─ renderer-vue      Vue Driver
+```
+
+`renderer` 的对外 API 保持原样（`evaluate` / `shouldPlacePlaceholder` / `IRNode` 仍从它拿），所以宿主的 import 一行没改；`renderer-core` 是新增的内核，两套 Driver 都只依赖它。
+
+**四个设计点值得记住：**
+
+| 点 | 做法 | 为什么 |
+|---|---|---|
+| 包粒度 | `registry.use(pkg)` / `unuse(id)`，重名**默认抛错** | 「装上了却没生效」是排查成本极高的静默失败；覆盖要显式 `{ override: true }` |
+| 变更通知 | `version` + `subscribe`（属性面板早已这么订阅 setter） | 上一版物料表没有通知机制，`list()` 变了面板也不重算 —— 实例没换 |
+| 枚举同源 | 常量数组从 `materials` 导出，两套实现 import 它做 `pick()` | 从「靠注释约定别手抄」升级成「物理上只有一份」 |
+| 装配校验 | `assertMetaBindings(metas, bindingNames, flavor)` | meta 有、实现没有 → 渲染兜底块；实现有、meta 没有 → 面板永远看不到。两种都在装配期抛错并列出差集 |
+
+**Vue 侧只做 3 个物料（Div / Heading / Button），并且面板只列这 3 个**（`subsetPackage` 按实现清单筛描述）。理由：列全 20 个、17 个一拖就废，比少几个物料难查得多。三个物料刻意覆盖了 `isContainer` / `options` / `bool` 三类 meta 字段，其余是同一模子。
+
+Vue app 的默认页因此从落地页改成「最小示例」（只用 Div + Button）；`?page=landing` 仍可打开，那一片「未注册物料」红框就是缺口清单。
+
+**样式表由宿主显式引入**（`import '@lowcode-next/materials/styles.css'`），不在绑定包里 import —— 绑定包会 `tsc` 编成 dist，`import '*.css'` 留在产物里会指向不存在的文件。
+
+**渲染层也按框架分家了**：Vue app 的 `canvas.html` / `preview.html` 现在走 `renderer-vue` + `materials-vue`。iframe 隔离、消息通道、选中框、拖拽命中全部不变 —— 它们只看 `PageSchema` 与 DOM，与画布里渲染什么框架无关。消息通道抽成了 `apps/shared/src/canvas-channel.ts`，两版画布共用（「ready 重发几次」「非法 schema 怎么办」这些细节各写一遍必然分叉）。
+
+**验证（2026-11-07 实测）：**
+
+| 项 | 结果 |
+|---|---|
+| `tsc -b` + 两 app `--noEmit` | 0 错误 |
+| `vitest` | 130/130（物料守卫测试随包迁到 `materials/src/metas/`） |
+| 产物互斥 | vue 侧 grep `react-dom\|useState\|jsx-runtime` 零命中；react 侧 grep `__v_isReactive\|createApp(` 零命中 |
+| React 编辑器 | iframe 93 个 `data-node-id`，0 console error |
+| Vue 编辑器 | 3 个节点（Div + 2 Button）、面板列「容器/标题/按钮」、0 console error |
+| `?page=landing`（Vue） | 93 节点 / 76 兜底 —— 缺口可见 |
+
+**还没做：**
+
+1. `node.meta` 仍是构造时的缓存（`model/src/node.ts:29`，`readonly`）。所以运行期 `unuse()` 一个包，**已创建的节点**仍拿旧 meta；要改成 getter 委托注册表才彻底。改之前得先数一遍 `node.meta` 被当 `useMemo` deps 用的地方。
+2. Vue 物料 17 个未实现（Text / Button 之外的基础物料、全部布局容器、全部区块）。
+3. `packages/` 下没有 `packages` 级概念（远程 UMD 注入 / `assets.json`）。当前「多包」只支持装配期本地包。
+
+#### 12.13.11 决策记录（补充 2 项）
+
+| # | 决策 | 理由 |
+|---|---|---|
+| D-L3-7 | 物料以**包**为单位注册与卸载（`use` / `unuse`），注册表带 `version` + `subscribe` | 「随时加入不同的包」需要包级身份（谁装的、整包摘）；散装 `register` 只能加不能卸，且改不动面板 |
+| D-L3-8 | 描述与实现分包（`materials` ← `materials-react` / `materials-vue`），**渲染层也按框架分包**（`renderer-core` ← `renderer` / `renderer-vue`） | 只拆物料不拆 driver，Vue 画布仍要 React；只拆 driver 不拆物料，编辑器仍绑死一套实现。两处一起拆，跨框架依赖才真正消失 |

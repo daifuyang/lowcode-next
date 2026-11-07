@@ -1,26 +1,20 @@
-import type { ReactNode } from 'react';
 import { defineMaterial, propOptions } from '@lowcode-next/protocol';
 import type { ComponentMeta } from '@lowcode-next/protocol';
-import { bool, cx, num, passthrough, pick, str, styleOf } from './shared';
-import type { Props } from './shared';
 
 /**
- * 基础物料：文字、按钮、链接、标签、图标、分割线、图片、撑开。
+ * 基础物料的描述（9 个）：文字、按钮、链接、标签、图标、分割线、图片、间距。
  *
- * 统一约定（所有物料都遵守）：
- * 1. 根元素必须 `{...passthrough(props)}`，`data-node-id` 靠这一句落到 DOM；
- * 2. 业务 props 一律经 pick/num/bool 收口，schema 是外部输入，不可信；
- * 3. 暴露 `style` 覆盖口，让 schema 能调 margin / maxWidth 这类布局意图；
- * 4. 每个枚举 prop 的 meta.options 必须由下面的常量数组生成 —— 属性面板
- *    的下拉和物料内部的 pick 校验共用同一份常量，不允许手抄第二份。
+ * 常量一律导出 —— 两套视图层的实现都 import 它们做 `pick()` 校验，与 meta 里的
+ * `propOptions()` 共用同一个数组。字段顺序刻意与 props 的展示顺序一致，
+ * 改动会直接改变属性面板的行序。
  */
 
-const TEXT_SIZES = ['xs', 'sm', 'base', 'lg', 'xl'] as const;
-const TONES = ['default', 'muted', 'subtle', 'primary', 'invert', 'invert-strong'] as const;
-const ALIGNS = ['left', 'center', 'right'] as const;
-const WEIGHTS = ['normal', 'medium', 'semibold', 'bold'] as const;
+export const TEXT_SIZES = ['xs', 'sm', 'base', 'lg', 'xl'] as const;
+export const TONES = ['default', 'muted', 'subtle', 'primary', 'invert', 'invert-strong'] as const;
+export const ALIGNS = ['left', 'center', 'right'] as const;
+export const WEIGHTS = ['normal', 'medium', 'semibold', 'bold'] as const;
 
-const TEXT_SIZE_LABEL: Record<string, string> = {
+export const TEXT_SIZE_LABEL: Record<string, string> = {
   xs: '极小',
   sm: '小',
   base: '常规',
@@ -28,7 +22,7 @@ const TEXT_SIZE_LABEL: Record<string, string> = {
   xl: '特大',
 };
 
-const TONE_LABEL: Record<string, string> = {
+export const TONE_LABEL: Record<string, string> = {
   default: '默认',
   muted: '次要',
   subtle: '弱化',
@@ -38,16 +32,17 @@ const TONE_LABEL: Record<string, string> = {
   gradient: '渐变',
 };
 
-const ALIGN_LABEL: Record<string, string> = { left: '左', center: '中', right: '右' };
+export const ALIGN_LABEL: Record<string, string> = { left: '左', center: '中', right: '右' };
 
-const WEIGHT_LABEL: Record<string, string> = {
+export const WEIGHT_LABEL: Record<string, string> = {
   normal: '常规',
   medium: '中等',
   semibold: '半粗',
   bold: '粗',
 };
 
-const WEIGHT_VALUE: Record<(typeof WEIGHTS)[number], number> = {
+/** 语义字重 → 数值。实现里拼进 inline style，不在 CSS 里重复定义 */
+export const WEIGHT_VALUE: Record<(typeof WEIGHTS)[number], number> = {
   normal: 400,
   medium: 500,
   semibold: 600,
@@ -58,35 +53,8 @@ const WEIGHT_VALUE: Record<(typeof WEIGHTS)[number], number> = {
 /* Heading                                                            */
 /* ------------------------------------------------------------------ */
 
-const HEADING_TONES = ['default', 'invert', 'gradient'] as const;
-const HEADING_LEVELS = [1, 2, 3, 4] as const;
-
-export function Heading(props: Props) {
-  const level = Math.min(Math.max(num(props.level, 1), 1), 4);
-  const tone = pick(props.tone, HEADING_TONES, 'default');
-  const align = pick(props.align, ALIGNS, 'left');
-
-  const Tag = `h${level}` as 'h1';
-  const className = cx(
-    'lc-heading',
-    `lc-heading--${level}`,
-    tone !== 'default' && `lc-heading--${tone}`,
-    `lc-ta--${align}`,
-    bool(props.mono) && 'lc-heading--mono',
-  );
-
-  const weight = pick(props.weight, WEIGHTS, 'semibold');
-
-  return (
-    <Tag
-      className={className}
-      style={{ fontWeight: WEIGHT_VALUE[weight], ...styleOf(props.style) }}
-      {...passthrough(props)}
-    >
-      {props.children as ReactNode}
-    </Tag>
-  );
-}
+export const HEADING_TONES = ['default', 'invert', 'gradient'] as const;
+export const HEADING_LEVELS = [1, 2, 3, 4] as const;
 
 export const headingMaterial: ComponentMeta = defineMaterial({
   componentName: 'Heading',
@@ -135,32 +103,8 @@ export const headingMaterial: ComponentMeta = defineMaterial({
 /* Text                                                               */
 /* ------------------------------------------------------------------ */
 
-export function Text(props: Props) {
-  const size = pick(props.size, TEXT_SIZES, 'base');
-  const tone = pick(props.tone, TONES, 'default');
-  const align = pick(props.align, ALIGNS, 'left');
-  const tag = pick(props.as, ['p', 'span', 'div'] as const, 'p');
-  const weight = pick(props.weight, WEIGHTS, 'normal');
-
-  const Tag = tag as 'p';
-
-  return (
-    <Tag
-      className={cx(
-        'lc-text',
-        `lc-text--${size}`,
-        `lc-tone--${tone}`,
-        `lc-ta--${align}`,
-        bool(props.mono) && 'lc-mono',
-        weight !== 'normal' && 'lc-text--strong',
-      )}
-      style={{ fontWeight: WEIGHT_VALUE[weight], ...styleOf(props.style) }}
-      {...passthrough(props)}
-    >
-      {props.children as ReactNode}
-    </Tag>
-  );
-}
+/** Text 的 `as` 允许的标签 —— 单独导出，实现与 meta 共用 */
+export const TEXT_TAGS = ['p', 'span', 'div'] as const;
 
 export const textMaterial: ComponentMeta = defineMaterial({
   componentName: 'Text',
@@ -197,7 +141,7 @@ export const textMaterial: ComponentMeta = defineMaterial({
       title: '标签',
       type: 'string',
       defaultValue: 'p',
-      options: propOptions(['p', 'span', 'div'] as const),
+      options: propOptions(TEXT_TAGS),
     },
     mono: { title: '等宽', type: 'bool', defaultValue: false },
     style: { title: '样式', type: 'object' },
@@ -217,38 +161,17 @@ export const textMaterial: ComponentMeta = defineMaterial({
 /* Button                                                             */
 /* ------------------------------------------------------------------ */
 
-const BUTTON_VARIANTS = ['primary', 'default', 'ghost', 'outline'] as const;
-const BUTTON_SIZES = ['sm', 'md', 'lg'] as const;
+export const BUTTON_VARIANTS = ['primary', 'default', 'ghost', 'outline'] as const;
+export const BUTTON_SIZES = ['sm', 'md', 'lg'] as const;
 
-const BUTTON_VARIANT_LABEL: Record<string, string> = {
+export const BUTTON_VARIANT_LABEL: Record<string, string> = {
   primary: '主按钮',
   default: '次按钮',
   ghost: '文字按钮',
   outline: '描边按钮',
 };
 
-const BUTTON_SIZE_LABEL: Record<string, string> = { sm: '小', md: '中', lg: '大' };
-
-export function Button(props: Props) {
-  const variant = pick(props.variant, BUTTON_VARIANTS, 'default');
-  const size = pick(props.size, BUTTON_SIZES, 'md');
-
-  return (
-    <button
-      type="button"
-      className={cx(
-        'lc-btn',
-        `lc-btn--${variant}`,
-        size !== 'md' && `lc-btn--${size}`,
-        bool(props.block) && 'lc-btn--block',
-      )}
-      style={styleOf(props.style)}
-      {...passthrough(props)}
-    >
-      {props.children as ReactNode}
-    </button>
-  );
-}
+export const BUTTON_SIZE_LABEL: Record<string, string> = { sm: '小', md: '中', lg: '大' };
 
 export const buttonMaterial: ComponentMeta = defineMaterial({
   componentName: 'Button',
@@ -285,22 +208,7 @@ export const buttonMaterial: ComponentMeta = defineMaterial({
 /* Link                                                               */
 /* ------------------------------------------------------------------ */
 
-const LINK_TONES = ['default', 'invert', 'muted'] as const;
-
-export function Link(props: Props) {
-  const tone = pick(props.tone, LINK_TONES, 'default');
-
-  return (
-    <a
-      className={cx('lc-link', tone !== 'default' && `lc-link--${tone}`)}
-      href={str(props.href, '#')}
-      style={styleOf(props.style)}
-      {...passthrough(props)}
-    >
-      {props.children as ReactNode}
-    </a>
-  );
-}
+export const LINK_TONES = ['default', 'invert', 'muted'] as const;
 
 export const linkMaterial: ComponentMeta = defineMaterial({
   componentName: 'Link',
@@ -331,21 +239,7 @@ export const linkMaterial: ComponentMeta = defineMaterial({
 /* Badge                                                              */
 /* ------------------------------------------------------------------ */
 
-const BADGE_TONES = ['accent', 'neutral', 'success', 'invert', 'outline'] as const;
-
-export function Badge(props: Props) {
-  const tone = pick(props.tone, BADGE_TONES, 'accent');
-
-  return (
-    <span
-      className={cx('lc-badge', `lc-badge--${tone}`)}
-      style={styleOf(props.style)}
-      {...passthrough(props)}
-    >
-      {props.children as ReactNode}
-    </span>
-  );
-}
+export const BADGE_TONES = ['accent', 'neutral', 'success', 'invert', 'outline'] as const;
 
 export const badgeMaterial: ComponentMeta = defineMaterial({
   componentName: 'Badge',
@@ -381,20 +275,6 @@ export const badgeMaterial: ComponentMeta = defineMaterial({
 /* Icon                                                               */
 /* ------------------------------------------------------------------ */
 
-export function Icon(props: Props) {
-  const size = num(props.size, 18);
-
-  return (
-    <span
-      className="lc-icon"
-      style={{ fontSize: size, ...styleOf(props.style) }}
-      {...passthrough(props)}
-    >
-      {str(props.name, '◆')}
-    </span>
-  );
-}
-
 export const iconMaterial: ComponentMeta = defineMaterial({
   componentName: 'Icon',
   title: '图标',
@@ -417,18 +297,6 @@ export const iconMaterial: ComponentMeta = defineMaterial({
 /* ------------------------------------------------------------------ */
 /* Divider                                                            */
 /* ------------------------------------------------------------------ */
-
-export function Divider(props: Props) {
-  const spacing = num(props.spacing, 0);
-
-  return (
-    <hr
-      className={cx('lc-divider', bool(props.invert) && 'lc-divider--invert')}
-      style={{ margin: `${spacing}px 0`, ...styleOf(props.style) }}
-      {...passthrough(props)}
-    />
-  );
-}
 
 export const dividerMaterial: ComponentMeta = defineMaterial({
   componentName: 'Divider',
@@ -453,34 +321,6 @@ export const dividerMaterial: ComponentMeta = defineMaterial({
 /* Image                                                              */
 /* ------------------------------------------------------------------ */
 
-export function Image(props: Props) {
-  const src = str(props.src);
-  const alt = str(props.alt, '图片');
-  const radius = num(props.radius, 12);
-
-  if (!src) {
-    return (
-      <div
-        className="lc-image lc-image--empty"
-        style={{ borderRadius: radius, ...styleOf(props.style) }}
-        {...passthrough(props)}
-      >
-        {alt}
-      </div>
-    );
-  }
-
-  return (
-    <img
-      className="lc-image"
-      src={src}
-      alt={alt}
-      style={{ borderRadius: radius, ...styleOf(props.style) }}
-      {...passthrough(props)}
-    />
-  );
-}
-
 export const imageMaterial: ComponentMeta = defineMaterial({
   componentName: 'Image',
   title: '图片',
@@ -504,18 +344,6 @@ export const imageMaterial: ComponentMeta = defineMaterial({
 /* ------------------------------------------------------------------ */
 /* Spacer                                                             */
 /* ------------------------------------------------------------------ */
-
-export function Spacer(props: Props) {
-  const size = num(props.size, 16);
-
-  return (
-    <div
-      className={cx('lc-spacer', bool(props.grow) && 'lc-spacer--grow')}
-      style={bool(props.grow) ? styleOf(props.style) : { height: size, ...styleOf(props.style) }}
-      {...passthrough(props)}
-    />
-  );
-}
 
 export const spacerMaterial: ComponentMeta = defineMaterial({
   componentName: 'Spacer',

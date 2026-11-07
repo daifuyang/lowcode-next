@@ -67,7 +67,12 @@ export function defineApp({ appDir, port, plugins }: AppOptions): UserConfig {
         '@pg': resolve(appDir, '../shared/src'),
         '@lowcode-next/protocol': pkgSrc('protocol'),
         '@lowcode-next/model': pkgSrc('model'),
+        '@lowcode-next/materials': pkgSrc('materials'),
+        '@lowcode-next/materials-react': pkgSrc('materials-react'),
+        '@lowcode-next/materials-vue': pkgSrc('materials-vue'),
+        '@lowcode-next/renderer-core': pkgSrc('renderer-core'),
         '@lowcode-next/renderer': pkgSrc('renderer'),
+        '@lowcode-next/renderer-vue': pkgSrc('renderer-vue'),
         '@lowcode-next/drag': pkgSrc('drag'),
         // ★ designer-core 必须显式 alias：它带 dist，漏掉这一条时 `@lowcode-next/designer-core`
         // 会按 package.json 的 exports 解析到 `dist/*.js` —— 于是改 src 不生效（开发时

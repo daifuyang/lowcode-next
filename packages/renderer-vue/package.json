@@ -1,0 +1,23 @@
+{
+  "name": "@lowcode-next/renderer-vue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vue 版渲染层：只做 IR → VNode 的映射。契约与求值器来自 renderer-core，与 React 版对等。",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@lowcode-next/protocol": "workspace:*",
+    "@lowcode-next/renderer-core": "workspace:*",
+    "vue": "^3.5.45"
+  }
+}

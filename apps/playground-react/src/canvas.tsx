@@ -6,4 +6,4 @@
  * 「Vue 编辑器 + React 画布」那一格。HTML 入口只认 `/src/canvas.tsx`，
  * 所以每个 app 留这么一行转发，避免 HTML 去引 root 之外的相对路径。
  */
-import '@pg/canvas';
+import './canvas-body';

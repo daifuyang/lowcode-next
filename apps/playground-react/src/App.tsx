@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Designer } from '@lowcode-next/designer-react';
 import { createDocument } from '@lowcode-next/model';
-import { builtinMaterials, createMaterialRegistry } from '@lowcode-next/renderer';
 import { parsePageSchema, sampleSchema } from '@lowcode-next/protocol';
 import type { PageSchema } from '@lowcode-next/protocol';
+import { createReactEditorMaterials } from './materials';
 import { landingSchema } from '@pg/schemas/landing';
 import { openPreview } from '@pg/preview-route';
 import styles from '@pg/shell.module.css';
@@ -26,7 +26,7 @@ const PAGES = {
 type PageKey = keyof typeof PAGES;
 
 export function App() {
-  const [registry] = useState(() => createMaterialRegistry(builtinMaterials));
+  const [materials] = useState(() => createReactEditorMaterials());
   // 页面切换走 URL（?page=sample）—— 顶栏左区按引擎只放 logo，不放演示控件
   const [page] = useState<PageKey>(() => {
     try {
@@ -40,12 +40,12 @@ export function App() {
     const current = PAGES[page];
     try {
       const schema = parsePageSchema(current.schema);
-      return { ok: true as const, document: createDocument(schema, registry, page) };
+      return { ok: true as const, document: createDocument(schema, materials.registry, page) };
     } catch (error) {
       return { ok: false as const, message: (error as Error).message };
     }
     // page 变化 → 全新 document 实例（历史栈一起清空）
-  }, [page, registry]);
+  }, [page, materials]);
 
   const handlePreview = useCallback(() => {
     if (!boot.ok) return;
@@ -65,7 +65,7 @@ export function App() {
     <Designer
       key={page}
       document={boot.document}
-      registry={registry}
+      registry={materials.registry}
       canvasPadding={PAGES[page].padding}
       onPreview={handlePreview}
     />
