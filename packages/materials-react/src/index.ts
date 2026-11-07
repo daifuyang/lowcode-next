@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import type { ComponentMeta } from '@lowcode-next/protocol';
 import type { MaterialPackage, Props } from '@lowcode-next/materials';
 import { builtinMaterialPackage, assertMetaBindings } from '@lowcode-next/materials';
-import { Div, Stack, Grid, Section, Card } from './components/layout';
+import { Page } from './components/page';
 import {
   Typography,
   Link,
@@ -19,13 +19,15 @@ import {
   Empty,
   Alert,
 } from './components/base';
-import { Navbar, Hero, FeatureCard, Stat, CodeBlock, Footer } from './components/blocks';
 
 /**
- * 内置物料的 React 绑定（DESIGN-v1 §12.4）。
+ * 内置物料的 React 绑定（DESIGN-v1 §12.4 / §12.16）。
  *
  * 描述在 `@lowcode-next/materials`（零框架），实现在这里。两边靠
- * `componentName` 对齐，见 `bindReactMetas()` 的装配期校验。
+ * `componentName` 对齐，见 `createReactPackage()` 的装配期校验。
+ *
+ * 面板清单只保留原子组件；`Page` 是隐藏的页面壳（`hidden: true`），
+ * 专供 schema 根节点使用。
  *
  * **样式表不在这里 import。** 本包会被 `tsc` 编成 dist，`import '*.css'` 留在
  * 产物里会指向一个不存在的文件。样式入口由宿主显式引入：
@@ -41,12 +43,8 @@ export type ReactComponent = ComponentType<Props>;
 export type ReactBindings = Record<string, ReactComponent>;
 
 export const builtinReactComponents: ReactBindings = {
-  // 布局
-  Div,
-  Stack,
-  Grid,
-  Section,
-  Card,
+  // 页面壳（hidden）
+  Page,
 
   // 文字
   Typography,
@@ -69,14 +67,6 @@ export const builtinReactComponents: ReactBindings = {
   Progress,
   Empty,
   Alert,
-
-  // 区块
-  Navbar,
-  Hero,
-  FeatureCard,
-  Stat,
-  CodeBlock,
-  Footer,
 };
 
 /**
@@ -129,7 +119,8 @@ export function mergeReactBindings(packages: ReactMaterialPackage[]): ReactBindi
   return output;
 }
 
-export { Div, Stack, Grid, Section, Card } from './components/layout';export {
+export { Page } from './components/page';
+export {
   Typography,
   Link,
   Button,
@@ -145,6 +136,5 @@ export { Div, Stack, Grid, Section, Card } from './components/layout';export {
   Empty,
   Alert,
 } from './components/base';
-export { Navbar, Hero, FeatureCard, Stat, CodeBlock, Footer } from './components/blocks';
 export { PropSetterProvider, usePropSetter } from './prop-setter-context';
 export { PropSetterContext } from './prop-setter-context';

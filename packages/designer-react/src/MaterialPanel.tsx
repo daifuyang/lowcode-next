@@ -50,6 +50,9 @@ export function MaterialPanel({
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, ComponentMeta[]>();
     for (const meta of registry.list()) {
+      // hidden 物料（页面壳 Page）只在注册表里活着：根节点渲染与顶层拖放
+      // 都靠它，但它不是拿来拖的，出现在面板里只会诱导往页面里套页面
+      if (meta.configure.component.hidden) continue;
       const name = meta.group ?? '其他';
       const bucket = map.get(name);
       if (bucket) bucket.push(meta);

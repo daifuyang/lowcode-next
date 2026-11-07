@@ -1,26 +1,20 @@
 import type { ComponentType } from 'react';
 import {
-  ChartColumn,
-  Code,
-  CreditCard,
+  AlignLeft,
+  AlertCircle,
+  CheckSquare,
+  ChevronDownSquare,
   FileText,
-  Heading1,
   Image as ImageIcon,
-  LayoutGrid,
-  LayoutPanelTop,
+  Inbox,
   Link2,
+  Loader,
   Minus,
-  Monitor,
-  PanelBottom,
-  PanelTop,
   RectangleHorizontal,
-  Rows3,
-  Shapes,
-  Square,
-  SquareStack,
   Tag,
+  TextCursorInput,
+  ToggleLeft,
   Type,
-  UnfoldVertical,
 } from 'lucide-react';
 
 /**
@@ -49,34 +43,24 @@ type Glyph = ComponentType<{
 }>;
 
 const GLYPHS: Record<string, Glyph> = {
-  // 布局
-  Div: Square,
-  Stack: Rows3,
-  Grid: LayoutGrid,
-  Section: LayoutPanelTop,
-  Card: CreditCard,
+  // 页面壳（hidden，树面板里会见到）
+  Page: FileText,
 
-  // 基础
-  Heading: Heading1,
-  Text: Type,
+  // 原子组件（§12.16）
+  Typography: Type,
   Button: RectangleHorizontal,
   Link: Link2,
-  Badge: Tag,
-  Icon: Shapes,
   Image: ImageIcon,
   Divider: Minus,
-  Spacer: UnfoldVertical,
-
-  // 区块
-  Navbar: PanelTop,
-  Hero: Monitor,
-  FeatureCard: SquareStack,
-  Stat: ChartColumn,
-  CodeBlock: Code,
-  Footer: PanelBottom,
-
-  // 页面 / 根节点
-  Page: FileText,
+  Input: TextCursorInput,
+  TextArea: AlignLeft,
+  Select: ChevronDownSquare,
+  Checkbox: CheckSquare,
+  Switch: ToggleLeft,
+  Tag: Tag,
+  Progress: Loader,
+  Empty: Inbox,
+  Alert: AlertCircle,
 };
 
 /**

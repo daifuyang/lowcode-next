@@ -73,6 +73,14 @@ export interface ComponentConfigure {
     isContainer?: boolean;
     isModal?: boolean;
     /**
+     * 不在物料面板展示（§12.16）。
+     *
+     * 给「页面壳」这类结构性物料用：Page 必须注册（schema 根节点需要一个
+     * 可渲染、可容纳的组件），但它不是拿来拖的 —— 显示在面板里只会让人
+     * 往页面里再套一层页面。
+     */
+    hidden?: boolean;
+    /**
      * 空容器占位开关，缺省开启（只对 isContainer 生效）。
      *
      * 默认开启的理由：容器没子节点时高度会塌成 0，选不中也拖不进去。

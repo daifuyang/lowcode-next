@@ -5,7 +5,7 @@ import type { SetterContext } from '@lowcode-next/designer-react';
  * 演示用 setter —— **不是库代码**，只为验证 §12.12.6 的注册通路。
  *
  * 它覆盖内置 `textarea`：同一个 kind、同一个 schema，属性面板换成一个带字数统计
- * 的多行输入。`FeatureCard.desc` 与 `CodeBlock.code` 都声明了
+ * 的多行输入。`TextArea.value` 与 `Alert.description` 都声明了
  * `setter: 'TextAreaSetter'`（归一后就是 `textarea`），所以选中它们即可看到替换。
  *
  * 关键点：**没有改一行物料代码、没有迁移 schema、没有重启编辑器**。

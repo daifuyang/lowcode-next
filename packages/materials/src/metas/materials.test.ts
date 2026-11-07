@@ -23,9 +23,6 @@ const EXPECTED_ENUMS: Record<string, string[]> = {
   Button: ['variant', 'size'],
   Link: ['tone'],
   Tag: ['tone'],
-  Stack: ['direction', 'align', 'justify'],
-  Section: ['tone', 'padding'],
-  Card: ['tone'],
   Input: ['size'],
   Select: ['size'],
   Progress: ['tone'],
@@ -94,17 +91,14 @@ describe('物料协议', () => {
       .filter((meta) => meta.configure.component.isContainer)
       .map((meta) => meta.componentName);
 
-    // 布局与整段区块都应该是容器；基础物料（按钮/标题）不是
-    expect(containers).toEqual([
-      'Div',
-      'Stack',
-      'Grid',
-      'Section',
-      'Card',
-      'Navbar',
-      'Hero',
-      'FeatureCard',
-      'Footer',
-    ]);
+    // 布局容器移除后（§12.16），唯一的容器是隐藏的页面壳
+    expect(containers).toEqual(['Page']);
+  });
+
+  it('hidden 物料（页面壳）不出现在面板分组里', () => {
+    const visible = metas.filter((meta) => !meta.configure.component.hidden);
+    expect(visible.map((meta) => meta.componentName)).not.toContain('Page');
+    // 面板可见的恰好是 14 个原子组件
+    expect(visible).toHaveLength(14);
   });
 });

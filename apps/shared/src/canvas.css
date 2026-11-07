@@ -50,7 +50,7 @@ body {
 }
 
 /* 空容器占位（照抄 lowcode react-simulator-renderer/src/renderer.less 的
-   .lc-container-placeholder）。没有它，空 Stack / Grid 的高度是 0：
+   .lc-container-placeholder）。没有它，空 Page（页面根）的高度是 0：
    选不中、看不见、也拖不进去。只在编辑态存在。 */
 [data-lc-canvas] .lc-container-placeholder {
   display: flex;

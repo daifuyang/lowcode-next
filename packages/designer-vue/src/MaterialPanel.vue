@@ -52,6 +52,8 @@ const groups = computed<Group[]>(() => {
   void version.value;
   const map = new Map<string, ComponentMeta[]>();
   for (const meta of props.registry.list()) {
+    // hidden 物料（页面壳 Page）不进面板 —— 与 React 版 MaterialPanel 同一约定
+    if (meta.configure.component.hidden) continue;
     const name = meta.group ?? '其他';
     const bucket = map.get(name);
     if (bucket) bucket.push(meta);

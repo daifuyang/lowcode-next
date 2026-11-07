@@ -1,12 +1,5 @@
 import type { ComponentMeta } from '@lowcode-next/protocol';
 import {
-  divMaterial,
-  stackMaterial,
-  gridMaterial,
-  sectionMaterial,
-  cardMaterial,
-} from './layout';
-import {
   typographyMaterial,
   linkMaterial,
   buttonMaterial,
@@ -22,34 +15,22 @@ import {
   emptyMaterial,
   alertMaterial,
 } from './base';
-import {
-  navbarMaterial,
-  heroMaterial,
-  featureCardMaterial,
-  statMaterial,
-  codeBlockMaterial,
-  footerMaterial,
-} from './blocks';
+import { pageMaterial } from './page';
 import type { MaterialPackage } from '../registry';
 
 /**
- * 内置物料清单。
+ * 内置物料清单（§12.16）。
  *
- * **顺序即物料面板的展示顺序**，分组标题取 meta.group。排列的用意是
- * 「从上到下就是搭建顺序」：先布局搭骨架，再填文字和操作，然后放录入控件，
- * 最后是展示类；区块（整段页面模块）压在最下面 —— 它更像模板而不是组件，
- * 常规搭建用不到。
+ * **顺序即物料面板的展示顺序**，分组标题取 meta.group。布局容器与页面级区块
+ * 已整体移除 —— 面板只保留这一批原子组件；页面根由隐藏的 `Page` 壳承担
+ * （见 `page.ts`，`hidden: true` 不进面板）。
  *
  * 这是一个**物料包**而不是裸数组 —— 装上/摘掉都按包粒度走（`registry.use()` /
  * `registry.unuse()`），业务方追加自己的物料时不需要改动这份清单。
  */
 export const builtinMetas: ComponentMeta[] = [
-  // 布局
-  divMaterial,
-  stackMaterial,
-  gridMaterial,
-  sectionMaterial,
-  cardMaterial,
+  // 页面壳（hidden，面板不展示，但根节点渲染与顶层拖放都靠它）
+  pageMaterial,
 
   // 文字
   typographyMaterial,
@@ -72,14 +53,6 @@ export const builtinMetas: ComponentMeta[] = [
   progressMaterial,
   emptyMaterial,
   alertMaterial,
-
-  // 区块（页面级模板，不是原子组件）
-  navbarMaterial,
-  heroMaterial,
-  featureCardMaterial,
-  statMaterial,
-  codeBlockMaterial,
-  footerMaterial,
 ];
 
 /** 描述层的内置包。视图层各自把它绑上自己的实现（见 materials-react / -vue） */
@@ -90,6 +63,5 @@ export const builtinMaterialPackage: MaterialPackage = {
   metas: builtinMetas,
 };
 
-export * from './layout';
 export * from './base';
-export * from './blocks';
+export * from './page';

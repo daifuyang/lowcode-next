@@ -2,19 +2,9 @@
   "version": "1.0.1",
   "componentsMap": [
     {
-      "componentName": "Div",
+      "componentName": "Page",
       "package": "@lowcode-next/materials-react",
-      "exportName": "Div"
-    },
-    {
-      "componentName": "Section",
-      "package": "@lowcode-next/materials-react",
-      "exportName": "Section"
-    },
-    {
-      "componentName": "Typography",
-      "package": "@lowcode-next/materials-react",
-      "exportName": "Typography"
+      "exportName": "Page"
     },
     {
       "componentName": "Typography",
@@ -25,21 +15,6 @@
       "componentName": "Button",
       "package": "@lowcode-next/materials-react",
       "exportName": "Button"
-    },
-    {
-      "componentName": "Grid",
-      "package": "@lowcode-next/materials-react",
-      "exportName": "Grid"
-    },
-    {
-      "componentName": "Card",
-      "package": "@lowcode-next/materials-react",
-      "exportName": "Card"
-    },
-    {
-      "componentName": "StatCard",
-      "package": "./StatCard",
-      "exportName": "StatCard"
     },
     {
       "componentName": "Input",
@@ -85,265 +60,145 @@
       "componentName": "Divider",
       "package": "@lowcode-next/materials-react",
       "exportName": "Divider"
+    },
+    {
+      "componentName": "StatCard",
+      "package": "./StatCard",
+      "exportName": "StatCard"
     }
   ],
   "componentsTree": {
     "id": "page_root",
-    "componentName": "Div",
+    "componentName": "Page",
     "props": {
       "style": {
-        "minHeight": "100vh",
-        "background": "#f8fafc"
+        "maxWidth": 720,
+        "margin": "0 auto",
+        "padding": "56px 24px 80px"
       }
     },
     "children": [
       {
-        "id": "hero_section",
-        "componentName": "Section",
-        "props": {
-          "tone": "light",
-          "padding": "lg"
-        },
+        "id": "hero_tag",
+        "componentName": "Tag",
+        "props": { "tone": "accent" },
+        "children": ["接入你自己的组件"]
+      },
+      {
+        "id": "hero_heading",
+        "componentName": "Typography",
+        "props": { "type": "h1", "tone": "gradient", "style": { "marginTop": 12 } },
+        "children": ["画布与编辑器共用同一棵 React tree"]
+      },
+      {
+        "id": "hero_text",
+        "componentName": "Typography",
+        "props": { "type": "body", "tone": "muted", "style": { "marginTop": 12 } },
         "children": [
-          {
-            "id": "hero_heading",
-            "componentName": "Typography",
-            "props": {
-              "tone": "gradient",
-              "align": "center",
-              "type": "h1"
-            },
-            "children": [
-              "接入你自己的组件"
-            ]
-          },
-          {
-            "id": "hero_text",
-            "componentName": "Typography",
-            "props": {
-              "tone": "muted",
-              "align": "center"
-            },
-            "children": [
-              "左边是物料面板，中间是画布。画布与编辑器共用同一棵 React tree —— 你的 Context、样式、状态都能直接用。"
-            ]
-          },
-          {
-            "id": "hero_actions",
-            "componentName": "Div",
-            "props": {
-              "style": {
-                "display": "flex",
-                "gap": 12,
-                "justifyContent": "center",
-                "marginTop": 8
-              }
-            },
-            "children": [
-              {
-                "id": "hero_btn_primary",
-                "componentName": "Button",
-                "props": {
-                  "variant": "primary",
-                  "size": "lg"
-                },
-                "children": [
-                  "拖一个组件试试"
-                ]
-              },
-              {
-                "id": "hero_btn_outline",
-                "componentName": "Button",
-                "props": {
-                  "variant": "outline",
-                  "size": "lg"
-                },
-                "children": [
-                  "看物料配置"
-                ]
-              }
-            ]
-          }
+          "组件库面板里只有原子组件；页面根是一个隐藏的 Page 壳。你的 Context、样式、状态都能直接用 —— 拖一个组件进来试试。"
         ]
       },
       {
-        "id": "stats_section",
-        "componentName": "Section",
+        "id": "hero_btn",
+        "componentName": "Button",
+        "props": { "variant": "primary", "size": "lg", "style": { "marginTop": 18 } },
+        "children": ["拖一个组件试试"]
+      },
+      {
+        "id": "stat_live",
+        "componentName": "StatCard",
         "props": {
-          "tone": "muted",
-          "padding": "md"
-        },
+          "label": "月度活跃",
+          "value": "12,480",
+          "hint": "较上月 +8.2%",
+          "style": { "marginTop": 26 }
+        }
+      },
+      {
+        "id": "divider_1",
+        "componentName": "Divider",
+        "props": { "spacing": 34 }
+      },
+      {
+        "id": "form_heading",
+        "componentName": "Typography",
+        "props": { "type": "h2" },
+        "children": ["表单演示"]
+      },
+      {
+        "id": "form_caption",
+        "componentName": "Typography",
+        "props": { "type": "body", "tone": "muted", "style": { "marginTop": 8 } },
         "children": [
-          {
-            "id": "stats_grid",
-            "componentName": "Grid",
-            "props": {
-              "columns": 3,
-              "gap": 20
-            },
-            "children": [
-              {
-                "id": "stat_live",
-                "componentName": "StatCard",
-                "props": {
-                  "label": "月度活跃",
-                  "value": "12,480",
-                  "hint": "较上月 +8.2%"
-                }
-              },
-              {
-                "id": "stat_materials",
-                "componentName": "StatCard",
-                "props": {
-                  "label": "已接入物料",
-                  "value": "21",
-                  "hint": "20 个内置 + 1 个业务组件"
-                }
-              },
-              {
-                "id": "stat_bundle",
-                "componentName": "StatCard",
-                "props": {
-                  "label": "首屏代码",
-                  "value": "3 行",
-                  "hint": "一次 createEditor 调用"
-                }
-              }
-            ]
-          }
+          "下面的输入都受控：打字、勾选、切换会实时写回 schema（undo/redo 生效）。"
         ]
       },
       {
-        "id": "next_section",
-        "componentName": "Section",
-        "props": {
-          "tone": "light",
-          "padding": "md"
-        },
-        "children": [
-          {
-            "id": "next_card",
-            "componentName": "Card",
-            "props": {
-              "tone": "outline"
-            },
-            "children": [
-              {
-                "id": "next_heading",
-                "componentName": "Typography",
-                "props": {
-                  "type": "h3"
-                },
-                "children": [
-                  "这个页面由 page.json 描述"
-                ]
-              },
-              {
-                "id": "next_text",
-                "componentName": "Typography",
-                "props": {
-                  "tone": "muted"
-                },
-                "children": [
-                  "在画布里拖拽调整，结构变化会实时回写到文档。整份 schema 就是普通 JSON，存数据库或文件都行。"
-                ]
-              }
-            ]
-          }
-        ]
+        "id": "form_name_label",
+        "componentName": "Typography",
+        "props": { "type": "caption", "tone": "muted", "style": { "marginTop": 20 } },
+        "children": ["单行输入"]
       },
       {
-        "id": "form_section",
-        "componentName": "Section",
+        "id": "form_name",
+        "componentName": "Input",
+        "props": { "value": "", "placeholder": "输入点什么试试", "style": { "marginTop": 6 } }
+      },
+      {
+        "id": "form_select_label",
+        "componentName": "Typography",
+        "props": { "type": "caption", "tone": "muted", "style": { "marginTop": 14 } },
+        "children": ["下拉选择"]
+      },
+      {
+        "id": "form_select",
+        "componentName": "Select",
         "props": {
-          "tone": "light",
-          "padding": "md"
-        },
-        "children": [
-          {
-            "id": "form_heading",
-            "componentName": "Typography",
-            "props": {
-              "type": "h3"
-            },
-            "children": [
-              "表单演示"
-            ]
-          },
-          {
-            "id": "form_caption",
-            "componentName": "Typography",
-            "props": {
-              "type": "body",
-              "tone": "muted"
-            },
-            "children": [
-              "下面的输入都受控：打字、勾选、切换会实时写回 schema（undo/redo 生效）。"
-            ]
-          },
-          {
-            "id": "form_name",
-            "componentName": "Input",
-            "props": {
-              "value": "",
-              "placeholder": "输入点什么试试"
-            }
-          },
-          {
-            "id": "form_select",
-            "componentName": "Select",
-            "props": {
-              "value": "",
-              "options": [
-                "选项一",
-                "选项二",
-                "选项三"
-              ]
-            }
-          },
-          {
-            "id": "form_textarea",
-            "componentName": "TextArea",
-            "props": {
-              "value": "",
-              "placeholder": "多行输入",
-              "rows": 3
-            }
-          },
-          {
-            "id": "form_check",
-            "componentName": "Checkbox",
-            "props": {
-              "label": "我已阅读说明",
-              "checked": true
-            }
-          },
-          {
-            "id": "form_switch",
-            "componentName": "Switch",
-            "props": {
-              "label": "自动保存",
-              "checked": true
-            }
-          },
-          {
-            "id": "form_progress",
-            "componentName": "Progress",
-            "props": {
-              "percent": 40,
-              "showText": true
-            }
-          },
-          {
-            "id": "form_alert",
-            "componentName": "Alert",
-            "props": {
-              "type": "info",
-              "title": "提示",
-              "description": "这是提示条组件，编辑态下关闭按钮不可用。"
-            }
-          }
-        ]
+          "value": "",
+          "options": ["选项一", "选项二", "选项三"],
+          "style": { "marginTop": 6 }
+        }
+      },
+      {
+        "id": "form_textarea_label",
+        "componentName": "Typography",
+        "props": { "type": "caption", "tone": "muted", "style": { "marginTop": 14 } },
+        "children": ["多行输入"]
+      },
+      {
+        "id": "form_textarea",
+        "componentName": "TextArea",
+        "props": {
+          "value": "",
+          "placeholder": "多行输入",
+          "rows": 3,
+          "style": { "marginTop": 6 }
+        }
+      },
+      {
+        "id": "form_check",
+        "componentName": "Checkbox",
+        "props": { "label": "我已阅读说明", "checked": true, "style": { "marginTop": 16 } }
+      },
+      {
+        "id": "form_switch",
+        "componentName": "Switch",
+        "props": { "label": "自动保存", "checked": true, "style": { "marginTop": 10 } }
+      },
+      {
+        "id": "form_progress",
+        "componentName": "Progress",
+        "props": { "percent": 40, "showText": true, "style": { "marginTop": 20 } }
+      },
+      {
+        "id": "form_alert",
+        "componentName": "Alert",
+        "props": {
+          "type": "info",
+          "title": "提示",
+          "description": "这是提示条组件，编辑态下关闭按钮不可用。",
+          "style": { "marginTop": 18 }
+        }
       }
     ]
   }

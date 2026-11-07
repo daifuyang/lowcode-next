@@ -3893,3 +3893,48 @@ protocol 导出 symbol，driver 注入，物料 `getPropSetter(props)` 读。三
    Vue 的 `render-vue` 同 §12.14.7。
 2. **Table / Form** 属复合组件，需要数据源或校验机制，不在原子层。
 3. **Icon** 若要回来，正确做法是接一个图标集把 `name` 映射到组件，属于独立决策。
+
+### 12.16 组件库收口为原子组件，页面壳 `Page`（2026-11-07）
+
+#### 12.16.1 决策
+
+用户拍板：组件库面板**只显示原子组件**（§12.15 的 14 个），布局（Div / Stack /
+Grid / Section / Card）与页面区块（Navbar / Hero / FeatureCard / Stat /
+CodeBlock / Footer）**从注册表彻底移除**——不是隐藏，是删除 meta、实现与样式。
+
+随之而来的是一个协议层问题：`componentsTree: NodeSchema` 要求根是一个组件节点，
+没有容器物料之后「根渲染成什么」没有着落。解法是引入**引擎级页面壳 `Page`**：
+
+- 一个不带任何语义的块级容器，吃 `style` 覆盖口，children 即页面内容；
+- meta 上 `configure.component.hidden: true`（protocol 新增字段）——
+  它必须注册（根要渲染、顶层拖放要落点），但不出现在物料面板里：
+  页面里再套一层页面没有意义。React / Vue 两个 MaterialPanel 都跳过 hidden；
+- 它不是「布局组件」，是页面本身 —— lowcode 的 componentsTree 根同样是
+  独立成类的 Page 物料，思路一致。
+
+#### 12.16.2 删了什么
+
+| 层 | 文件 |
+|---|---|
+| 描述 | `materials/src/metas/layout.ts`、`blocks.ts` 整文件删除 |
+| React 实现 | `materials-react/src/components/layout.tsx`、`blocks.tsx` |
+| Vue 实现 | `materials-vue` 的 `Div.vue`（Vue 物料变 Page / Typography / Button） |
+| 样式 | `styles.css` 的布局容器～页脚共 364 行；新增 `.lc-page`（仅 min-height） |
+| 图标 | `icons.tsx` 的 GLYPHS 清到「Page + 14 原子」 |
+
+两份示例 schema 同步重写成**纯纵向流**：没有 Stack/Section 之后，块级组件
+（Typography / Input / Alert…）依次往下排，行内组件（Tag / Link / Button）
+天然并排，间距一律走各组件的 `style` 覆盖口。`sampleSchema`（protocol 自带
+的最小示例）根节点也从 Div 换成 Page。
+
+#### 12.16.3 验证（实测）
+
+- `tsc -b` + 两 app `--noEmit` 0 错误；`vitest` **131/131**（materials.test
+  新增两条守卫：容器唯一性 `['Page']`、hidden 物料不在可见清单、可见恰 14 个）；
+  `pnpm build` 通过；
+- CDP 实测编辑器：活动栏点开组件库，分组只有
+  **文字 / 操作 / 录入 / 展示 / 业务组件**，卡片 15 张
+  （14 原子 + StatCard），Page 不在面板；画布 19 节点、0 个未注册兜底、
+  `.lc-page` 根渲染正常；
+- Vue playground（临时 5189）：iframe 内 3 节点、Page 根、提交/取消按钮、0 兜底；
+- `/render`：Page 根 + 表单组件全部渲染，0 兜底。
