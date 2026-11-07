@@ -44,8 +44,19 @@ export interface CreateEditorOptions extends MaterialConfig {
   schema: PageSchema | Record<string, unknown>;
   /** 画布内边距，默认 20；整幅落地页设 0 */
   canvasPadding?: number;
+  /**
+   * 文档 id，默认 'doc'。同时是「保存」写 localStorage 的 key
+   * （`lowcode-next:schema:<documentId>`）—— 一个宿主里放多个编辑器时
+   * 给不同的 id，保存互不覆盖；playground 启动时用同名 key 读回保存的 schema。
+   */
+  documentId?: string;
   /** 每次文档提交后回调（可用于自动保存） */
   onSchemaChange?: (schema: PageSchema) => void;
+  /**
+   * 保存出口：保存按钮 / Ctrl+S 时收到当前 schema。存到哪（localStorage /
+   * 落库 / 下载）是宿主的事；没传时保存按钮静默 no-op。
+   */
+  onSave?: (schema: PageSchema) => void;
   /**
    * 「预览」按钮的回调。不传则按钮置灰。
    *
@@ -113,7 +124,7 @@ export function createEditor(
     return fail('页面 JSON 解析失败', error);
   }
 
-  const document = createDocument(parsed, assembled.registry);
+  const document = createDocument(parsed, assembled.registry, options.documentId);
 
   root.render(
     <EditorView
@@ -148,6 +159,7 @@ function EditorView({ document, materials, options }: EditorViewProps) {
       registry={materials.registry}
       canvasPadding={options.canvasPadding ?? 20}
       onSchemaChange={options.onSchemaChange}
+      onSave={options.onSave}
       onPreview={options.onPreview}
       // 画布内容：同一棵 React tree 的另一个 DOM 落点（Designer 内部 portal 到 iframe）
       renderCanvas={(padding) => (

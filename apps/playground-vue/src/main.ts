@@ -3,6 +3,7 @@ import '@pg/styles.css';
 import { mountDesigner } from '@lowcode-next/designer-vue';
 import { pickPage } from '@pg/pages';
 import { openPreview } from '@pg/preview-route';
+import { loadSavedSchema } from '@pg/schema-store';
 import { createDesigner } from './materials';
 
 /**
@@ -20,7 +21,9 @@ const container = document.getElementById('root');
 if (!container) throw new Error('#root not found');
 
 const page = pickPage('sample');
-const booted = createDesigner(page.schema, page.key);
+// 启动时优先读回保存过的 schema（React 侧「保存」按 doc.id 落 localStorage；
+// Vue 设计器目前是只读骨架、没有保存按钮，所以这里只接了读回）
+const booted = createDesigner(loadSavedSchema(page.key) ?? page.schema, page.key);
 
 if (!booted.ok) {
   // Vue 版没有 React 那样的错误外壳：挂载前就失败，直接写进容器

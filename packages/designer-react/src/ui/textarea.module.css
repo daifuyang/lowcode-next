@@ -1,0 +1,39 @@
+/*
+ * 文本域（文案 / JSON / 表达式多行输入）的壳。
+ *
+ * 解决三处观感问题（对照用户截图）：
+ * 1. 去除浏览器自带的 resize 拉伸手柄（右下角对角线 grip）—— 它和面板
+ *    的方角视觉语言冲突，且多行文本域本就靠滚动而非拉伸；
+ * 2. 给一套细净的自定义滚动条（细轨 + 圆角浅灰滑块），替换浏览器默认
+ *    的「带箭头 + 圆形深色滑块」原生滚动条；
+ * 3. overflow:auto + max-height 双保险：内容超出后内部滚动，绝不被容器
+ *    底部裁掉半行（截图里「文案」被底边切掉」的根因）。
+ */
+
+.textarea {
+  resize: none;
+  overflow: auto;
+  max-height: 240px;
+  /* Firefox 细滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 56, 88, 0.25) transparent;
+}
+
+/* WebKit / Blink 细滚动条（无箭头、圆角浅灰滑块） */
+.textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.textarea::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(31, 56, 88, 0.25);
+}
+
+.textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 56, 88, 0.4);
+}
+
+.textarea::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -91,14 +91,15 @@ describe('物料协议', () => {
       .filter((meta) => meta.configure.component.isContainer)
       .map((meta) => meta.componentName);
 
-    // 布局容器移除后（§12.16），唯一的容器是隐藏的页面壳
-    expect(containers).toEqual(['Page']);
+    // 布局容器移除后（§12.16），补回唯一通用容器 Div（§12.17）：
+    // 容器是隐藏的页面壳 Page + 可见的通用容器 Div
+    expect(containers).toEqual(['Page', 'Div']);
   });
 
   it('hidden 物料（页面壳）不出现在面板分组里', () => {
     const visible = metas.filter((meta) => !meta.configure.component.hidden);
     expect(visible.map((meta) => meta.componentName)).not.toContain('Page');
-    // 面板可见的恰好是 14 个原子组件
-    expect(visible).toHaveLength(14);
+    // 面板可见：14 个原子组件 + 1 个通用容器 Div（§12.17），共 15 个
+    expect(visible).toHaveLength(15);
   });
 });

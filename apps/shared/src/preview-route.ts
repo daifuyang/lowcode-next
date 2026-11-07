@@ -29,17 +29,23 @@ export const PREVIEW_KEY = 'lowcode-next:preview-schema';
 export type PreviewEntry = 'preview' | 'render';
 
 /**
- * 入口地址 = 同目录下的 `<entry>`。
+ * 入口地址 = 同目录下的 `<entry>.html`。
  *
  * 用 URL 相对解析而不是拼 `location.pathname + '?preview=1'`：前者在
  * 「部署到子路径」「编辑器地址带 ?page=sample」两种情况下都算得对，
  * 也不会出现 `index.html/preview` 这种错拼。
+ *
+ * **必须带 `.html` 后缀**：dev/preview 下的干净路径 rewrite（`/render` →
+ * `/render.html`，vite.base.ts）只在 Vite 自家中间件里存在，静态托管
+ * （nginx / 对象存储 / 发布为应用）没有这一层 —— 2026-11-07 线上实测，
+ * 不带后缀的 `/render` 在静态托管直接 404。`/render.html` 是真实文件，
+ * 在 dev 与托管侧都成立。
  */
 export function entryUrl(
   entry: PreviewEntry,
   href: string = globalThis.location.href,
 ): string {
-  return new URL(entry, href).toString();
+  return new URL(`${entry}.html`, href).toString();
 }
 
 /**

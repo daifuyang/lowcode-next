@@ -16,14 +16,15 @@ import {
   alertMaterial,
 } from './base';
 import { pageMaterial } from './page';
+import { divMaterial } from './div';
 import type { MaterialPackage } from '../registry';
 
 /**
- * 内置物料清单（§12.16）。
+ * 内置物料清单（§12.16 / §12.17）。
  *
  * **顺序即物料面板的展示顺序**，分组标题取 meta.group。布局容器与页面级区块
- * 已整体移除 —— 面板只保留这一批原子组件；页面根由隐藏的 `Page` 壳承担
- * （见 `page.ts`，`hidden: true` 不进面板）。
+ * 已整体移除，仅补回一个最朴素的通用容器 `Div`（§12.17）；页面根由隐藏的
+ * `Page` 壳承担（见 `page.ts`，`hidden: true` 不进面板）。其余是原子组件。
  *
  * 这是一个**物料包**而不是裸数组 —— 装上/摘掉都按包粒度走（`registry.use()` /
  * `registry.unuse()`），业务方追加自己的物料时不需要改动这份清单。
@@ -31,6 +32,9 @@ import type { MaterialPackage } from '../registry';
 export const builtinMetas: ComponentMeta[] = [
   // 页面壳（hidden，面板不展示，但根节点渲染与顶层拖放都靠它）
   pageMaterial,
+
+  // 布局（唯一通用容器）
+  divMaterial,
 
   // 文字
   typographyMaterial,
@@ -65,3 +69,4 @@ export const builtinMaterialPackage: MaterialPackage = {
 
 export * from './base';
 export * from './page';
+export * from './div';

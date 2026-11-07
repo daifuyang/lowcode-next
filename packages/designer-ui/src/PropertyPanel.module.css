@@ -238,6 +238,16 @@
   min-width: 0;
 }
 
+/* 多行控件（文案 / JSON）行：标签与控件都改为顶部对齐，否则标签会悬在
+   文本框中段，和首行文字对不齐（引擎 lc-inline-field 的多行分支同款处理） */
+.rowTop {
+  align-items: flex-start;
+}
+
+.rowTop .rowHead {
+  padding-top: 6px;
+}
+
 /* ------------------------------------------------------------------ */
 /* 分组手风琴（引擎 lc-accordion-field：头高 32、底 N-8、上下线 N-7、    */
 /* 字重 500、padding 0 12）                                             */

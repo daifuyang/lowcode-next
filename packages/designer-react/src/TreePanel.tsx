@@ -24,6 +24,7 @@ import { MatIcon } from './icons';
 import { PaneHeader } from './PaneHeader';
 import {
   collapsedByDefault,
+  collapsibleIds,
   flattenVisible,
   INDENT,
   keepPaths,
@@ -281,6 +282,22 @@ export function TreePanel({
 
       autoScroll(event.clientY);
 
+      // 指针正悬在插入线（占位块）上 → 保持当前落点不重算，直接返回。
+      // 占位块是撑开布局的：挂载后它恰好盖住指针，若继续按"指针下的行"重算
+      // 会得到 null → 占位块卸载 → 行弹回 → 下一次微动又挂载 …… 指针稍微一抖
+      // 插入线就反复闪。引擎把 `.insertion` 设为 `pointer-events: all` 的合法
+      // 命中目标（pane-controller 的 `target.matches('.insertion')` 分支），
+      // 悬在它上面 = 落点不变，这里对齐同一条规则。
+      const underHere = globalThis.document.elementFromPoint(event.clientX, event.clientY);
+      if (
+        dropRef.current &&
+        underHere instanceof Element &&
+        treeRef.current?.contains(underHere) &&
+        underHere.closest('[data-tree-insertion]')
+      ) {
+        return;
+      }
+
       const next = resolveDrop(pending.id, event.clientX, event.clientY);
       const prev = dropRef.current;
       const unchanged =
@@ -494,14 +511,16 @@ export function TreePanel({
     }
   };
 
-  const allCollapsed = collapsed.size > 0;
+  // 「全部收起 / 全部展开」按**可折叠节点全集**（含根）判断与设置。
+  // 不能用 `collapsed.size > 0` 之类近似：收了一半时按钮态就错了；
+  // 也不能用 `collapsedByDefault`（它豁免根）—— 扁平 schema 下唯一可折叠的
+  // 就是根，用它当目标集合按钮点了毫无变化，看起来像坏了。
+  // 每次渲染现算（树是几十行的小结构，走一遍很便宜），避免 doc 提交后 memo 失效。
+  const collapsible = collapsibleIds(doc.root);
+  const allCollapsed = collapsible.size > 0 && [...collapsible].every((id) => collapsed.has(id));
 
   const toggleAll = () => {
-    if (allCollapsed) {
-      setCollapsed(new Set());
-      return;
-    }
-    setCollapsed(collapsedByDefault(doc.root));
+    setCollapsed(allCollapsed ? new Set() : collapsible);
   };
 
   return (
@@ -804,7 +823,7 @@ function TreeNode({
                 type="button"
                 className={styles.act}
                 data-danger="true"
-                title="删除节点（可撤销）"
+                title="删除"
                 aria-label="删除"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -864,7 +883,14 @@ function TreeNode({
  * 换成红色虚线，仍然占位，告诉用户"这里不接受"。
  */
 function Insertion({ invalid }: { invalid?: boolean }) {
-  return <div className={styles.insertion} data-invalid={invalid || undefined} role="presentation" />;
+  return (
+    <div
+      className={styles.insertion}
+      data-tree-insertion=""
+      data-invalid={invalid || undefined}
+      role="presentation"
+    />
+  );
 }
 
 /**

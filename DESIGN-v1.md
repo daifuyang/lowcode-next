@@ -1222,7 +1222,7 @@ clamp 进视口），期间把 `title` 暂存摘掉（否则原生提示还会�
 | 交互 | 触发 | 说明 |
 |---|---|---|
 | 选中 | 单击行 | 同步画布选中态，并展开祖先、滚进可视区 |
-| 初始态 | 面板首次出现 | **只摊开第一层**：除根节点外的容器全部收起（`collapsedByDefault`），和点一次「全部收起」等价；换文档（切页面 / 重载 schema）时回到这个状态，同一会话里不动 |
+| 初始态 | 面板首次出现 | **只摊开第一层**：除根节点外的容器全部收起（`collapsedByDefault`）；换文档（切页面 / 重载 schema）时回到这个状态，同一会话里不动。**「全部收起」按钮的目标集合含根**（`collapsibleIds`，全部有孩子的节点）—— 默认态豁免根是第一印象的取舍，按钮是显式动作；且扁平 schema（示例页全是叶子）下唯一可折叠的就是根，豁免根会让按钮点了毫无变化 |
 | 展收子树 | **双击行** | 已展开则收起该节点及其全部子孙，否则全部展开（`expandAllDecendants / collapseAllDecendants`）；只切一层的入口是行首箭头和 ← / → |
 | 定位画布 | Enter | 引擎里选中即滚动画布，这里保留 Enter 作为显式入口（双击已让给展收） |
 | 重命名 | 行尾铅笔 / **F2** | 内联输入，**Enter 保存、Esc 取消、失焦保存**；进入即全选 |
@@ -1241,7 +1241,9 @@ clamp 进视口），期间把 `title` 暂存摘掉（否则原生提示还会�
 - 拖到**自己的子树**里是非法落点（`checkRecursion`）：插入线照样显示但标红
   （`#f53f3f` 虚线），松手不提交；根节点不可拖、锁定节点不可拖、搜索态不起拖；
 - 插入线是**一个行高的虚线占位块**（引擎 `.insertion`：品牌色虚线框 + 微底色），
-  不是 1px 横线 —— 它会撑开列表，松手后节点就落在这块空白的位置，落点与结果一一对应；
+  不是 1px 横线 —— 它会撑开列表，松手后节点就落在这块空白的位置，落点与结果一一对应。
+  占位块是**合法命中目标**（引擎 `pointer-events: all` 同款）：指针悬在它上面时
+  保持当前落点不重算 —— 否则"挂载→指针悬空→卸载→行弹回"来回震荡，插入线闪动；
 - index 按"**移除被拖节点之后**"的坐标换算（`MoveNode` 先 remove 再 insert，
   同容器后移要扣掉自己占的一格）；换算后与原位相同 = 没动，不画线也不提交；
 - 拖拽中的行 `opacity: .4`、树光标 `grabbing`；拖到树上 / 下边缘 24px 内自动滚动；
@@ -3889,8 +3891,10 @@ protocol 导出 symbol，driver 注入，物料 `getPropSetter(props)` 读。三
 
 #### 12.15.4 还没做
 
-1. **Vue 物料仍是 3 个**（Div/Typography/Button），录入与展示组件待补；
-   Vue 的 `render-vue` 同 §12.14.7。
+1. **Vue 物料已补回通用容器 `Div`**（现 4 个：Page / Div / Typography / Button，
+   见 §12.17），但录入（Input/TextArea/Select/Checkbox/Switch）与展示
+   （Tag/Divider/Image/Progress/Empty/Alert）组件仍待补；Vue 的 `render-vue`
+   同 §12.14.7。
 2. **Table / Form** 属复合组件，需要数据源或校验机制，不在原子层。
 3. **Icon** 若要回来，正确做法是接一个图标集把 `name` 映射到组件，属于独立决策。
 
@@ -3938,3 +3942,96 @@ CodeBlock / Footer）**从注册表彻底移除**——不是隐藏，是删除 
   `.lc-page` 根渲染正常；
 - Vue playground（临时 5189）：iframe 内 3 节点、Page 根、提交/取消按钮、0 兜底；
 - `/render`：Page 根 + 表单组件全部渲染，0 兜底。
+
+### 12.17 补回通用容器 `Div`（2026-11-07）
+
+#### 12.17.1 动机
+
+§12.16 把布局物料（Div / Stack / Grid / Section / Card）**整体删除**后，用户想
+「把几个组件框在一起、整体设 style、作为拖拽落点」就没有抓手了。`Page` 是页面根、
+不该被当成普通容器反复嵌套，所以需要一个**最朴素的通用容器**——对齐 lowcode-engine
+的「容器」物料。这是 §12.16 删除决策的唯一例外回补。
+
+#### 12.17.2 形态
+
+- 描述：`materials/src/metas/div.ts`，`componentName: 'Div'`，`title: '容器'`，
+  归到**布局**分组；`configure.component.isContainer: true`；`supports.style /
+  condition / loop`（容器允许循环重复，与原子组件只开 style/condition 不同）。
+- React：`materials-react/src/components/div.tsx`，`<div class="lc-div">` 透传
+  `data-node-id` 与 `style`，children 直出；登记进 `builtinReactComponents`。
+- Vue：`materials-vue/src/components/Div.vue`（`<slot/>` 承载 children），登记进
+  `vueMaterialNames` / `vueComponents`；`designer-vue/src/icons.ts` 里原本就留着
+  `Div: Square`（旧布局物料的遗留项），这次重新用上，无需改图标。
+- 样式：`styles.css` 新增 `.lc-div { display: block }`——不带任何视觉语义，
+  空态高度/选中提示由引擎 `empty-placeholder` 机制兜底，不预设边框或高度
+  （否则会变成「看不见的框」）。
+- 图标：React 侧 `icons.tsx` 的 GLYPHS 补 `Div: Square`，与 Vue 侧成对。
+
+#### 12.17.3 验证
+
+- 测试守卫（materials.test）更新：容器清单 `['Page', 'Div']`；面板可见物料
+  14 原子 + 1 容器 = **15**；
+- `tsc -b` 与两 app `--noEmit` 0 错误、`vitest` 全绿、`pnpm build` 通过即视为收口
+  （本次改动未重新跑 CDP 实测，刷新 5173 即可在组件库「布局」分组看到「容器」卡片）。
+
+### 12.18 落地页重建：用现有物料搭一张能对外的营销页（2026-11-07）
+
+#### 12.18.1 为什么重写
+
+§12.16 收口为原子组件后，`landing.ts` 退化成「14 个物料的纵向陈列」——
+它证明物料能渲染，但**不像一个产品官网**：没有区块节奏、没有栅格、没有导航与
+页脚。这一轮把它重建成一张真正的落地页（Lowcode Next 自己的官网），并且只用手上
+这套东西：14 个原子组件 + `Div` + 隐藏的 `Page`。
+
+#### 12.18.2 交付物：schema JSON，不是代码
+
+页面**只存在于 JSON 里**：`apps/shared/src/schemas/landing.json`。
+它是设置器与渲染器共同消费的产物 —— 编辑器读它出场、属性面板改它、
+`<LowcodeRender />` 渲染它。
+
+- `landing.ts` 退化成两行类型收口（`landing as PageSchema`）。原因：`resolveJsonModule`
+  推断的是字面量类型，`props` 没有索引签名，直接传给 `PageSchema` / `parsePageSchema`
+  会因 `Record<string, unknown>` 不兼容报错；cast 只在这一处发生。
+- **删掉 `apps/playground-react/page.json`**：它与 landing 是同一张页面的副本，
+  248 个节点抄两遍必然漂移。现在 React / Vue 两个 playground 都 import
+  `@pg/schemas/landing.json` —— 一份数据，两个运行时。
+- `landing.test.ts` 继续守着三类「页面上不报错」的坏法：重名 id、未注册物料、
+  componentsMap 漏登记。
+
+#### 12.18.3 三条落地手法（没有布局物料时怎么排版）
+
+| 需求 | 做法 |
+|---|---|
+| 全幅背景色带 | 每个 section 是一个铺满宽度的 `Div`（背景 / 上下留白 / 分隔线），里面套 `maxWidth: 1120 + margin: 0 auto + padding: 0 24px` 的内层 `Div`。背景是整屏的，内容不是 |
+| 卡片 | 没有 Card 物料：`Div` + `1px` 边框 + `14px` 圆角 + 内边距 + `flex: '1 1 300px'`。栅格用 `flexWrap: wrap` + `flex-basis`，窄画布自动折行（把断点交给 flex，不写媒体查询） |
+| 图标位 | 没有 Icon 物料：功能卡用等宽数字 `01–06` 当序号标；产品截图整块用 `Div` 画（物料 / 画布 / 属性三栏），比 `Image` 的斜纹占位诚实 |
+| 深色 CTA 区带 | `Div` 的 `backgroundImage` 渐变 + `Typography tone="invert"`。不用 `background` 简写（§7 记录过属性面板的 `backgroundSize` 冲突） |
+
+设计语言沿用已有的两处事实标准：品牌蓝 `#006cff`、分隔线 `#e5e9f2`、
+浅底 `#f6f7fb`、圆角 12–20px。正文与标题色直接吃物料 tone 的默认值，
+只有标题压到 `#101828` —— 所以 JSON 里几乎没有重复的 color 声明。
+
+#### 12.18.4 过程中修掉的两个物料 bug
+
+1. **深色区块里正文不可见（CSS 顺序）**：`.lc-tone--invert` 与 `.lc-typo--body`
+   同为单类选择器，后者在文件里更靠后，`color: var(--lc-fg-soft)` 把 invert 压掉，
+   CTA 区带上的副标题变成「深底深字」，肉眼几乎看不见且不报错。
+   修法：把「色调」整段移到字形档之后，并让 `.lc-tone--default` **不表态**
+   （默认色仍由 `body` / `caption` 各自的缺省色与宿主继承决定）。
+   语义结论：**色调是作者显式选择，字形档只是缺省值，色调必须赢**。
+2. **`caption` 是 `<span>`**：`TYPOGRAPHY_TAG.caption = 'span'`，所以给 caption
+   设 `marginTop` / `maxWidth` / `margin: auto` 在**普通块容器**里全部失效（行内元素
+   不吃纵向 margin，`getBoundingClientRect` 拿到的是行盒）。落在 flex 容器里的
+   caption 会被 blockify，所以问题只在「块级父容器」这一种情况暴露。
+   修法：`flow_note` 补 `display: block`；`align` 一律走 `props.align`（class），
+   不能写在 `style` 里（`align` 不是合法 CSS 属性，React 会警告）。
+
+#### 12.18.5 验证
+
+- `tsc -b` + 两个 app `--noEmit` 0 错误；`vitest` **131/131**；
+- 编辑态（5173 CDP）：`__editor.getSchema()` **248 节点 / 11 个顶层区块**，
+  localStorage 无旧快照时正常出场，console 0 error / 0 warning；
+- render 态（`/render.html`，1440×1000 逐屏截图）：公告条 / 导航 / 首屏 +
+  产品截图 / 场景 chips / 6 张能力卡（3 列）/ 3 个数字 / 4 步流水线 /
+  两种接入形态（Progress 对比 139 vs 46）/ 技术栈 chips / 深色 CTA / 四列页脚
+  全部按预期排版；11 个 chip 单行排布，CTA 副标题对比度恢复正常。

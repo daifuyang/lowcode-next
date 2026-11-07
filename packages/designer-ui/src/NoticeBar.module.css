@@ -1,0 +1,85 @@
+/*
+ * 右上角报错条（参考 lowcode 的 simulator 错误提示）。
+ *
+ * 形态：浅底卡片 + 左侧红色感叹号 + 文案 + 右侧关闭按钮。
+ * 定位在顶栏（48px 高）下方、靠右，不挡「保存 / 预览」按钮，
+ * z-index 压过画布浮条（20/21）与浮层面板（22），但让位给数据源详情浮层（25）
+ * 与 tooltip 气泡（2000）—— 报错条只在异常时出现，层级不必最高。
+ */
+
+.bar {
+  position: fixed;
+  top: 58px;
+  right: 12px;
+  z-index: 1500;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 360px;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid #fbc4c4;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(31, 35, 41, 0.16);
+  font-family: Roboto, 'Helvetica Neue', Helvetica, Tahoma, Arial, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #1f2329;
+  animation: noticeIn 0.14s ease-out;
+}
+
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #f53f3f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.close {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #9aa3b0;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.close:hover {
+  background: #f2f3f5;
+  color: #1f2329;
+}

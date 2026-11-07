@@ -157,6 +157,9 @@
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
+  /* 滚动条槽位常驻：收起 / 拖拽改变内容高度时，滚动条出现消失会把所有行
+     的宽度拽来拽去，看起来在闪 */
+  scrollbar-gutter: stable;
   padding-bottom: 6px;
   outline: none;
   scrollbar-width: thin;
@@ -201,7 +204,10 @@
   cursor: grabbing !important;
 }
 
-/* 插入块（引擎 `.insertion`）：一个行高的虚线占位，松手后节点就落在这里 */
+/* 插入块（引擎 `.insertion`）：一个行高的虚线占位，松手后节点就落在这里。
+   pointer-events 不能是 none —— 占位块要作为合法命中目标（引擎 pointer-events:all
+   同款）：指针悬在它上面时落点保持不变，否则"挂载→指针悬空→卸载→行弹回"
+   来回震荡，插入线看起来在闪 */
 .insertion {
   height: 26px;
   box-sizing: border-box;
@@ -209,7 +215,8 @@
   border: 1px dashed #006cff;
   border-radius: 3px;
   background: rgba(0, 108, 255, 0.04);
-  pointer-events: none;
+  pointer-events: auto;
+  transition: all 0.2s ease-in-out;
 }
 
 .insertion[data-invalid] {
@@ -264,8 +271,16 @@
   padding-right: 4px;
   font-size: 12px;
   color: #1f2329;
-  cursor: default;
+  /* 整行可拖拽：照 lowcode 大纲树，行本身带 grab 光标，按下变 grabbing。
+   * 行内的展开箭头 / 行尾动作按钮各自用 cursor:pointer 覆盖。 */
+  cursor: grab;
   user-select: none;
+}
+
+/* 按下即进入「准备拖拽」态，光标先变 grabbing（拖拽真正开始时
+ * DragManager 会在 body 上设 grabbing，这里提前给反馈） */
+.row:active {
+  cursor: grabbing;
 }
 
 .row:hover {

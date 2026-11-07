@@ -33,15 +33,28 @@ export function nodeText(node: NodeImpl): string {
  * 全铺开反而要先滚动。根节点留着展开，是为了让第一层（导航栏 / 首屏 / 区块 …）
  * 直接可见 —— 连根都收起就只剩一行"页面"，看起来像树没加载出来。
  *
- * 这也正是"全部收起"按钮的结果，两者共用同一份规则，避免默认态和按钮态对不上。
+ * 默认视图里根节点保持展开（连根都收起只剩一行"页面"，像树没加载出来）；
+ * 但「全部收起」**按钮**的目标集合不含这条豁免 —— 见 `collapsibleIds`。
  */
 export function collapsedByDefault(root: NodeImpl): Set<string> {
+  const ids = collapsibleIds(root);
+  ids.delete(root.id);
+  return ids;
+}
+
+/**
+ * 「全部收起」按钮的目标集合：**所有**有孩子的节点（含根）。
+ *
+ * 默认折叠态豁免根节点是"第一印象"的取舍；按钮是显式动作，用户点它就是要
+ * 看到整棵树收到最简 —— 尤其扁平 schema（示例页全是叶子，唯一可折叠的就是
+ * 根）下，排除根会让按钮点了毫无变化，看起来像坏了。
+ */
+export function collapsibleIds(root: NodeImpl): Set<string> {
   const ids = new Set<string>();
   const walk = (node: NodeImpl) => {
     if (node.children.length) ids.add(node.id);
     for (const child of node.children) walk(child as NodeImpl);
   };
   walk(root);
-  ids.delete(root.id);
   return ids;
 }

@@ -16,6 +16,7 @@ import type {
 } from '@lowcode-next/designer-core';
 import { MatIcon } from './icons';
 import { DESIGNER_FLAVOR, SetterSlot } from './SetterSlot';
+import { cn } from './lib/utils';
 import { BoolSetter, JsonSetter, NumberSetter, SelectSetter, TextSetter } from './setters';
 import { StyleSetter } from './StyleSetter';
 import { Input } from './ui/input';
@@ -241,7 +242,7 @@ function PropsTab({
   return (
     <div>
       {model.text.editable ? (
-        <Row label="文案" hint="即 children，纯文本节点才有">
+        <Row label="文案" tall hint="即 children，纯文本节点才有">
           {/*
             固定用多行：如果按当前长度在 input / textarea 之间切换，
             打到第 25 个字时会换成另一个宿主元素，焦点和输入法状态全丢。
@@ -276,7 +277,7 @@ function PropsTab({
             这些键在 schema 里，但物料 meta 没声明，所以物料实现可能读不到。
           </p>
           {model.undeclared.map((key) => (
-            <Row key={key} label={key}>
+            <Row key={key} label={key} tall>
               <JsonSetter value={node.props[key]} onCommit={setProp(key)} />
             </Row>
           ))}
@@ -616,16 +617,19 @@ function Row({
   hint,
   reset,
   resetTitle,
+  tall,
   children,
 }: {
   label: string;
   hint?: string;
   reset?: () => void;
   resetTitle?: string;
+  /** 多行控件（文案 / JSON）行：标签与控件顶部对齐，否则标签悬在文本框中段 */
+  tall?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className={styles.row} data-prop={label}>
+    <div className={cn(styles.row, tall && styles.rowTop)} data-prop={label}>
       <div className={styles.rowHead}>
         <span className={styles.label} title={hint ?? label}>
           {label}

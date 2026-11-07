@@ -38,8 +38,8 @@ export function PaneHeader({ title, extra, pinned, onTogglePin, onClose }: PaneH
           <button
             type="button"
             className={styles.iconBtn}
-            title={pinned ? '取消固定（改为悬浮，不占画布宽度）' : '固定面板（占位，不遮挡画布）'}
-            aria-label={pinned ? '取消固定' : '固定面板'}
+            title={pinned ? '取消固定' : '固定'}
+            aria-label={pinned ? '取消固定' : '固定'}
             onClick={onTogglePin}
           >
             {pinned ? <PinOff size={15} strokeWidth={1.8} aria-hidden="true" /> : <Pin size={15} strokeWidth={1.8} aria-hidden="true" />}
@@ -50,8 +50,8 @@ export function PaneHeader({ title, extra, pinned, onTogglePin, onClose }: PaneH
           <button
             type="button"
             className={styles.iconBtn}
-            title="关闭面板"
-            aria-label="关闭面板"
+            title="关闭"
+            aria-label="关闭"
             onClick={onClose}
           >
             <X size={13} strokeWidth={1.8} aria-hidden="true" />

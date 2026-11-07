@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import { cn } from '../lib/utils';
+import styles from './textarea.module.css';
 
 /** shadcn/ui Textarea，尺寸令牌对齐引擎 setter（圆角 3、12px、等宽字体可选） */
 function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
@@ -12,6 +13,7 @@ function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
         'hover:border-muted-foreground/70',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+        styles.textarea,
         className,
       )}
       {...props}

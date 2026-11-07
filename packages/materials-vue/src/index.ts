@@ -6,6 +6,7 @@ import {
   subsetPackage,
 } from '@lowcode-next/materials';
 import Page from './components/Page.vue';
+import Div from './components/Div.vue';
 import Typography from './components/Typography.vue';
 import Button from './components/Button.vue';
 
@@ -17,26 +18,28 @@ import Button from './components/Button.vue';
  * 要解决的那件事（拆之前 `designer-vue` 得 `import type { MaterialRegistry } from
  * '@lowcode-next/renderer'`，而那个包 dependencies 里写着 `react`）。
  *
- * ## 为什么先只有 3 个
+ * ## 当前清单
  *
  * 面板上只列**真能渲染**的物料（`subsetPackage` 按实现清单筛描述），而不是列全
- * 15 个、剩下的一拖进画布就变兜底块。少几个物料是可见的功能缺口，
+ * 个、剩下的一拖进画布就变兜底块。少几个物料是可见的功能缺口，
  * 「看起来有、一用就废」是排查成本高得多的状态。
  *
- * 补齐顺序按「覆盖形态」走：页面壳（Page）、带枚举的文本（Typography）、
- * 带多状态的按钮（Button）。这三个把 `isContainer`、`options`、`bool` 三类
- * meta 字段都走了一遍，剩下的物料基本是同一个模子。
+ * 已补齐：页面壳（Page）、通用容器（Div，§12.17）、带枚举的文本（Typography）、
+ * 带多状态的按钮（Button）。Div 与 Page 把 `isContainer`、`style`、`loop` 这类
+ * 容器字段走了一遍，Typography/Button 把 `options`、`bool` 走了一遍，剩下的物料
+ * 基本是同一个模子。
  *
  * Page 不进面板（`hidden: true`），但 Vue 的 sample 页根节点用它，必须有实现。
  */
 
 /** 已实现的物料清单 —— 与 `vueComponents` 的 key 必须一一对应 */
-export const vueMaterialNames = ['Page', 'Typography', 'Button'] as const;
+export const vueMaterialNames = ['Page', 'Div', 'Typography', 'Button'] as const;
 
 export type VueBindings = Record<string, Component>;
 
 export const vueComponents: VueBindings = {
   Page,
+  Div,
   Typography,
   Button,
 };
@@ -73,4 +76,4 @@ export function mergeVueBindings(packages: VueMaterialPackage[]): VueBindings {
   return output;
 }
 
-export { Page, Typography, Button };
+export { Page, Div, Typography, Button };

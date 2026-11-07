@@ -117,12 +117,17 @@ export function Button(props: Props) {
  *   **受控**：读 `props[key]`，写经回写通道进 schema。
  * - 没包（纯预览）→ **非受控**：内部 state 兜底，可以打字但不落库。
  *
+ * 兜底的**初始值取 `props[key]`**，不是空值：纯预览（`render.html`，没有
+ * Provider）若从空开始，schema 里写的 `value="hero_title"` 在线上会被渲染成
+ * 一个空控件 —— 编辑态与 render 态当场不一致（§12.18 落地页的产品截图里
+ * 一眼能看出来）。之后的外部改动不追（预览是静态快照），要动态跟随就接 Provider。
+ *
  * hooks 必须无条件调用（React 规则），所以两条路都先 `useState`，
  * 受控分支只是不用它。拆成文本 / 布尔两个钩子而不是一个泛型：
  * `useState` 对字面量入参（`''`）会收窄类型，泛型反而要到处断言。
  */
 function useTextValue(props: Props): [string, (next: string) => void] {
-  const [local, setLocal] = useState('');
+  const [local, setLocal] = useState(() => (typeof props.value === 'string' ? props.value : ''));
   const setProp = usePropSetter(props);
   if (!setProp) return [local, setLocal];
 
@@ -131,7 +136,9 @@ function useTextValue(props: Props): [string, (next: string) => void] {
 }
 
 function useCheckedValue(props: Props, fallback: boolean): [boolean, (next: boolean) => void] {
-  const [local, setLocal] = useState(fallback);
+  const [local, setLocal] = useState(() =>
+    typeof props.checked === 'boolean' ? props.checked : fallback,
+  );
   const setProp = usePropSetter(props);
   if (!setProp) return [local, setLocal];
 

@@ -8,3 +8,11 @@ coverage/
 
 # 本地会话记忆与工作日志（非代码基线）
 .workbuddy/
+
+# 本地调试产物：浏览器快照 / WorkBuddy 应用包
+.playwright-cli/
+*.genie
+/s1
+/s2
+/snap.yaml
+/after.yaml

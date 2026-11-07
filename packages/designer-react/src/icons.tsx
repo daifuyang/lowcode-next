@@ -11,6 +11,7 @@ import {
   Loader,
   Minus,
   RectangleHorizontal,
+  Square,
   Tag,
   TextCursorInput,
   ToggleLeft,
@@ -45,6 +46,9 @@ type Glyph = ComponentType<{
 const GLYPHS: Record<string, Glyph> = {
   // 页面壳（hidden，树面板里会见到）
   Page: FileText,
+
+  // 布局（通用容器）
+  Div: Square,
 
   // 原子组件（§12.16）
   Typography: Type,

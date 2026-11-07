@@ -1,0 +1,3840 @@
+{
+  "version": "1.0.1",
+  "componentsMap": [
+    {
+      "componentName": "Page",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Page"
+    },
+    {
+      "componentName": "Div",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Div"
+    },
+    {
+      "componentName": "Typography",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Typography"
+    },
+    {
+      "componentName": "Link",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Link"
+    },
+    {
+      "componentName": "Button",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Button"
+    },
+    {
+      "componentName": "Tag",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Tag"
+    },
+    {
+      "componentName": "Input",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Input"
+    },
+    {
+      "componentName": "Select",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Select"
+    },
+    {
+      "componentName": "Switch",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Switch"
+    },
+    {
+      "componentName": "Progress",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Progress"
+    },
+    {
+      "componentName": "Divider",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Divider"
+    }
+  ],
+  "componentsTree": {
+    "id": "page_root",
+    "componentName": "Page",
+    "props": {
+      "style": {
+        "display": "block"
+      }
+    },
+    "children": [
+      {
+        "id": "announce",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#f2f7ff",
+            "borderBottom": "1px solid #dfeaff"
+          }
+        },
+        "children": [
+          {
+            "id": "announce_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "9px 24px",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "gap": 10,
+                "flexWrap": "wrap"
+              }
+            },
+            "children": [
+              {
+                "id": "announce_tag",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "accent",
+                  "style": {
+                    "fontSize": 11.5,
+                    "padding": "1px 8px"
+                  }
+                },
+                "children": [
+                  "v1.0.1"
+                ]
+              },
+              {
+                "id": "announce_text",
+                "componentName": "Typography",
+                "props": {
+                  "type": "caption",
+                  "tone": "default",
+                  "style": {
+                    "fontSize": 12.5,
+                    "color": "#33405a"
+                  }
+                },
+                "children": [
+                  "物料体系重构完成：14 个原子组件 + 一个通用容器"
+                ]
+              },
+              {
+                "id": "announce_link",
+                "componentName": "Link",
+                "props": {
+                  "href": "#",
+                  "style": {
+                    "fontSize": 12.5,
+                    "fontWeight": 600,
+                    "color": "#006cff"
+                  }
+                },
+                "children": [
+                  "查看更新 →"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "nav",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "borderBottom": "1px solid #e5e9f2"
+          }
+        },
+        "children": [
+          {
+            "id": "nav_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "0 24px",
+                "height": 64,
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "space-between",
+                "gap": 24
+              }
+            },
+            "children": [
+              {
+                "id": "brand",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": 10
+                  }
+                },
+                "children": [
+                  {
+                    "id": "brand_mark",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "style": {
+                        "display": "inline-flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "width": 28,
+                        "height": 28,
+                        "borderRadius": 8,
+                        "backgroundImage": "linear-gradient(135deg, #006cff, #3a8bff)",
+                        "color": "#ffffff",
+                        "fontSize": 13,
+                        "fontWeight": 700
+                      }
+                    },
+                    "children": [
+                      "L"
+                    ]
+                  },
+                  {
+                    "id": "brand_name",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h4",
+                      "tone": "default",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 15.5,
+                        "fontWeight": 600
+                      }
+                    },
+                    "children": [
+                      "Lowcode Next"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "nav_links",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": 28
+                  }
+                },
+                "children": [
+                  {
+                    "id": "nav_link_1",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "fontSize": 14,
+                        "color": "#33405a"
+                      }
+                    },
+                    "children": [
+                      "能力"
+                    ]
+                  },
+                  {
+                    "id": "nav_link_2",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "fontSize": 14,
+                        "color": "#33405a"
+                      }
+                    },
+                    "children": [
+                      "工作方式"
+                    ]
+                  },
+                  {
+                    "id": "nav_link_3",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "fontSize": 14,
+                        "color": "#33405a"
+                      }
+                    },
+                    "children": [
+                      "接入形态"
+                    ]
+                  },
+                  {
+                    "id": "nav_link_4",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "fontSize": 14,
+                        "color": "#33405a"
+                      }
+                    },
+                    "children": [
+                      "技术栈"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "nav_actions",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": 16
+                  }
+                },
+                "children": [
+                  {
+                    "id": "nav_login",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "fontSize": 14,
+                        "color": "#33405a"
+                      }
+                    },
+                    "children": [
+                      "登录"
+                    ]
+                  },
+                  {
+                    "id": "nav_cta",
+                    "componentName": "Button",
+                    "props": {
+                      "variant": "primary",
+                      "size": "sm"
+                    },
+                    "children": [
+                      "进入编辑器"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hero",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundImage": "linear-gradient(180deg, #f1f7ff 0%, #fbfdff 52%, #ffffff 100%)",
+            "borderBottom": "1px solid #eef1f6"
+          }
+        },
+        "children": [
+          {
+            "id": "hero_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "72px 24px 80px",
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",
+                "textAlign": "center"
+              }
+            },
+            "children": [
+              {
+                "id": "hero_badge",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "accent",
+                  "style": {
+                    "marginBottom": 20
+                  }
+                },
+                "children": [
+                  "Schema 驱动 · 双栈渲染"
+                ]
+              },
+              {
+                "id": "hero_title",
+                "componentName": "Typography",
+                "props": {
+                  "type": "h1",
+                  "tone": "default",
+                  "style": {
+                    "color": "#101828",
+                    "fontSize": 52,
+                    "lineHeight": 1.14,
+                    "letterSpacing": "-0.02em",
+                    "maxWidth": 900
+                  },
+                  "align": "center"
+                },
+                "children": [
+                  "拖拽即页面，Schema 即应用"
+                ]
+              },
+              {
+                "id": "hero_desc",
+                "componentName": "Typography",
+                "props": {
+                  "type": "body",
+                  "tone": "default",
+                  "align": "center",
+                  "style": {
+                    "marginTop": 20,
+                    "maxWidth": 660,
+                    "fontSize": 16.5,
+                    "lineHeight": 1.75,
+                    "color": "#33405a"
+                  }
+                },
+                "children": [
+                  "Lowcode Next 把物料体系、拖拽编排、渲染内核拆成三层：编辑器只管编排，运行时只管映射，React / Vue 共享同一份协议。"
+                ]
+              },
+              {
+                "id": "hero_actions",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "gap": 12,
+                    "marginTop": 30,
+                    "flexWrap": "wrap"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "hero_cta_primary",
+                    "componentName": "Button",
+                    "props": {
+                      "variant": "primary",
+                      "size": "lg"
+                    },
+                    "children": [
+                      "进入在线编辑器 →"
+                    ]
+                  },
+                  {
+                    "id": "hero_cta_secondary",
+                    "componentName": "Button",
+                    "props": {
+                      "variant": "default",
+                      "size": "lg"
+                    },
+                    "children": [
+                      "查看渲染形态"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "hero_note",
+                "componentName": "Typography",
+                "props": {
+                  "type": "caption",
+                  "tone": "default",
+                  "style": {
+                    "marginTop": 14,
+                    "fontSize": 12.5,
+                    "color": "#8a94a8"
+                  }
+                },
+                "children": [
+                  "无需注册 · 浏览器内直接体验 · 打开即用"
+                ]
+              },
+              {
+                "id": "hero_mock",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "width": "100%",
+                    "maxWidth": 940,
+                    "marginTop": 52,
+                    "border": "1px solid #e5e9f2",
+                    "borderRadius": 16,
+                    "backgroundColor": "#ffffff",
+                    "boxShadow": "0 28px 64px -24px rgba(16,24,40,0.22)",
+                    "overflow": "hidden",
+                    "textAlign": "left"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "mock_bar",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": 8,
+                        "padding": "11px 14px",
+                        "backgroundColor": "#fafbfc",
+                        "borderBottom": "1px solid #eef1f6"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mock_dot_1",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 10,
+                            "height": 10,
+                            "borderRadius": 999,
+                            "backgroundColor": "#e2e6ee"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mock_dot_2",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 10,
+                            "height": 10,
+                            "borderRadius": 999,
+                            "backgroundColor": "#e2e6ee"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mock_dot_3",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 10,
+                            "height": 10,
+                            "borderRadius": 999,
+                            "backgroundColor": "#e2e6ee"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mock_url",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "marginLeft": 8,
+                            "fontSize": 11.5,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "lowcode-next / pages / landing"
+                        ]
+                      },
+                      {
+                        "id": "mock_spacer",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "flex": "1 1 auto"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mock_state",
+                        "componentName": "Tag",
+                        "props": {
+                          "tone": "success",
+                          "style": {
+                            "fontSize": 11,
+                            "padding": "1px 8px"
+                          }
+                        },
+                        "children": [
+                          "已同步"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "mock_body",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "stretch",
+                        "minHeight": 288
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mock_rail",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "flex": "0 0 168px",
+                            "padding": 12,
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "gap": 6,
+                            "backgroundColor": "#fafbfc",
+                            "borderRight": "1px solid #eef1f6"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "mock_rail_title",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 11,
+                                "color": "#8a94a8",
+                                "marginBottom": 2
+                              }
+                            },
+                            "children": [
+                              "物料"
+                            ]
+                          },
+                          {
+                            "id": "mock_item_1",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "display": "flex",
+                                "alignItems": "center",
+                                "gap": 8,
+                                "padding": "7px 9px",
+                                "borderRadius": 8,
+                                "border": "1px solid #cfe3ff",
+                                "backgroundColor": "#f2f8ff"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_item_1_icon",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "width": 14,
+                                    "height": 14,
+                                    "borderRadius": 4,
+                                    "backgroundColor": "#cfe3ff"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "mock_item_1_label",
+                                "componentName": "Typography",
+                                "props": {
+                                  "type": "caption",
+                                  "tone": "default",
+                                  "style": {
+                                    "fontSize": 12,
+                                    "color": "#006cff"
+                                  }
+                                },
+                                "children": [
+                                  "文字"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "mock_item_2",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "display": "flex",
+                                "alignItems": "center",
+                                "gap": 8,
+                                "padding": "7px 9px",
+                                "borderRadius": 8,
+                                "border": "1px solid #eef1f6",
+                                "backgroundColor": "#ffffff"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_item_2_icon",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "width": 14,
+                                    "height": 14,
+                                    "borderRadius": 4,
+                                    "backgroundColor": "#eef1f6"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "mock_item_2_label",
+                                "componentName": "Typography",
+                                "props": {
+                                  "type": "caption",
+                                  "tone": "default",
+                                  "style": {
+                                    "fontSize": 12,
+                                    "color": "#5a6478"
+                                  }
+                                },
+                                "children": [
+                                  "按钮"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "mock_item_3",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "display": "flex",
+                                "alignItems": "center",
+                                "gap": 8,
+                                "padding": "7px 9px",
+                                "borderRadius": 8,
+                                "border": "1px solid #eef1f6",
+                                "backgroundColor": "#ffffff"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_item_3_icon",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "width": 14,
+                                    "height": 14,
+                                    "borderRadius": 4,
+                                    "backgroundColor": "#eef1f6"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "mock_item_3_label",
+                                "componentName": "Typography",
+                                "props": {
+                                  "type": "caption",
+                                  "tone": "default",
+                                  "style": {
+                                    "fontSize": 12,
+                                    "color": "#5a6478"
+                                  }
+                                },
+                                "children": [
+                                  "图片"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "mock_item_4",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "display": "flex",
+                                "alignItems": "center",
+                                "gap": 8,
+                                "padding": "7px 9px",
+                                "borderRadius": 8,
+                                "border": "1px solid #eef1f6",
+                                "backgroundColor": "#ffffff"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_item_4_icon",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "width": 14,
+                                    "height": 14,
+                                    "borderRadius": 4,
+                                    "backgroundColor": "#eef1f6"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "mock_item_4_label",
+                                "componentName": "Typography",
+                                "props": {
+                                  "type": "caption",
+                                  "tone": "default",
+                                  "style": {
+                                    "fontSize": 12,
+                                    "color": "#5a6478"
+                                  }
+                                },
+                                "children": [
+                                  "进度条"
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "mock_canvas",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "flex": "1 1 auto",
+                            "minWidth": 0,
+                            "padding": 20,
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "gap": 10,
+                            "backgroundColor": "#ffffff"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "mock_canvas_label",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 11,
+                                "color": "#8a94a8"
+                              }
+                            },
+                            "children": [
+                              "Page · 落地页"
+                            ]
+                          },
+                          {
+                            "id": "mock_heading",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "height": 16,
+                                "width": "58%",
+                                "borderRadius": 5,
+                                "backgroundColor": "#101828"
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_line_1",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "height": 8,
+                                "width": "100%",
+                                "borderRadius": 4,
+                                "backgroundColor": "#eef1f6"
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_line_2",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "height": 8,
+                                "width": "84%",
+                                "borderRadius": 4,
+                                "backgroundColor": "#eef1f6"
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_btn",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "width": 104,
+                                "height": 30,
+                                "borderRadius": 8,
+                                "marginTop": 4,
+                                "backgroundImage": "linear-gradient(135deg, #006cff, #3a8bff)",
+                                "display": "flex",
+                                "alignItems": "center",
+                                "justifyContent": "center"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_btn_label",
+                                "componentName": "Typography",
+                                "props": {
+                                  "type": "caption",
+                                  "tone": "default",
+                                  "style": {
+                                    "fontSize": 11.5,
+                                    "color": "#ffffff"
+                                  }
+                                },
+                                "children": [
+                                  "开始搭建"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "mock_cards",
+                            "componentName": "Div",
+                            "props": {
+                              "style": {
+                                "display": "flex",
+                                "gap": 10,
+                                "marginTop": 8
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "mock_card_1",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "flex": "1 1 0",
+                                    "minWidth": 0,
+                                    "padding": 10,
+                                    "border": "1px solid #eef1f6",
+                                    "borderRadius": 10,
+                                    "display": "flex",
+                                    "flexDirection": "column",
+                                    "gap": 6
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "id": "mock_card_1_icon",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "width": 18,
+                                        "height": 18,
+                                        "borderRadius": 5,
+                                        "backgroundColor": "#e8f3ff"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "mock_card_1_bar_1",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "height": 6,
+                                        "width": "72%",
+                                        "borderRadius": 3,
+                                        "backgroundColor": "#e6eaf1"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "mock_card_1_bar_2",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "height": 6,
+                                        "width": "94%",
+                                        "borderRadius": 3,
+                                        "backgroundColor": "#eef1f6"
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "mock_card_2",
+                                "componentName": "Div",
+                                "props": {
+                                  "style": {
+                                    "flex": "1 1 0",
+                                    "minWidth": 0,
+                                    "padding": 10,
+                                    "border": "1px solid #eef1f6",
+                                    "borderRadius": 10,
+                                    "display": "flex",
+                                    "flexDirection": "column",
+                                    "gap": 6
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "id": "mock_card_2_icon",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "width": 18,
+                                        "height": 18,
+                                        "borderRadius": 5,
+                                        "backgroundColor": "#e8f3ff"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "mock_card_2_bar_1",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "height": 6,
+                                        "width": "72%",
+                                        "borderRadius": 3,
+                                        "backgroundColor": "#e6eaf1"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "mock_card_2_bar_2",
+                                    "componentName": "Div",
+                                    "props": {
+                                      "style": {
+                                        "height": 6,
+                                        "width": "94%",
+                                        "borderRadius": 3,
+                                        "backgroundColor": "#eef1f6"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "mock_panel",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "flex": "0 0 196px",
+                            "padding": 12,
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "gap": 9,
+                            "backgroundColor": "#fafbfc",
+                            "borderLeft": "1px solid #eef1f6"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "mock_panel_title",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 11,
+                                "color": "#8a94a8"
+                              }
+                            },
+                            "children": [
+                              "属性"
+                            ]
+                          },
+                          {
+                            "id": "mock_input",
+                            "componentName": "Input",
+                            "props": {
+                              "value": "hero_title",
+                              "placeholder": "hero_title",
+                              "size": "sm",
+                              "style": {
+                                "fontSize": 12
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_select",
+                            "componentName": "Select",
+                            "props": {
+                              "value": "h1",
+                              "options": [
+                                "h1",
+                                "h2",
+                                "body"
+                              ],
+                              "size": "sm",
+                              "style": {
+                                "fontSize": 12
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_progress",
+                            "componentName": "Progress",
+                            "props": {
+                              "percent": 64,
+                              "height": 6,
+                              "showText": false
+                            }
+                          },
+                          {
+                            "id": "mock_switch",
+                            "componentName": "Switch",
+                            "props": {
+                              "label": "自动保存",
+                              "checked": true,
+                              "style": {
+                                "fontSize": 12
+                              }
+                            }
+                          },
+                          {
+                            "id": "mock_count",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "style": {
+                                "fontSize": 11,
+                                "color": "#8a94a8",
+                                "marginTop": 2
+                              }
+                            },
+                            "children": [
+                              "共 18 个节点 · 已保存"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "trust",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "borderBottom": "1px solid #f0f2f5"
+          }
+        },
+        "children": [
+          {
+            "id": "trust_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "26px 24px",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "gap": 10,
+                "flexWrap": "wrap"
+              }
+            },
+            "children": [
+              {
+                "id": "trust_label",
+                "componentName": "Typography",
+                "props": {
+                  "type": "caption",
+                  "tone": "default",
+                  "style": {
+                    "fontSize": 13,
+                    "color": "#8a94a8",
+                    "marginRight": 4
+                  }
+                },
+                "children": [
+                  "真实场景里它被用来搭"
+                ]
+              },
+              {
+                "id": "trust_tag_1",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "neutral"
+                },
+                "children": [
+                  "运营中后台"
+                ]
+              },
+              {
+                "id": "trust_tag_2",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "neutral"
+                },
+                "children": [
+                  "官网与落地页"
+                ]
+              },
+              {
+                "id": "trust_tag_3",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "neutral"
+                },
+                "children": [
+                  "数据看板"
+                ]
+              },
+              {
+                "id": "trust_tag_4",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "neutral"
+                },
+                "children": [
+                  "内部工具"
+                ]
+              },
+              {
+                "id": "trust_tag_5",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "neutral"
+                },
+                "children": [
+                  "审批表单"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "features",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "padding": "80px 24px 24px"
+          }
+        },
+        "children": [
+          {
+            "id": "features_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto"
+              }
+            },
+            "children": [
+              {
+                "id": "features_head",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 12,
+                    "textAlign": "center",
+                    "marginBottom": 44
+                  }
+                },
+                "children": [
+                  {
+                    "id": "features_eyebrow",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "primary",
+                      "mono": true,
+                      "style": {
+                        "fontSize": 11.5,
+                        "letterSpacing": "0.12em",
+                        "fontWeight": 600
+                      }
+                    },
+                    "children": [
+                      "CAPABILITIES"
+                    ]
+                  },
+                  {
+                    "id": "features_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h2",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 32,
+                        "letterSpacing": "-0.02em"
+                      }
+                    },
+                    "children": [
+                      "三层拆开，每一层都能单独用"
+                    ]
+                  },
+                  {
+                    "id": "features_desc",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "body",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "maxWidth": 620,
+                        "fontSize": 15,
+                        "lineHeight": 1.75
+                      }
+                    },
+                    "children": [
+                      "物料是数据，编排是引擎，渲染是映射。想只要其中一层，也可以只接那一层。"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "features_grid",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "gap": 16
+                  }
+                },
+                "children": [
+                  {
+                    "id": "feat_1",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_1_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_1_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "01"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_1_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "拖拽编排"
+                        ]
+                      },
+                      {
+                        "id": "feat_1_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "自研拖拽内核：跨层级拖入、落点命中判定、骨架占位。画布上的手感接近原生编辑器，不是\"拖个框看看\"。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "feat_2",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_2_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_2_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "02"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_2_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "物料体系"
+                        ]
+                      },
+                      {
+                        "id": "feat_2_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "声明式 meta 与组件实现分开注册，原子组件和业务组件同一套接入方式，左侧面板自动生成。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "feat_3",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_3_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_3_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "03"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_3_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "双栈渲染"
+                        ]
+                      },
+                      {
+                        "id": "feat_3_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "React / Vue 共用渲染内核与协议。同一份 schema，两种运行时渲染结果一致，不用维护两套页面。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "feat_4",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_4_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_4_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "04"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_4_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "两态分离"
+                        ]
+                      },
+                      {
+                        "id": "feat_4_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "编辑态叠设计器，渲染态只做 schema → DOM 的映射。消费端不必背 monaco 与 radix。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "feat_5",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_5_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_5_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "05"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_5_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "命令与历史"
+                        ]
+                      },
+                      {
+                        "id": "feat_5_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "文档模型内置事务化命令、撤销重做。每一次改动都是可回放的命令，状态可预测。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "feat_6",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 300px",
+                        "minWidth": 0,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 10,
+                        "padding": "24px 22px 26px",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 14,
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "feat_6_badge",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "width": 34,
+                            "height": 34,
+                            "borderRadius": 10,
+                            "backgroundColor": "#e8f3ff",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "marginBottom": 4
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "feat_6_no",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "primary",
+                              "mono": true,
+                              "style": {
+                                "fontSize": 12,
+                                "fontWeight": 700
+                              }
+                            },
+                            "children": [
+                              "06"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "feat_6_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 17,
+                            "lineHeight": 1.4
+                          }
+                        },
+                        "children": [
+                          "预览通道"
+                        ]
+                      },
+                      {
+                        "id": "feat_6_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "编辑器与预览页只共享一份 schema 快照：不传函数、不挂全局注册表，部署形态天然干净。"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stats",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "padding": "48px 24px 72px"
+          }
+        },
+        "children": [
+          {
+            "id": "stats_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "display": "flex",
+                "flexWrap": "wrap",
+                "borderTop": "1px solid #eef1f6",
+                "paddingTop": 8
+              }
+            },
+            "children": [
+              {
+                "id": "stat_1",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "1 1 220px",
+                    "minWidth": 0,
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 6,
+                    "padding": "22px 12px",
+                    "borderLeft": "none"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "stat_1_value",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "baseline",
+                        "gap": 6,
+                        "justifyContent": "center"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "stat_1_num",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h2",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 40,
+                            "lineHeight": 1.1,
+                            "letterSpacing": "-0.03em"
+                          }
+                        },
+                        "children": [
+                          "14"
+                        ]
+                      },
+                      {
+                        "id": "stat_1_unit",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 13,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "个原子物料"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "stat_1_note",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "fontSize": 12.5,
+                        "color": "#8a94a8"
+                      }
+                    },
+                    "children": [
+                      "面板块数，全部可拖"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "stat_2",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "1 1 220px",
+                    "minWidth": 0,
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 6,
+                    "padding": "22px 12px",
+                    "borderLeft": "1px solid #eef1f6"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "stat_2_value",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "baseline",
+                        "gap": 6,
+                        "justifyContent": "center"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "stat_2_num",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h2",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 40,
+                            "lineHeight": 1.1,
+                            "letterSpacing": "-0.03em"
+                          }
+                        },
+                        "children": [
+                          "2"
+                        ]
+                      },
+                      {
+                        "id": "stat_2_unit",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 13,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "套运行时"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "stat_2_note",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "fontSize": 12.5,
+                        "color": "#8a94a8"
+                      }
+                    },
+                    "children": [
+                      "React / Vue 同一份协议"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "stat_3",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "1 1 220px",
+                    "minWidth": 0,
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 6,
+                    "padding": "22px 12px",
+                    "borderLeft": "1px solid #eef1f6"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "stat_3_value",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "baseline",
+                        "gap": 6,
+                        "justifyContent": "center"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "stat_3_num",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h2",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 40,
+                            "lineHeight": 1.1,
+                            "letterSpacing": "-0.03em"
+                          }
+                        },
+                        "children": [
+                          "46"
+                        ]
+                      },
+                      {
+                        "id": "stat_3_unit",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 13,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "个静态资源"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "stat_3_note",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "fontSize": 12.5,
+                        "color": "#8a94a8"
+                      }
+                    },
+                    "children": [
+                      "render 态实测，比编辑态少 93"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "flow",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#f6f7fb",
+            "borderTop": "1px solid #eef1f6",
+            "borderBottom": "1px solid #eef1f6",
+            "padding": "80px 24px"
+          }
+        },
+        "children": [
+          {
+            "id": "flow_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto"
+              }
+            },
+            "children": [
+              {
+                "id": "flow_head",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 12,
+                    "textAlign": "center",
+                    "marginBottom": 44
+                  }
+                },
+                "children": [
+                  {
+                    "id": "flow_eyebrow",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "primary",
+                      "mono": true,
+                      "style": {
+                        "fontSize": 11.5,
+                        "letterSpacing": "0.12em",
+                        "fontWeight": 600
+                      }
+                    },
+                    "children": [
+                      "HOW IT WORKS"
+                    ]
+                  },
+                  {
+                    "id": "flow_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h2",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 32,
+                        "letterSpacing": "-0.02em"
+                      }
+                    },
+                    "children": [
+                      "一条单向数据流"
+                    ]
+                  },
+                  {
+                    "id": "flow_desc",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "body",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "maxWidth": 620,
+                        "fontSize": 15,
+                        "lineHeight": 1.75
+                      }
+                    },
+                    "children": [
+                      "从设计到上线，数据只往一个方向走。没有双向绑定，也没有隐式状态回写。"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "flow_pipeline",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "stretch",
+                    "justifyContent": "center",
+                    "flexWrap": "wrap",
+                    "gap": 10
+                  }
+                },
+                "children": [
+                  {
+                    "id": "flow_step_1",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "0 1 196px",
+                        "minWidth": 158,
+                        "padding": "16px 18px",
+                        "backgroundColor": "#ffffff",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 12,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "alignItems": "center",
+                        "gap": 4
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "flow_step_1_name",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h4",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 14.5
+                          }
+                        },
+                        "children": [
+                          "Schema"
+                        ]
+                      },
+                      {
+                        "id": "flow_step_1_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "align": "center",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "页面描述 JSON"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "flow_arrow_1",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "style": {
+                        "alignSelf": "center",
+                        "fontSize": 16,
+                        "color": "#b7c0d0",
+                        "padding": "0 2px"
+                      }
+                    },
+                    "children": [
+                      "→"
+                    ]
+                  },
+                  {
+                    "id": "flow_step_2",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "0 1 196px",
+                        "minWidth": 158,
+                        "padding": "16px 18px",
+                        "backgroundColor": "#ffffff",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 12,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "alignItems": "center",
+                        "gap": 4
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "flow_step_2_name",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h4",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 14.5
+                          }
+                        },
+                        "children": [
+                          "物料表"
+                        ]
+                      },
+                      {
+                        "id": "flow_step_2_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "align": "center",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "组件名 → 实现"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "flow_arrow_2",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "style": {
+                        "alignSelf": "center",
+                        "fontSize": 16,
+                        "color": "#b7c0d0",
+                        "padding": "0 2px"
+                      }
+                    },
+                    "children": [
+                      "→"
+                    ]
+                  },
+                  {
+                    "id": "flow_step_3",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "0 1 196px",
+                        "minWidth": 158,
+                        "padding": "16px 18px",
+                        "backgroundColor": "#ffffff",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 12,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "alignItems": "center",
+                        "gap": 4
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "flow_step_3_name",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h4",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 14.5
+                          }
+                        },
+                        "children": [
+                          "渲染内核"
+                        ]
+                      },
+                      {
+                        "id": "flow_step_3_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "align": "center",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "求值 + IR 构建"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "flow_arrow_3",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "style": {
+                        "alignSelf": "center",
+                        "fontSize": 16,
+                        "color": "#b7c0d0",
+                        "padding": "0 2px"
+                      }
+                    },
+                    "children": [
+                      "→"
+                    ]
+                  },
+                  {
+                    "id": "flow_step_4",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "0 1 196px",
+                        "minWidth": 158,
+                        "padding": "16px 18px",
+                        "backgroundColor": "#ffffff",
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 12,
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "alignItems": "center",
+                        "gap": 4
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "flow_step_4_name",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h4",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 14.5
+                          }
+                        },
+                        "children": [
+                          "Driver"
+                        ]
+                      },
+                      {
+                        "id": "flow_step_4_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "align": "center",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "React / Vue 渲染"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "flow_note",
+                "componentName": "Typography",
+                "props": {
+                  "type": "caption",
+                  "tone": "default",
+                  "align": "center",
+                  "style": {
+                    "marginTop": 26,
+                    "textAlign": "center",
+                    "fontSize": 12.5,
+                    "color": "#8a94a8",
+                    "maxWidth": 720,
+                    "marginLeft": "auto",
+                    "marginRight": "auto",
+                    "display": "block"
+                  }
+                },
+                "children": [
+                  "编辑态在这条链路前面再叠一层设计器（画布 / 属性面板 / setter 体系）；渲染态只保留后三步 —— 这就是它够轻的原因。"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "modes",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "padding": "80px 24px"
+          }
+        },
+        "children": [
+          {
+            "id": "modes_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto"
+              }
+            },
+            "children": [
+              {
+                "id": "modes_head",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 12,
+                    "textAlign": "center",
+                    "marginBottom": 44
+                  }
+                },
+                "children": [
+                  {
+                    "id": "modes_eyebrow",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "primary",
+                      "mono": true,
+                      "style": {
+                        "fontSize": 11.5,
+                        "letterSpacing": "0.12em",
+                        "fontWeight": 600
+                      }
+                    },
+                    "children": [
+                      "TWO MODES"
+                    ]
+                  },
+                  {
+                    "id": "modes_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h2",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 32,
+                        "letterSpacing": "-0.02em"
+                      }
+                    },
+                    "children": [
+                      "编辑态与渲染态，是两条链路"
+                    ]
+                  },
+                  {
+                    "id": "modes_desc",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "body",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "maxWidth": 620,
+                        "fontSize": 15,
+                        "lineHeight": 1.75
+                      }
+                    },
+                    "children": [
+                      "编辑态是给搭建者的，渲染态是给消费端的。后者不依赖任何编辑器代码。"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "modes_cards",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "gap": 16
+                  }
+                },
+                "children": [
+                  {
+                    "id": "mode_edit",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 400px",
+                        "minWidth": 0,
+                        "padding": 28,
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 16,
+                        "backgroundColor": "#ffffff",
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 12
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mode_edit_tag",
+                        "componentName": "Tag",
+                        "props": {
+                          "tone": "neutral",
+                          "style": {
+                            "alignSelf": "flex-start"
+                          }
+                        },
+                        "children": [
+                          "编辑态"
+                        ]
+                      },
+                      {
+                        "id": "mode_edit_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 18
+                          }
+                        },
+                        "children": [
+                          "createEditor(container, options)"
+                        ]
+                      },
+                      {
+                        "id": "mode_edit_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "接管一个容器，返回 handle：画布、大纲树、属性面板、快捷键与历史全部就位。物料以 JSON 描述 + 组件映射两份东西交进来。"
+                        ]
+                      },
+                      {
+                        "id": "mode_edit_metric",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "display": "flex",
+                            "alignItems": "baseline",
+                            "justifyContent": "space-between",
+                            "marginTop": 6
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "mode_edit_metric_label",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "style": {
+                                "fontSize": 12.5,
+                                "color": "#8a94a8"
+                              }
+                            },
+                            "children": [
+                              "开发资源（实测）"
+                            ]
+                          },
+                          {
+                            "id": "mode_edit_metric_value",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "h4",
+                              "tone": "default",
+                              "style": {
+                                "color": "#101828",
+                                "fontSize": 15
+                              }
+                            },
+                            "children": [
+                              "139"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "mode_edit_progress",
+                        "componentName": "Progress",
+                        "props": {
+                          "percent": 100,
+                          "height": 8,
+                          "showText": false
+                        }
+                      },
+                      {
+                        "id": "mode_edit_note",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "含 monaco / radix / lucide / tailwind-merge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "mode_render",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "flex": "1 1 400px",
+                        "minWidth": 0,
+                        "padding": 28,
+                        "border": "1px solid #e5e9f2",
+                        "borderRadius": 16,
+                        "backgroundColor": "#ffffff",
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "gap": 12
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mode_render_tag",
+                        "componentName": "Tag",
+                        "props": {
+                          "tone": "success",
+                          "style": {
+                            "alignSelf": "flex-start"
+                          }
+                        },
+                        "children": [
+                          "渲染态"
+                        ]
+                      },
+                      {
+                        "id": "mode_render_title",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h3",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 18
+                          }
+                        },
+                        "children": [
+                          "<LowcodeRender schema materials />"
+                        ]
+                      },
+                      {
+                        "id": "mode_render_desc",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "body",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 14,
+                            "lineHeight": 1.78,
+                            "color": "#5a6478"
+                          }
+                        },
+                        "children": [
+                          "消费端把它当一个普通组件嵌进自己的 React 树：给 schema、给物料表、给组件映射，剩下的交给渲染内核。"
+                        ]
+                      },
+                      {
+                        "id": "mode_render_metric",
+                        "componentName": "Div",
+                        "props": {
+                          "style": {
+                            "display": "flex",
+                            "alignItems": "baseline",
+                            "justifyContent": "space-between",
+                            "marginTop": 6
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "mode_render_metric_label",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "caption",
+                              "tone": "default",
+                              "style": {
+                                "fontSize": 12.5,
+                                "color": "#8a94a8"
+                              }
+                            },
+                            "children": [
+                              "开发资源（实测）"
+                            ]
+                          },
+                          {
+                            "id": "mode_render_metric_value",
+                            "componentName": "Typography",
+                            "props": {
+                              "type": "h4",
+                              "tone": "default",
+                              "style": {
+                                "color": "#101828",
+                                "fontSize": 15
+                              }
+                            },
+                            "children": [
+                              "46"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "mode_render_progress",
+                        "componentName": "Progress",
+                        "props": {
+                          "percent": 33,
+                          "tone": "success",
+                          "height": 8,
+                          "showText": false
+                        }
+                      },
+                      {
+                        "id": "mode_render_note",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#8a94a8"
+                          }
+                        },
+                        "children": [
+                          "designer / radix / lucide 全部零命中"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stack",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#f6f7fb",
+            "borderTop": "1px solid #eef1f6",
+            "borderBottom": "1px solid #eef1f6",
+            "padding": "64px 24px"
+          }
+        },
+        "children": [
+          {
+            "id": "stack_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto"
+              }
+            },
+            "children": [
+              {
+                "id": "stack_head",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "alignItems": "center",
+                    "gap": 12,
+                    "textAlign": "center",
+                    "marginBottom": 44
+                  }
+                },
+                "children": [
+                  {
+                    "id": "stack_eyebrow",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "primary",
+                      "mono": true,
+                      "style": {
+                        "fontSize": 11.5,
+                        "letterSpacing": "0.12em",
+                        "fontWeight": 600
+                      }
+                    },
+                    "children": [
+                      "STACK"
+                    ]
+                  },
+                  {
+                    "id": "stack_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h2",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 32,
+                        "letterSpacing": "-0.02em"
+                      }
+                    },
+                    "children": [
+                      "分层清晰，内核不依赖 UI 库"
+                    ]
+                  },
+                  {
+                    "id": "stack_desc",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "body",
+                      "tone": "default",
+                      "align": "center",
+                      "style": {
+                        "maxWidth": 620,
+                        "fontSize": 15,
+                        "lineHeight": 1.75
+                      }
+                    },
+                    "children": [
+                      "零框架的包不出现 React / Vue；Vue 包不 import 任何带 react 的包。"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "stack_chips",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "gap": 10,
+                    "justifyContent": "center"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "chip_1",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_1_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "protocol"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_2",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_2_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "model"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_3",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_3_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "drag"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_4",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_4_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "materials"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_5",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_5_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "renderer-core"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_6",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_6_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "designer-core"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_7",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_7_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "render-react"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_8",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_8_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "lowcode-react"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_9",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_9_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "Vite"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_10",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_10_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "pnpm monorepo"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chip_11",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "padding": "6px 13px",
+                        "borderRadius": 999,
+                        "border": "1px solid #e5e9f2",
+                        "backgroundColor": "#ffffff"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "chip_11_label",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "mono": true,
+                          "style": {
+                            "fontSize": 12,
+                            "color": "#33405a"
+                          }
+                        },
+                        "children": [
+                          "Vitest"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cta",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "padding": "72px 24px 88px"
+          }
+        },
+        "children": [
+          {
+            "id": "cta_band",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "56px 40px",
+                "borderRadius": 20,
+                "backgroundImage": "linear-gradient(120deg, #0b1122 0%, #0f2c6b 58%, #0b45b5 132%)",
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",
+                "gap": 14,
+                "textAlign": "center",
+                "overflow": "hidden"
+              }
+            },
+            "children": [
+              {
+                "id": "cta_tag",
+                "componentName": "Tag",
+                "props": {
+                  "tone": "invert"
+                },
+                "children": [
+                  "v1.0.1 已发布"
+                ]
+              },
+              {
+                "id": "cta_title",
+                "componentName": "Typography",
+                "props": {
+                  "type": "h2",
+                  "tone": "invert-strong",
+                  "style": {
+                    "fontSize": 32,
+                    "letterSpacing": "-0.02em"
+                  }
+                },
+                "children": [
+                  "现在就拖出你的第一个页面"
+                ]
+              },
+              {
+                "id": "cta_desc",
+                "componentName": "Typography",
+                "props": {
+                  "type": "body",
+                  "tone": "invert",
+                  "align": "center",
+                  "style": {
+                    "fontSize": 15,
+                    "maxWidth": 480,
+                    "lineHeight": 1.7
+                  }
+                },
+                "children": [
+                  "无需注册、无需安装。打开编辑器就能拖，关掉浏览器也不丢。"
+                ]
+              },
+              {
+                "id": "cta_form",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "gap": 10,
+                    "marginTop": 8,
+                    "width": "100%",
+                    "maxWidth": 460,
+                    "flexWrap": "wrap",
+                    "justifyContent": "center"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "cta_input",
+                    "componentName": "Input",
+                    "props": {
+                      "value": "",
+                      "placeholder": "输入企业邮箱，获取私有部署方案",
+                      "size": "lg",
+                      "style": {
+                        "flex": "1 1 240px"
+                      }
+                    }
+                  },
+                  {
+                    "id": "cta_submit",
+                    "componentName": "Button",
+                    "props": {
+                      "variant": "default",
+                      "size": "lg"
+                    },
+                    "children": [
+                      "获取方案"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "cta_note",
+                "componentName": "Typography",
+                "props": {
+                  "type": "caption",
+                  "tone": "invert",
+                  "style": {
+                    "fontSize": 12,
+                    "opacity": 0.82
+                  }
+                },
+                "children": [
+                  "只用于发送部署方案，不发营销邮件"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "componentName": "Div",
+        "props": {
+          "style": {
+            "backgroundColor": "#ffffff",
+            "borderTop": "1px solid #e5e9f2"
+          }
+        },
+        "children": [
+          {
+            "id": "footer_inner",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "maxWidth": 1120,
+                "margin": "0 auto",
+                "padding": "52px 24px 40px",
+                "display": "flex",
+                "flexWrap": "wrap",
+                "gap": 40,
+                "justifyContent": "space-between"
+              }
+            },
+            "children": [
+              {
+                "id": "foot_brand",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "1 1 260px",
+                    "minWidth": 0,
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": 10
+                  }
+                },
+                "children": [
+                  {
+                    "id": "foot_brand_row",
+                    "componentName": "Div",
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": 10
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "foot_mark",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "caption",
+                          "tone": "default",
+                          "style": {
+                            "display": "inline-flex",
+                            "alignItems": "center",
+                            "justifyContent": "center",
+                            "width": 26,
+                            "height": 26,
+                            "borderRadius": 7,
+                            "backgroundImage": "linear-gradient(135deg, #006cff, #3a8bff)",
+                            "color": "#ffffff",
+                            "fontSize": 12,
+                            "fontWeight": 700
+                          }
+                        },
+                        "children": [
+                          "L"
+                        ]
+                      },
+                      {
+                        "id": "foot_name",
+                        "componentName": "Typography",
+                        "props": {
+                          "type": "h4",
+                          "tone": "default",
+                          "style": {
+                            "color": "#101828",
+                            "fontSize": 15
+                          }
+                        },
+                        "children": [
+                          "Lowcode Next"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "foot_desc",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "body",
+                      "tone": "default",
+                      "style": {
+                        "fontSize": 13,
+                        "lineHeight": 1.75,
+                        "color": "#5a6478",
+                        "maxWidth": 300
+                      }
+                    },
+                    "children": [
+                      "一套 schema 驱动的低代码引擎：物料、编排、渲染三层解耦，编辑器与运行时各走各的路。"
+                    ]
+                  },
+                  {
+                    "id": "foot_copy",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "caption",
+                      "tone": "default",
+                      "style": {
+                        "fontSize": 12,
+                        "color": "#8a94a8"
+                      }
+                    },
+                    "children": [
+                      "© 2026 Lowcode Next · 保留所有权利"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "foot_product_col",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "0 1 160px",
+                    "minWidth": 120
+                  }
+                },
+                "children": [
+                  {
+                    "id": "foot_product_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h4",
+                      "tone": "default",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 14
+                      }
+                    },
+                    "children": [
+                      "产品"
+                    ]
+                  },
+                  {
+                    "id": "foot_product_link_1",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "编辑器"
+                    ]
+                  },
+                  {
+                    "id": "foot_product_link_2",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "渲染态接入"
+                    ]
+                  },
+                  {
+                    "id": "foot_product_link_3",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "物料市场"
+                    ]
+                  },
+                  {
+                    "id": "foot_product_link_4",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "版本记录"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "foot_resource_col",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "0 1 160px",
+                    "minWidth": 120
+                  }
+                },
+                "children": [
+                  {
+                    "id": "foot_resource_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h4",
+                      "tone": "default",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 14
+                      }
+                    },
+                    "children": [
+                      "资源"
+                    ]
+                  },
+                  {
+                    "id": "foot_resource_link_1",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "设计文档"
+                    ]
+                  },
+                  {
+                    "id": "foot_resource_link_2",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "协议说明"
+                    ]
+                  },
+                  {
+                    "id": "foot_resource_link_3",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "更新日志"
+                    ]
+                  },
+                  {
+                    "id": "foot_resource_link_4",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "示例页面"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "foot_about_col",
+                "componentName": "Div",
+                "props": {
+                  "style": {
+                    "flex": "0 1 160px",
+                    "minWidth": 120
+                  }
+                },
+                "children": [
+                  {
+                    "id": "foot_about_title",
+                    "componentName": "Typography",
+                    "props": {
+                      "type": "h4",
+                      "tone": "default",
+                      "style": {
+                        "color": "#101828",
+                        "fontSize": 14
+                      }
+                    },
+                    "children": [
+                      "关于"
+                    ]
+                  },
+                  {
+                    "id": "foot_about_link_1",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "团队"
+                    ]
+                  },
+                  {
+                    "id": "foot_about_link_2",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "联系"
+                    ]
+                  },
+                  {
+                    "id": "foot_about_link_3",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "GitHub"
+                    ]
+                  },
+                  {
+                    "id": "foot_about_link_4",
+                    "componentName": "Link",
+                    "props": {
+                      "href": "#",
+                      "style": {
+                        "display": "block",
+                        "marginTop": 10,
+                        "fontSize": 13.5,
+                        "color": "#5a6478"
+                      }
+                    },
+                    "children": [
+                      "开源协议"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "dataSource": {
+    "list": [
+      {
+        "id": "info",
+        "type": "fetch",
+        "description": "引擎元信息（mock）",
+        "isInit": true,
+        "options": {
+          "uri": "/mock/info.json",
+          "method": "GET",
+          "timeout": 5000
+        }
+      }
+    ]
+  }
+}

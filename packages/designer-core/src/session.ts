@@ -72,6 +72,11 @@ export interface DesignerSessionOptions {
   /** 画布 iframe 的内边距（透传给画布入口） */
   canvasPadding?: number;
   onSchemaChange?: (schema: PageSchema) => void;
+  /**
+   * 保存出口（宿主注入）。core 不知道存储 —— 写 localStorage、落库、下载
+   * 都是宿主的事；没传时 `save()` 静默 no-op。
+   */
+  onSave?: (schema: PageSchema) => void;
   /** 左栏「钉住」偏好的存储；默认 localStorage，测试可注入内存实现 */
   storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
   /** 画布入口页；默认相对当前 location 的 `canvas.html`。`portal` 模式忽略 */
@@ -100,6 +105,7 @@ export class DesignerSession {
 
   private padding: number;
   private onSchemaChange?: (schema: PageSchema) => void;
+  private onSave?: (schema: PageSchema) => void;
   private readonly storage: Pick<Storage, 'getItem' | 'setItem'> | null;
   private readonly canvasUrl: string;
   private readonly canvasMode: 'frame' | 'portal';
@@ -140,6 +146,7 @@ export class DesignerSession {
     this.history = new History(options.document);
     this.padding = options.canvasPadding ?? 20;
     this.onSchemaChange = options.onSchemaChange;
+    this.onSave = options.onSave;
     this.storage = options.storage === undefined ? safeLocalStorage() : options.storage;
     this.canvasUrl =
       options.canvasUrl ?? new URL('canvas.html', globalThis.location.href).toString();
@@ -162,12 +169,17 @@ export class DesignerSession {
   getSnapshot = (): DesignerSnapshot => this.snapshot;
 
   /** 宿主在每次渲染后同步最新 props（避免闭包捕获旧的 `onSchemaChange`） */
-  update(options: { canvasPadding?: number; onSchemaChange?: (schema: PageSchema) => void }): void {
+  update(options: {
+    canvasPadding?: number;
+    onSchemaChange?: (schema: PageSchema) => void;
+    onSave?: (schema: PageSchema) => void;
+  }): void {
     if (options.canvasPadding !== undefined && options.canvasPadding !== this.padding) {
       this.padding = options.canvasPadding;
       this.postSchema();
     }
     if ('onSchemaChange' in options) this.onSchemaChange = options.onSchemaChange;
+    if ('onSave' in options) this.onSave = options.onSave;
   }
 
   /* ---------------------------------------------------------------- */
@@ -325,24 +337,15 @@ export class DesignerSession {
   }
 
   /**
-   * 保存：把当前 schema 导出为 JSON 文件下载（引擎 demo 的「保存到本地」
-   * 是写 localStorage，本地文件对单机 playground 更有用）。
-   * 文件名用 doc.id —— playground 里就是页面 key。
+   * 保存：core 只负责「把当前 schema 交出去」，存到哪是宿主的事（对齐引擎：
+   * 编辑器核心不知道存储，demo/插件层决定写 localStorage）。
+   * 宿主没传 `onSave` 就静默 no-op；Ctrl+S 与保存按钮共用这一个出口。
    */
   save(): void {
     const schema = this.doc.toSchema();
-    const blob = new Blob([JSON.stringify(schema, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = globalThis.document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${this.doc.id}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    this.onSave?.(schema);
     this.onSchemaChange?.(schema);
   }
-
   /* ---------------------------------------------------------------- */
   /* 选中 / 视口                                                       */
   /* ---------------------------------------------------------------- */
@@ -434,47 +437,53 @@ export class DesignerSession {
   /* 左栏 / 数据源                                                      */
   /* ---------------------------------------------------------------- */
 
-  setLeftTab(tab: string): void {
+  /**
+   * 这一组写成**箭头类字段**而不是原型方法：视图层会把它们裸传当回调
+   * （`onTogglePin={session.togglePin}`），普通函数经 React onClick 调用时
+   * `this` 是 undefined（严格模式），按下就抛 TypeError —— 表现就是
+   * "固定 / 关闭按钮完全没反应"。与上面 `subscribe` / `getSnapshot` 同款。
+   */
+  setLeftTab = (tab: string): void => {
     this.leftTab = tab;
     this.dataSourceEditing = null;
     this.paneOpen = true;
     this.emit();
-  }
+  };
 
   /**
    * 点图标栏：点当前这个 = 收起，点别的 = 切过去并打开 —— 照 lowcode 的 PanelDock，
    * 浮层面板靠图标栏开合，不靠"点画布"，否则点一下画布面板就没了。
    */
-  toggleLeftTab(tab: string): void {
+  toggleLeftTab = (tab: string): void => {
     if (tab === this.leftTab && this.paneOpen) {
       this.closePane();
       return;
     }
     this.setLeftTab(tab);
-  }
+  };
 
-  setPaneOpen(open: boolean): void {
+  setPaneOpen = (open: boolean): void => {
     if (this.paneOpen === open) return;
     this.paneOpen = open;
     if (!open) this.dataSourceEditing = null;
     this.emit();
-  }
+  };
 
-  togglePin(): void {
+  togglePin = (): void => {
     this.pinned = !this.pinned;
     this.writePinned(this.pinned);
     // 切装载方式意味着"我要用这个面板"，顺手把它打开
     this.paneOpen = true;
     this.emit();
-  }
+  };
 
-  closePane(): void {
+  closePane = (): void => {
     this.paneOpen = false;
     // 面板都收起来了，从它里面打开的编辑表单也一并收掉 —— 否则画布上会留一块
     // 没有来源的白板
     this.dataSourceEditing = null;
     this.emit();
-  }
+  };
 
   editDataSource(draft: DataSourceConfig, isNew: boolean): void {
     this.dataSourceEditing = { draft, isNew };

@@ -26,7 +26,7 @@ import { LowcodeRender } from '@lowcode-next/render-react';
 import { readPreview, subscribePreview } from '@pg/preview-route';
 
 import materials from '../materials.json';
-import page from '../page.json';
+import page from '@pg/schemas/landing.json';
 import { StatCard } from './StatCard';
 
 /**
@@ -37,7 +37,7 @@ const COMPONENTS = { StatCard };
 
 function RenderPage() {
   // 预览窗口是「后打开的」，所以要听编辑器的后续改动；拿不到快照
-  // （直接访问 /render、或存储被禁用）就退回仓库里的 page.json。
+  // （直接访问 /render、或存储被禁用）就退回共享的 landing.json。
   const [schema, setSchema] = useState(() => readPreview() ?? page);
 
   useEffect(() => subscribePreview(setSchema), []);

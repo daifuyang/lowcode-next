@@ -3,6 +3,7 @@ import type { ComponentMeta } from '@lowcode-next/protocol';
 import type { MaterialPackage, Props } from '@lowcode-next/materials';
 import { builtinMaterialPackage, assertMetaBindings } from '@lowcode-next/materials';
 import { Page } from './components/page';
+import { Div } from './components/div';
 import {
   Typography,
   Link,
@@ -45,6 +46,9 @@ export type ReactBindings = Record<string, ReactComponent>;
 export const builtinReactComponents: ReactBindings = {
   // 页面壳（hidden）
   Page,
+
+  // 布局（通用容器）
+  Div,
 
   // 文字
   Typography,
@@ -120,6 +124,7 @@ export function mergeReactBindings(packages: ReactMaterialPackage[]): ReactBindi
 }
 
 export { Page } from './components/page';
+export { Div } from './components/div';
 export {
   Typography,
   Link,

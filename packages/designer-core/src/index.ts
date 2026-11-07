@@ -89,5 +89,12 @@ export type {
   DesignerSessionOptions,
   DesignerSnapshot,
 } from './session';
-export { collapsedByDefault, nodeLabel, nodeText } from './tree';
+export { collapsedByDefault, collapsibleIds, nodeLabel, nodeText } from './tree';
 export { flattenVisible, INDENT, keepPaths, rowBox, stepRow } from './tree-layout';
+export {
+  clearError,
+  getStoredError,
+  reportError,
+  subscribeError,
+} from './error-store';
+export type { StoredError } from './error-store';

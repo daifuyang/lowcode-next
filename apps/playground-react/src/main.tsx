@@ -14,13 +14,23 @@ import '@pg/styles.css';
 
 import { createEditor } from '@lowcode-next/lowcode-react';
 import { entryUrl, openPreview, writePreview } from '@pg/preview-route';
+import { loadSavedSchema, saveSchema } from '@pg/schema-store';
+import { showToast } from '@pg/toast';
 
 import materials from '../materials.json';
-import page from '../page.json';
+import page from '@pg/schemas/landing.json';
 import { StatCard } from './StatCard';
 
+/**
+ * 本页在 localStorage 里的 schema key（同 doc.id）。
+ * 「保存」写到 `lowcode-next:schema:demo`；启动时优先读回保存过的内容，
+ * 读不到（首次打开 / 用户清了存储）才回落到 shared 里的 landing.json
+ */
+const PAGE_KEY = 'demo';
+
 const editor = createEditor('#root', {
-  schema: page,
+  schema: loadSavedSchema(PAGE_KEY) ?? page,
+  documentId: PAGE_KEY,
   // 物料描述（纯 JSON）与组件实现分开交，靠 componentName 对齐
   materials,
   components: { StatCard },
@@ -33,6 +43,11 @@ const editor = createEditor('#root', {
     // 事件就地更新。真实项目在这里同时落盘 / 打点。
     writePreview(schema);
     console.log('[demo] schema 已更新', schema.componentsTree.children?.length ?? 0, '个顶层节点');
+  },
+  // 保存 = 宿主决策（core 只交出 schema）：落 localStorage + toast 反馈
+  onSave: (schema) => {
+    saveSchema(PAGE_KEY, schema);
+    showToast('已保存');
   },
   // 预览 = 换一个入口打开同一份 schema 的快照（§12.14.5）。
   // `render.html` 自己 import 包与组件，不共享任何运行时对象。

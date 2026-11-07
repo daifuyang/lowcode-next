@@ -5,7 +5,7 @@ import { Monitor, Redo2, Smartphone, Tablet, Undo2 } from 'lucide-react';
 import type { Command, DocumentImpl } from '@lowcode-next/model';
 import type { MaterialMetaRegistry } from '@lowcode-next/materials';
 import type { PageSchema } from '@lowcode-next/protocol';
-import { CANVAS_DEVICES, DesignerSession } from '@lowcode-next/designer-core';
+import { CANVAS_DEVICES, DesignerSession, reportError } from '@lowcode-next/designer-core';
 import type { CanvasDevice, SetterRegistry } from '@lowcode-next/designer-core';
 import { ActivityRail, DataSourceTabIcon, MaterialTabIcon, OutlineTabIcon } from './ActivityRail';
 import { prepareCanvasDocument } from './canvas-document';
@@ -17,6 +17,7 @@ import { MaterialPanel } from './MaterialPanel';
 import { PropertyPanel } from './PropertyPanel';
 import { SelectionBorders } from './SelectionBorders';
 import { TitleTooltip } from './Tooltip';
+import { NoticeBar } from './NoticeBar';
 import { TreePanel } from './TreePanel';
 import styles from '@lowcode-next/designer-ui/Designer.module.css';
 
@@ -30,6 +31,11 @@ export interface DesignerProps {
   /** 画布内边距，默认 20；做整幅落地页时设 0，让区块自己贴边 */
   canvasPadding?: number;
   onSchemaChange?: (schema: PageSchema) => void;
+  /**
+   * 保存出口（宿主注入）：session.save() / Ctrl+S 调它。存到哪是宿主的事，
+   * core 与视图都不知道；没传时保存按钮静默 no-op。
+   */
+  onSave?: (schema: PageSchema) => void;
   /**
    * setter 注册表（§12.12.6）。缺省用全局默认表，宿主直接
    * `registerSetter('color', Comp)` / `loadSetters(...)` 就能生效。
@@ -78,6 +84,7 @@ export function Designer({
   rightPanel,
   canvasPadding = 20,
   onSchemaChange,
+  onSave,
   setters,
   renderCanvas,
 }: DesignerProps) {
@@ -98,6 +105,7 @@ export function Designer({
         materials: registry,
         canvasPadding,
         onSchemaChange,
+        onSave,
         canvasMode: portalMode ? 'portal' : 'frame',
       }),
     // 只在文档 / 物料注册表 / 画布装载方式换掉时重建；其余 props 由下面的 update() 同步
@@ -133,7 +141,7 @@ export function Designer({
 
   // 宿主可能每次渲染都给新的内联回调：同步进 session，避免它捕获旧闭包
   useEffect(() => {
-    session.update({ canvasPadding, onSchemaChange });
+    session.update({ canvasPadding, onSchemaChange, onSave });
   });
 
   const snap = useSyncExternalStore(session.subscribe, session.getSnapshot);
@@ -237,7 +245,7 @@ export function Designer({
                 step={1}
                 value={canvasDraft ?? canvasWidth ?? ''}
                 placeholder="请输入"
-                title="输入设计宽度后按回车应用"
+                title="回车应用"
                 aria-label="画布宽度"
                 onChange={(event) => session.setCanvasDraft(event.target.value)}
                 onKeyDown={(event: ReactKeyboardEvent<HTMLInputElement>) => {
@@ -282,7 +290,13 @@ export function Designer({
               type="button"
               className={styles.toolbarButton}
               title="保存（Ctrl/Cmd + S）"
-              onClick={() => session.save()}
+              onClick={() => {
+                try {
+                  session.save();
+                } catch (error) {
+                  reportError(`保存失败：${(error as Error).message ?? String(error)}`);
+                }
+              }}
             >
               保存
             </button>
@@ -290,7 +304,7 @@ export function Designer({
               type="button"
               className={styles.primaryButton}
               disabled={!onPreview}
-              title={onPreview ? '在新窗口打开运行态预览' : '宿主未提供 onPreview'}
+              title={onPreview ? '新窗口预览' : '宿主未提供 onPreview'}
               onClick={onPreview}
             >
               预览
@@ -373,6 +387,8 @@ export function Designer({
       />
       {/* 挂在根上：接管整棵树里的 title，统一换成深色小气泡 */}
       <TitleTooltip />
+      {/* 右上角报错条：从 localStorage 复原上次的报错，便于复现「保存过的内容」 */}
+      <NoticeBar />
     </>
   );
 }

@@ -25,15 +25,46 @@
   --lc-bg: #ffffff;
   --lc-bg-muted: #f6f7fb;
 
-  --lc-accent: #4f46e5;
-  --lc-accent-strong: #4338ca;
-  --lc-accent-soft: #eef2ff;
-  --lc-accent-2: #06b6d4;
+  --lc-accent: #006cff; /* 品牌蓝，与编辑器 / 官网统一（2026-11-07） */
+  --lc-accent-strong: #0052d9;
+  --lc-accent-soft: #e8f3ff;
+  --lc-accent-2: #3a8bff;
 }
 
 .lc-mono {
   font-family: var(--lc-mono) !important;
   font-variant-ligatures: none;
+}
+
+/* ---------- 盒模型 ---------- */
+
+/*
+ * 物料根元素统一 `border-box`（2026-11-07，§12.18 实测）。
+ *
+ * 编辑态的画布文档会克隆父文档样式，里面带 Tailwind preflight（`* { box-sizing:
+ * border-box }`）；消费端（`render.html`、真实项目）未必有 reset。少了这一句，
+ * 同一个「`width: 168` + `padding: 12`」的 Div 在画布里是 168、在 render 态是 193，
+ * 「编辑器里看到什么、线上就渲染什么」当场破功。
+ *
+ * 放在物料包里而不是宿主里：盒模型属于物料自己的契约，不该指望接入方提供。
+ */
+.lc-page,
+.lc-div,
+.lc-typo,
+.lc-link,
+.lc-btn,
+.lc-input,
+.lc-textarea,
+.lc-select,
+.lc-checkbox,
+.lc-switch,
+.lc-tag,
+.lc-divider,
+.lc-image,
+.lc-progress,
+.lc-empty,
+.lc-alert {
+  box-sizing: border-box;
 }
 
 /* ---------- 对齐 ---------- */
@@ -84,35 +115,6 @@
   color: var(--lc-fg);
 }
 
-/* ---------- 色调 ---------- */
-
-.lc-tone--default {
-  color: var(--lc-fg-soft);
-}
-.lc-tone--muted {
-  color: var(--lc-muted);
-}
-.lc-tone--subtle {
-  color: var(--lc-subtle);
-}
-.lc-tone--primary {
-  color: var(--lc-accent);
-}
-.lc-tone--invert {
-  color: #c8d2e8;
-}
-.lc-tone--invert-strong {
-  color: #f2f5ff;
-}
-
-/* 渐变文字：tone 体系里最特殊的一个，只能靠 background-clip 实现 */
-.lc-tone--gradient {
-  background: linear-gradient(96deg, #ffffff 8%, #cdd7ff 44%, #7be3f5 82%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 /* ---------- 文字（Typography） ---------- */
 
 .lc-typo {
@@ -153,6 +155,45 @@
   color: var(--lc-muted);
 }
 
+/* ---------- 色调 ---------- */
+
+/*
+ * **必须排在字形档之后**（2026-11-07，§12.18 落地页踩到）。
+ *
+ * `.lc-tone--*` 与 `.lc-typo--body/caption` 都是单类选择器，权重相同，
+ * 谁在后面谁赢。tone 原本写在 Typography 之前，于是「深色区块里的正文」
+ * 被 `.lc-typo--body { color: var(--lc-fg-soft) }` 覆盖回去 —— 深底深字，
+ * 肉眼几乎看不见，而且没有任何报错。色调是作者显式选择，字形档只是缺省值，
+ * 顺序上就该让色调赢。
+ *
+ * `.lc-tone--default` 因此**不表态**：默认色由字形档（body 的 #33405a /
+ * caption 的 #5a6478）和宿主继承决定，选中"默认"不该把 caption 也压成正文色。
+ */
+
+.lc-tone--muted {
+  color: var(--lc-muted);
+}
+.lc-tone--subtle {
+  color: var(--lc-subtle);
+}
+.lc-tone--primary {
+  color: var(--lc-accent);
+}
+.lc-tone--invert {
+  color: #c8d2e8;
+}
+.lc-tone--invert-strong {
+  color: #f2f5ff;
+}
+
+/* 渐变文字：tone 体系里最特殊的一个，只能靠 background-clip 实现 */
+.lc-tone--gradient {
+  background: linear-gradient(96deg, #ffffff 8%, #cdd7ff 44%, #7be3f5 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* ---------- 按钮 ---------- */
 
 .lc-btn {
@@ -186,12 +227,12 @@
 }
 
 .lc-btn--primary {
-  background: linear-gradient(135deg, #4f46e5, #6d5ef0);
+  background: linear-gradient(135deg, #006cff, #3a8bff);
   color: #ffffff;
-  box-shadow: 0 7px 20px rgba(79, 70, 229, 0.28);
+  box-shadow: 0 7px 20px rgba(0, 108, 255, 0.28);
 }
 .lc-btn--primary:hover {
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.36);
+  box-shadow: 0 12px 28px rgba(0, 108, 255, 0.36);
 }
 
 .lc-btn--ghost {
@@ -362,7 +403,7 @@
   --lc-field-border: #d6dbe6;
   --lc-field-bg: #ffffff;
   --lc-field-placeholder: #9aa3b5;
-  --lc-focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.16);
+  --lc-focus-ring: 0 0 0 3px rgba(0, 108, 255, 0.16);
 }
 
 .lc-field--disabled {
@@ -688,7 +729,7 @@
 
 .lc-alert--info {
   background: var(--lc-accent-soft);
-  border-color: #dfe3ff;
+  border-color: #d0e2ff;
   color: var(--lc-accent-strong);
 }
 .lc-alert--success {
@@ -713,4 +754,13 @@
    只保证画布里有最小高度可以点选和拖入 */
 .lc-page {
   min-height: 100%;
+}
+
+/* ---------- 通用容器（Div，§12.17） ---------- */
+
+/* 裸块级容器：不带任何视觉语义，只作为布局编组 / 拖拽落点的载体。
+   空态下的高度与选中提示由引擎的 empty-placeholder 机制兜底，
+   所以这里不需要给它预设高度或边框（那会变成"看不见的框"）。 */
+.lc-div {
+  display: block;
 }
