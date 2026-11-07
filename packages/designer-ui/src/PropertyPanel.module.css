@@ -1,0 +1,382 @@
+/*
+ * 属性面板 —— 色值 / 几何全部对齐 lowcode-engine 的设置面板
+ * （editor-skeleton components/settings/style.less + components/field/index.less
+ * + layouts/theme.less 与 less-variables.less 的 DPL 色板）。
+ * 引擎侧统一用 rgba(31,56,88,α) 一族做中性色、rgba(0,0,0,α) 做文本、
+ * #006cff 做品牌色 —— 本文件不再引入其它色系。
+ */
+
+.root {
+  --line: rgba(31, 56, 88, 0.1); /* N-7 --color-line-normal */
+  --block: rgba(31, 56, 88, 0.06); /* N-8 --color-block-background-shallow */
+  --title: rgba(0, 0, 0, 0.8); /* D-2 --color-title */
+  --text: rgba(0, 0, 0, 0.6); /* D-3 --color-text */
+  --label: rgba(0, 0, 0, 0.4); /* D-4 --color-field-label */
+  --icon: rgba(31, 56, 88, 0.4); /* N-4 --color-icon-normal */
+  --placeholder: var(--lc-placeholder, #999999); /* 引擎 Fusion Next input placeholder */
+  --brand: #006cff; /* @brand-color-1 */
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* 引擎 Fusion Next body：12px / 1.2857 / #333 + 先西文后中文的字体栈。
+     之前 root 不设 font-size，继承了宿主 body 的 14px，导致所有没显式写
+     字号的 button（尤其是按钮型单选组）比引擎大 2px。 */
+  font-family: Roboto, 'Helvetica Neue', Helvetica, Tahoma, Arial, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2857142;
+  color: #333333;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ */
+/* 头部导航（引擎 lc-settings-navigator：高 30、padding 0 16、图标 16）  */
+/* ------------------------------------------------------------------ */
+
+.navigator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.navIcon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--icon);
+}
+
+.navTitle {
+  font-size: 12px;
+  color: var(--title);
+}
+
+/* Fusion Breadcrumb：white-space nowrap、高 16、文本 12px/16px、
+   #666666（当前级 #333333）、hover #5584FF；分隔符是 arrow-right 图标，
+   间距 0 8px、色 #A0A2AD。引擎 style.less 只覆写文本 12px，其余沿用。 */
+.crumbs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 16px;
+  margin-left: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.crumbUnit {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.crumbSep {
+  flex: 0 0 auto;
+  margin: 0 8px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #a0a2ad;
+  user-select: none;
+}
+
+.crumb {
+  min-width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #666666;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 100ms linear;
+}
+
+.crumb:hover {
+  color: #5584ff;
+}
+
+.crumb[data-current] {
+  color: #333333;
+  font-weight: normal;
+  cursor: default;
+}
+
+.crumb[data-current]:hover {
+  color: #333333;
+}
+
+/* ------------------------------------------------------------------ */
+/* 页签（引擎 lc-settings-tabs：Fusion Tab 下划线形态，inner padding     */
+/* 12px 0，激活色 = 品牌蓝）                                            */
+/* ------------------------------------------------------------------ */
+
+.tabs {
+  display: flex;
+  flex: 0 0 auto;
+  height: 40px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.tab {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.14s ease;
+}
+
+.tab:hover {
+  color: var(--title);
+}
+
+.tab[data-active='true'] {
+  color: var(--brand);
+  /* Fusion Next .next-tabs-tab.active { font-weight: normal }：
+     12px 中文用 500 会触发合成加粗，反而糊，激活态只靠品牌蓝 + 下划线区分 */
+  font-weight: normal;
+}
+
+.tab[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+}
+
+/* ------------------------------------------------------------------ */
+/* 内容（引擎 lc-settings-body / lc-settings-pane：字段自带 12px 外距，  */
+/* 底部留 50px）                                                        */
+/* ------------------------------------------------------------------ */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 50px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  margin: 12px;
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 70px;
+  min-width: 0;
+}
+
+.label {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reset {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--icon);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease;
+}
+
+.row:hover .reset {
+  opacity: 1;
+}
+
+.reset:hover {
+  background: var(--block);
+  color: var(--brand);
+}
+
+.control {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 分组手风琴（引擎 lc-accordion-field：头高 32、底 N-8、上下线 N-7、    */
+/* 字重 500、padding 0 12）                                             */
+/* ------------------------------------------------------------------ */
+
+.group {
+  margin: 0;
+}
+
+.group + .group {
+  margin-top: 6px;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--block);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--title);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.groupHead:hover {
+  background: rgba(31, 56, 88, 0.1);
+}
+
+.groupArrow {
+  font-size: 9px;
+  color: var(--icon);
+  transition: transform 0.14s ease;
+}
+
+.groupArrow[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+.groupBody {
+  padding: 0 12px 2px;
+}
+
+.groupBody .row {
+  margin: 12px 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 其他                                                                */
+/* ------------------------------------------------------------------ */
+
+.notice {
+  margin: 0;
+  padding: 50px 15px 0;
+  font-size: 12px;
+  color: var(--text);
+  text-align: center;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 7px 10px;
+  margin: 12px;
+  font-size: 12px;
+}
+
+.kv dt {
+  color: var(--label);
+}
+
+.kv dd {
+  margin: 0;
+  color: var(--title);
+  word-break: break-all;
+}
+
+.note {
+  margin: 12px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: var(--block);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  color: var(--brand);
+  word-break: break-all;
+}
+
+.code {
+  margin: 12px;
+  padding: 10px;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--block);
+  font-family: Monaco, 'PingFang SC', 'Microsoft YaHei', monospace;
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.empty {
+  margin: 0;
+  padding: 20px 0;
+  font-size: 12px;
+  color: var(--text);
+  text-align: center;
+}
+
+/*
+ * setter 诊断（未注册 / flavor 不匹配 / 加载失败）。
+ *
+ * 独占一行而不是塞进控件右侧：这类信息是「你的 schema 或注册代码有问题」，
+ * 不是控件的辅助提示，挤在 200px 宽的行内会折成三行且看不清。
+ */
+.setterIssue {
+  margin: -4px 12px 12px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: rgba(245, 74, 69, 0.08);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #f54a45;
+  word-break: break-word;
+}

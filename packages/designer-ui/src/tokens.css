@@ -1,0 +1,26 @@
+/**
+ * 设计器皮肤令牌的**默认值**（DESIGN-v1 §12.13.2）。
+ *
+ * 为什么需要这份文件：`*.module.css` 里对宿主变量一律写成
+ * `var(--lc-placeholder, #999999)`（带 fallback），所以缺变量时不会崩、只会
+ * 悄悄退回写死的值。这对「只有一个宿主」的项目够用，但一旦有第二个宿主
+ * （Vue 版编辑器 / 嵌进业务系统的预览页），fallback 会变成**两处真相**：
+ * 改主题得去改几十个 fallback。这里把默认值收成一份，宿主只需覆盖它要改的。
+ *
+ * 为什么用 `:where(:root)` 而不是 `:root`：`:where()` 的**特异性为 0**，
+ * 任何宿主写的 `:root { --lc-placeholder: … }` 都能覆盖它 —— 与加载顺序无关。
+ * 若写成 `:root`，本文件晚加载时会把宿主的覆盖反压回去，这种 bug 极难查。
+ *
+ * 只放「宿主可能想改」的令牌。像 `--face-color` / `--rail-width` / `--line`
+ * 这些是组件内部几何与配色，定义在各自 module 里，不属于皮肤令牌。
+ */
+
+:where(:root) {
+  /* 输入框 placeholder：引擎 Fusion Next 的 rgba(0,0,0,0.4) 在浅底上偏淡，
+     这里取 #999（与 lowcode-engine 属性面板实测一致） */
+  --lc-placeholder: #999999;
+
+  /* 设计器外壳底色 / 前景色：引擎 editor-skeleton 的 #f5f6f7 / #1f2329 */
+  --lowcode-next-bg: #f5f6f7;
+  --lowcode-next-fg: #1f2329;
+}

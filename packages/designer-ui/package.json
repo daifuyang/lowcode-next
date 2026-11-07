@@ -1,0 +1,15 @@
+{
+  "name": "@lowcode-next/designer-ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "设计器共享样式与图标数据（无框架、无构建产物）：React 版与 Vue 版编辑器 import 同一份 CSS Module 文件，CSS Modules 的 class 名 hash 因此天然一致。",
+  "exports": {
+    "./tokens.css": "./src/tokens.css",
+    "./*.module.css": "./src/*.module.css",
+    "./icon-paths": "./src/icon-paths.ts"
+  },
+  "files": [
+    "src"
+  ]
+}

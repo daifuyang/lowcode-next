@@ -10,7 +10,9 @@ export default defineConfig({
       '@lowcode-next/model': r('./packages/model/src/index.ts'),
       '@lowcode-next/renderer': r('./packages/renderer/src/index.ts'),
       '@lowcode-next/drag': r('./packages/drag/src/index.ts'),
-      '@lowcode-next/designer': r('./packages/designer/src/index.ts'),
+      '@lowcode-next/designer-core': r('./packages/designer-core/src/index.ts'),
+      '@lowcode-next/designer-react': r('./packages/designer-react/src/index.ts'),
+      '@lowcode-next/designer-ui': r('./packages/designer-ui/src'),
     },
   },
   test: {

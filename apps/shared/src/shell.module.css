@@ -1,0 +1,67 @@
+.code {
+  margin: 0;
+  padding: 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #374151;
+}
+
+.fatal {
+  padding: 32px;
+}
+
+.fatalTitle {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+/* ---- 预览窗口（独立入口 /preview）：顶栏 + 运行态画布 ---- */
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f6f7;
+}
+
+.previewBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  height: 48px;
+  padding: 8px 12px 8px 16px;
+  background: #fff;
+}
+
+.previewTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.previewClose {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid #c4c6cf;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+}
+
+.previewClose:hover {
+  color: #006cff;
+  border-color: #006cff;
+}
+
+.previewStage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["vite/client", "node"],
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@pg/*": ["../shared/src/*"],
+      "@lowcode-next/protocol": ["../../packages/protocol/src/index.ts"],
+      "@lowcode-next/model": ["../../packages/model/src/index.ts"],
+      "@lowcode-next/renderer": ["../../packages/renderer/src/index.ts"],
+      "@lowcode-next/drag": ["../../packages/drag/src/index.ts"],
+      "@lowcode-next/designer-core": ["../../packages/designer-core/src/index.ts"],
+      "@lowcode-next/designer-react": ["../../packages/designer-react/src/index.ts"],
+      "@lowcode-next/designer-ui/*": ["../../packages/designer-ui/src/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "../shared"]
+}

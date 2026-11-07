@@ -5,6 +5,8 @@
     { "path": "./packages/model" },
     { "path": "./packages/renderer" },
     { "path": "./packages/drag" },
-    { "path": "./packages/designer" }
+    { "path": "./packages/designer-core" },
+    { "path": "./packages/designer-react" },
+    { "path": "./packages/designer-vue" }
   ]
 }

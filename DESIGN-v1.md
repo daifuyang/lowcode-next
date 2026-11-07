@@ -163,7 +163,7 @@ pnpm test           # vitest
 ```
 
 ```ts
-// apps/playground/vite.config.ts
+// apps/shared/vite.base.ts（两个 app 共用）
 resolve: {
   alias: {
     '@lowcode-next/protocol': resolve(__dirname, '../../packages/protocol/src'),
@@ -372,6 +372,11 @@ interface PropMeta {
 type SetterRef = string | { componentName: string; props?: Record<string, any> };
 ```
 
+> 注：以上是 v1 初始设计。§12 多框架规范落地后会净化：`PropValueType` 的
+> `'reactnode'` → `'node'`、`'func'` 不得进 schema；`SetterRef` 收敛为**语义
+> kind 枚举** + JSON `props`，不再接受任意 `componentName` 实现名（理由与替代
+> 方案见 §12.4.2 方案评审）。
+
 **决策 D4：`isContainer` 是唯一容器判据。**
 
 低代码引擎里 `isContainer` / `isParental` / `nestingRule` / `container` 多套概念并存，是拖拽 bug 的重灾区。v1 只认 `isContainer` + 可选 `nestingRule`。
@@ -514,7 +519,7 @@ function render(n: IRNode) {
 }
 ```
 
-**VueDriver 的缝**：只需实现 `Driver` 接口，`h(...)` 替掉 `createElement`，`data-node-id` 同样透传。拖拽引擎完全不用改。见 §7.4。
+**VueDriver 的缝**：只需实现 `Driver` 接口，`h(...)` 替掉 `createElement`，`data-node-id` 同样透传。拖拽引擎完全不用改。这句 v1 的粗略判断已由 **§12 多框架渲染规范**细化为完整的包边界、物料绑定契约与「一个画布二选一」的装配规则；本节的三段式与 `Driver` 接口仍是它的基础。
 
 ### 5.2 编辑态与运行态语义差异（重要）
 
@@ -879,13 +884,14 @@ class DesignerDropContext implements DropContext {
 
 ### 7.4 框架无关性检查
 
-| 组件 | 是否依赖 React/Vue |
+| 组件 | 框架耦合（按当前代码实测） |
 |---|---|
-| protocol / model / drag / renderer(Evaluator) | 否 |
-| ReactDriver | 是（唯一） |
-| designer UI | 是（React，但只影响开发设计器的人） |
+| protocol / model / drag | 否（`drag` 甚至零依赖） |
+| Evaluator / `IRNode` / `Driver` 接口 / 物料 meta | 否（纯 TS） |
+| `@lowcode-next/renderer` **包整体** | **是**：`react` 写在 `dependencies`，并导出 20 个 React 物料与 `ReactDriver` |
+| designer UI | 是（React 19 + shadcn/Radix/Monaco），但只 type-import registry 的 `getMeta` / `has` / `list` |
 
-**编辑态拖拽只依赖 `data-node-id` + `getBoundingClientRect`，因此 Vue 页面作为被拖拽内容时，同一套引擎直接可用。**
+**编辑态拖拽只依赖 `data-node-id` + `getBoundingClientRect`，因此 Vue 页面作为被拖拽内容时，同一套引擎直接可用。** 但要注意：「ReactDriver 是唯一框架相关层」只在**逻辑边界**上成立，在**包依赖**上不成立 —— 现状只要 import 求值器就会被拉进 React。拆包方案与完整契约见 **§12**；本节表格在 §12 落地后需再次更新。
 
 ### 7.4.1 画布高亮：独立边框层
 
@@ -1437,8 +1443,9 @@ demo 内容简单（高度不变）看不出来；实测引擎 demo 切固定时
 预览窗口是宿主（playground）的事 —— 文档由宿主创建，
 Designer 没有权力换掉自己的 `document`。保存是 Designer 内置能力
 （`doc.toSchema()` 导出 JSON 下载，文件名 = `doc.id`；`Ctrl/Cmd + S` 绑定同引擎 demo）。
-playground 的预览走 `?preview=1` 新窗口：schema 经 sessionStorage 传递，
-用 `createReactDriver(registry)`（无编辑态占位）以 `mode: 'runtime'` 渲染。
+playground 的预览是独立入口 `preview.html`（干净路径 `/preview`）：schema 经
+sessionStorage 传递，用 `createReactDriver(registry)`（无编辑态占位）以
+`mode: 'runtime'` 渲染。
 
 原先顶栏里的操作提示文字与「已选」徽章随对齐移除 —— 引擎顶栏没有这两样，
 选中反馈已经由画布框 / 大纲 / 属性面板三处承载。
@@ -1540,14 +1547,15 @@ layouts/theme.less + less-variables.less）：
   入口（`@import 'tailwindcss'` + `tw-animate-css`）。
 - **必须显式 `@source`**：本仓库没有 git 根，v4 的自动源探测不可靠；
   designer 以源码形态被 alias 进 bundle，其 ui 组件里的 Tailwind 类名要在
-  `@source '../../../packages/designer/src'` 里声明才会被编译。
+  `@source '../../../packages/designer-react/src'` 里声明才会被编译（**包改名时这条必须同步**，
+  写错不报错、只静默漏扫）。
 - shadcn 主题令牌在 `styles.css` 的 `:root` 里映射到引擎 DPL 色板
   （--primary #006cff、--input N-5、--ring 品牌蓝 25%、--destructive @brand-danger…），
   所以 shadcn 组件出厂就是 7.12 的引擎观感。
 - preflight 全局生效于宿主文档：壳样式全是显式 CSS Modules，实测无回归；
   画布在 iframe 里有自己的文档，完全不受影响。
 
-designer 侧新增（`packages/designer/src/ui/`）：
+designer 侧新增（`packages/designer-react/src/ui/`）：
 
 - `lib/utils.ts` 的 `cn()`（clsx + tailwind-merge）；
 - `input.tsx` / `textarea.tsx` / `switch.tsx` / `select.tsx` —— shadcn 结构，
@@ -1662,7 +1670,7 @@ chunk（`React.lazy`），只在展开源码区时加载，不进主 bundle。
 **图标与 placeholder 直接复用引擎资源**：样式面板原先自绘 SVG / 用 lucide
 凑图标，形状与引擎对不上。现在从 `lowcode-engine-ext/src/components/custom-icon.tsx`
 的 iconfont scriptUrl（`font_2761185_ccl8ob63gmj.js`）提取 70 个 `<symbol>`
-的 path，离线存进 `packages/designer/src/EngineIcons.tsx`（`EngineIcon` +
+的 path，离线存进 `packages/designer-react/src/EngineIcons.tsx`（`EngineIcon` +
 `engineIcons`），运行时不依赖阿里 CDN；图标名逐项照抄各模块
 `locale/zh-CN.json` 的 `icon` 字段（含 `icon--quanbubiankuang`、
 `icon-yuanjiaofangkuang`、`icon-a-Justify*`、`icon-qingchuzuoce` 等），
@@ -1745,7 +1753,7 @@ flex-shrink 收进一行（176px 行宽实测 48 / 65 / 65，三项 y 全等）�
 16:58 这轮按用户要求新增 shadcn `ToggleGroup`（1 个组件文件 + 1 个 Radix
 依赖），仍不引入 Fusion 或自造控件。
 
-**demo 根节点不写 `background` 简写（17:16）**：`apps/playground/src/schemas/landing.ts`
+**demo 根节点不写 `background` 简写（17:16）**：`apps/shared/src/schemas/landing.ts`
 根节点原有一行 `background:'#ffffff'`，而属性面板会写 `backgroundSize` 这类
 非简写属性，React dev 在删除 `backgroundSize` 时必报
 `Removing backgroundSize when conflicting property background is set`。白底
@@ -1824,13 +1832,1517 @@ lowcode-next/
 |---|---|---|
 | 表达式用 `new Function` | 安全 | 运行态对外部署时替换为 quickjs；v1 仅限自有页面 |
 | `elementFromPoint` 在跨域 iframe 不可用 | 架构 | v2 iframe 方案需在 iframe 内运行同一套 drag 引擎，而非跨域代理 |
-| 组件根节点不透传 `data-node-id` | 命中失败 | Driver 强制包一层 `<div data-node-id style="display:contents">`；对多根组件同样有效 |
+| 组件根节点不透传 `data-node-id` | 命中失败 | 物料必须把 attrs 透传到**唯一根 DOM**；禁止 `display:contents` 包裹（不生成盒子，rect 为 0，见 `react-driver.tsx` 注释）。契约见 §12.4 |
 | 可变模型 + 命令 | 协同/回放 | 命令已是唯一写入口，后续接 OT/CRDT 只需在 `apply` 处拦截 |
 | 矩形缓存失效不全 | 落点偏移 | 滚动/resize/MutationObserver 三重失效 + dragstart 强制 prime |
-| 物料双框架维护 | 长期成本 | v2 再议；v1 只有 React |
+| 物料双框架维护 | 长期成本 | meta 共享一份、组件按框架各一套，`createBindingRegistry` 在装配期校验集合相等；见 §12.4 |
 
 ### 待确认（3 项）
 
 1. **画布 v1 是否确定用同文档 + CSS 隔离**（不上 iframe）？影响 M4 的实现量。
 2. **物料面板与画布的拖拽是否要求"拖入时有缩放/旋转视觉"**？v1 建议只做位移。
 3. **是否需要在 v1 就支持把节点拖到画布外（例如删到垃圾桶）**？建议 v2。
+
+---
+
+## 12. 多框架渲染规范（Framework Adapter Contract）
+
+> **状态：已定稿 —— 最终架构见 §12.12，设计时双框架见 §12.13。** 本节定义
+> 「拖拽引擎不锁框架、React/Vue 各自接物料接口、一个画布二选一、自定义 setter
+> 可运行时加载」的落地契约。§5.1 的三段式与 `Driver` 接口仍是基础；本节与旧文
+> 冲突时以本节为准，§12.12 / §12.13 与前面冲突时以它们为准。落地按 §12.8 的
+> M0~M5 + §12.13.7 的 M-L3-1~5。
+>
+> 唯一已落地的代码是 `packages/designer-core/src/setter-registry.ts`（契约骨架，**尚未
+> 接线**）：注册表为空时 `PropRow` 仍走原 if/else 链，行为与现在完全一致。
+
+### 12.1 目标与非目标
+
+**目标**
+
+1. `protocol` / `model` / `drag` / 求值器 / 设计器的业务规则，完全不知道画布用的是
+   React 还是 Vue。
+2. 物料的**描述（meta）只有一份**，组件实现按框架各写一套，通过统一绑定接口接入。
+3. 一次装配只启用一套框架：画布、预览、物料注册表、驱动必须同源。
+4. 切换**画布**框架时，宿主设计器、拖拽引擎、属性面板、schema 数据**零改动**。
+5. 设计时逻辑（session / 命令 / 命中 / 样式解析 / 属性行解析）只有一份；编辑器 UI
+   可整体换成 Vue，换的是视图层，不是规则（§12.13）。
+
+**非目标（明确不做）**
+
+- 同一画布内按节点混用 React / Vue 物料，或运行时热切换框架。
+- 同一编辑器实例内混用两套框架的视图（React 面板里挂 Vue 控件、或反之）。
+  **注意**：编辑器 UI 本身**可以**是 Vue（§12.13 已定稿），只是要整套换，不是混挂。
+- 把 setter **控件实现**做成跨框架组件（一套实现跑两个框架）。控件按编辑器
+  flavor 各一份实现，框架中立的是**契约**（`SetterKind` / `SetterContext` / 值
+  `normalize·validate·serialize`）、**注册表注入点**与 **flavor 维度**（§12.4.2、
+  §12.13.5）。
+- 把 Vue 组件塞进 React 属性面板（「Vue 编辑器 + Vue setter」是 §12.13 的正规路径，
+  跨框架混挂不是）。「Vue **物料**要一个特殊控件」不受此限，本期就支持（§12.4.2）。
+- 跨框架复用组件实现（React 组件不塞进 Vue registry，反之亦然）。
+- 让物料组件参与编辑态交互（点击、拖拽、选中全走宿主原生 DOM 监听）。
+
+### 12.2 三条硬约束
+
+| # | 约束 | 可检验形式 |
+|---|---|---|
+| C1 | **框架知识只在 adapter 层** | `packages/{protocol,model,drag,renderer-core,designer-core}/src` 内 grep 不到 `from 'react'` / `from 'vue'` / `ComponentType` / `VNode` / `reactnode` |
+| C2 | **一个画布一个框架** | 装配期确定 `kind`；`createBindingRegistry` 与 `createDriver` 校验 `kind` 一致，不一致直接抛错 |
+| C3 | **DOM 是唯一跨框架协议** | 只靠 `data-node-id` / `data-edit-flags` / `[data-lc-canvas]` + `getBoundingClientRect()`；不传框架事件、不传组件实例、不读虚拟 DOM |
+
+C3 是拖拽引擎能不锁框架的根本原因：`drag` 包零依赖、只认 `Point` / `Rect` /
+字符串 id（见 §6.1），`DropContext.resolve` 的落点判断也只看 `Document` +
+`ComponentMeta` + DOM 矩形，与渲染框架无关。
+
+### 12.3 包边界
+
+| 包 | 内容 | 运行时依赖 | 框架 |
+|---|---|---|---|
+| `@lowcode-next/protocol` | `PageSchema` / `NodeSchema` / `ComponentMeta` / `defineMaterial` | `zod` | 无 |
+| `@lowcode-next/model` | `Document` / `Command` / `History`，靠 `MaterialResolver` 注入 | `protocol` | 无 |
+| `@lowcode-next/drag` | `DragManager` / `Locator` / `RectCache` / `Overlay` | **零** | 无 |
+| `@lowcode-next/renderer-core` **（新）** | `evaluate` / `IRNode` / `Driver` / `EvalContext` / `MaterialResolver` / `MaterialMetaSource` / `builtinMaterialMetas` | `protocol` | 无 |
+| `@lowcode-next/renderer-react` **（由现 renderer 拆出）** | `createReactDriver` / 20 个 React 物料 / `reactBindings` / `materials.css` | `core` + `protocol`，`react` 为 **peer** | React |
+| `@lowcode-next/renderer-vue` **（新）** | `createVueDriver` / Vue 物料 / `vueBindings` | `core` + `protocol`，`vue` 为 **peer** | Vue 3 |
+| `@lowcode-next/setter-contract` **（可并入 protocol）** | `SetterKind` / `SetterContext` / `SetterRegistration` / 每个 kind 的 `normalize·validate·serialize`（纯函数） | `protocol` | 无 |
+| `@lowcode-next/setter-react` **（M4 后按触发条件拆）** | 内置 React 控件 + 默认注册表；拆包时依赖 `ui-react` | `contract` + `protocol`，`react` 为 **peer** | React |
+| `@lowcode-next/ui-react` **（仅在拆 setter 包时需要）** | shadcn 控件壳（Input / Textarea / Select / Switch / Slider / Button / ToggleGroup）+ 编辑器 CSS 变量 + tailwind 预设 | `react` 为 **peer** | React |
+| `@lowcode-next/designer-core` **（新，§12.13）** | `DesignerSession` / 命令网关 / 拖拽装配 / iframe 桥 / `style`·`props`·`tree` 纯函数 / `dom`·`drop-context`·`float-bar`·`hierarchy`·`tree-layout`·`clone` / setter 注册表 | `core`（type-only）/ `model` / `drag` | 无 |
+| `@lowcode-next/designer-ui` **（新，§12.13）** | 14 个 `*.module.css` + `tokens.css` + DOM 契约 + `IconName` 语义表（**不含组件**） | 无 | 无 |
+| `@lowcode-next/designer-react` | 编辑器 UI（React + shadcn/Radix/lucide/Monaco） | `designer-core` / `designer-ui`，`react` 为 **peer** | React |
+| `@lowcode-next/designer-vue` **（新，§12.13）** | 编辑器 UI（Vue 3 + shadcn-vue/Reka/@lucide/vue/Monaco） | `designer-core` / `designer-ui`，`vue` 为 **peer** | Vue 3 |
+| `apps/playground-react` / `playground-vue` | 装配层：各绑一个 `designer-*`，加载 adapter、拼装宿主与画布；共用 `apps/shared` | 一个 `designer-*` + `core` + **一个** adapter | 每个 app 固定一种 |
+
+**依赖方向**（单向，禁止回指）：
+
+```
+protocol → model → designer-core ──→ designer-react | designer-vue
+    ↓        ↓          ↑(type only)
+renderer-core ──────────┘
+    ↓
+renderer-react | renderer-vue   ← 只在画布 / 预览入口加载
+```
+
+`designer-core` 对 `renderer-core` 只有 type-only 依赖（`MaterialMetaSource`），
+两个方向都不允许运行时 import —— 设计时与画布之间只交换 `PageSchema` 和 DOM。
+
+硬性要求：
+
+- `react` / `vue` 一律写成 `peerDependencies` + `devDependencies`，**禁止**放进
+  `dependencies`（现状 `@lowcode-next/renderer` 把 `react` 写成 dependencies，
+  导致 Vue 项目引入求值器也会被强装 React，这是 M1 要解决的首要问题）。
+- `@lowcode-next/renderer` 保留为 `renderer-react` 的**兼容别名**（re-export），
+  避免全仓 import 一起改；别名层不得再导出 `builtinMaterials` 这类混合结构。
+- `materials.css` 的 class 名属于 DOM 契约，React / Vue 两套物料必须共用同一份
+  CSS（放 `core` 的静态资源或独立 `@lowcode-next/materials-css`，见 §12.11）。
+- 所有框架绑定包（`renderer-react` / `renderer-vue`，以及将来可能的 setter 绑定）
+  与 core **同仓维护、锁步版本号**，同版本发布并在装配期校验版本一致。这是
+  **可实现的治理目标**，不是补救措施：`@ark-ui/react` / `@ark-ui/vue` 同为
+  `5.40.0`、同一 `gitHead`、同在 `chakra-ui/ark` 仓的 `packages/*`，官方同时维护
+  React / Vue / Solid / Svelte 四套绑定（§12.4.2 范式评估 2）。
+- 依赖位置按**两类**区分，不要混为一谈：
+  - 框架运行时本体（`react` / `react-dom` / `vue`）→ 必须 `peerDependencies`；
+    Ark UI 同样只把 `react >=18` / `vue >=3.5` 放 peer。
+  - 框架无关的 core / 机器包 → 可以放 `dependencies`，**前提是锁步同版本**；
+    Ark UI 的 60+ 个 `@zag-js/*@1.47.0` 全在 dependencies，npm dedupe 后仍只有一份。
+- 反面实证（§12.4.2）：`lexical` core 已 0.53.0，社区 `lexical-vue@0.18.0` 硬钉
+  `lexical: 0.50.0`。真正导致装出两份 core 的是**版本钉死不一致**，不是 core 放在
+  `dependencies`；上一版规范把两个原因合并叙述，此处更正归因。
+- **拆 setter 包的成本实测**（决定它不该现在拆）：`setters.tsx` 253 行 +
+  `setters.module.css` 24 行本身不大，但 `designer-react/src/ui/*` 共 297 行、被
+  `PropertyPanel` / `StyleSetter` / `StyleSetterExtras` / `setters` **4 个文件**引用，
+  且 `--lc-placeholder` 等皮肤变量现在由 `apps/shared/src/styles.css` 提供
+  （M-L3-2 会收进 `designer-ui/tokens.css`，宿主仍可覆盖）。要让
+  `setter-react` 不反向依赖 `designer`（否则成环），必须先抽 `ui-react` —— 拆分
+  顺序因此是 `ui-react → setter-react → designer`，三个包一起动才成立。
+
+### 12.4 物料接口（本规范的核心）
+
+**描述与实现必须分离。** 现状 `builtinMaterials: MaterialDefinition[]` 把
+`{ meta, component: ReactComponentType }` 绑在一个数组里，`component` 还是 React
+的 `ComponentType` —— 这是 designer 无法脱离 React 的直接原因。
+
+```ts
+// ── renderer-core：框架中立 ──────────────────────────────────────
+export type FrameworkKind = 'react' | 'vue';
+
+/** designer / Document 只需要元数据，永远不碰组件 */
+export interface MaterialMetaSource {
+  getMeta(componentName: string): ComponentMeta | null;
+  has(componentName: string): boolean;
+  list(): ComponentMeta[];                 // 注意：返回 meta，不是 definition
+}
+
+/** 画布 driver 才需要解析组件 */
+export interface MaterialRegistry<C = unknown> extends MaterialMetaSource {
+  readonly kind: FrameworkKind;
+  resolve(componentName: string): C | null;
+}
+
+export function createMetaRegistry(metas: ComponentMeta[]): MaterialMetaSource;
+
+export function createBindingRegistry<C>(
+  metas: ComponentMeta[],
+  bindings: Record<string, C>,
+  kind: FrameworkKind,
+): MaterialRegistry<C>;
+
+/** 物料描述：两套框架共用同一份，放在 core */
+export const builtinMaterialMetas: ComponentMeta[];
+
+/** 物料绑定：各框架各自实现，key 必须是 componentName */
+export type MaterialBindings<C> = Record<string, C>;
+```
+
+`createBindingRegistry` 必须做**启动时全量校验**：`metas` 的名字集合与
+`bindings` 的 key 集合必须完全相等，缺一个或补一个都抛错并列出差集。理由很实在：
+Vue 侧少实现一个物料时，画布不会报错，只会渲染出「未注册物料」的兜底块，用户
+拖进去才发现白屏 —— 这种问题必须在装配期暴露。
+
+**两套物料实现都必须满足的 6 条契约**（违反即拖拽/选中失效）：
+
+1. **唯一根 DOM 元素**，并把 `data-node-id`、`data-edit-flags` 以及所有
+   `data-*` / `aria-*` 透传到该根元素。React 侧沿用 `passthrough()`；Vue 侧用
+   `inheritAttrs: false` + 显式 `v-bind="$attrs"`（多根组件同理，必须指定唯一根）。
+2. **禁止**用 `<div data-node-id style="display:contents">` 包一层来「代劳」：
+   `display:contents` 不生成盒子，`getBoundingClientRect()` 全是 0，命中框和
+   指示线会整体失效。§11 风险表里的旧应对是错的，以实现为准（见 `react-driver.tsx`
+   开头注释）。
+3. `props.style` 收 `Record<string, string | number>`（camelCase 对象，React 与
+   Vue 的 `:style` 都原生支持），并且**必须**用 `styleOf` / `str` / `num` / `bool` /
+   `pick` 的等价物做白名单收口 —— schema 的 props 是不可信 `unknown`。
+4. 业务 props（level / gap / tone…）**不得**落到 DOM；只放行 `data-*` / `aria-*`。
+5. 组件内**不得**绑定框架事件来做编辑态交互；点击、拖拽、键盘由宿主在 iframe
+   文档上挂原生监听（§7.3 桥接）。
+6. `NodeSchema.props` 里**禁止**出现 `className`、`onClick`、`ReactNode` / VNode
+   等框架专有值；schema 序列化后必须能被另一套框架原样渲染。这是「同一份 schema
+   两种框架都能跑」的前提。
+
+**协议净化项**：`PropValueType` 现有 `'reactnode'` 是协议层的 React 泄漏（当前无
+调用方），改为 `'node'`，可保留一个 `@deprecated` 别名过渡。
+
+### 12.4.1 setter / 编辑器 UI 的归属（**契约不变，实现按 flavor 分家**）
+
+**结论：setter 不需要改成「无框架组件」，但它的契约必须无框架。** 它属于**设计时**，
+不接触物料组件、`Driver` 或虚拟节点；输入是纯数据的 `PropMeta`，输出是纯数据的
+`Command`。所以：
+
+- **契约层**（`SetterProps` / `SetterContext` / 语义 kind）**无框架**，写在
+  `protocol`，两套编辑器共用；
+- **实现层**按编辑器 UI 的 flavor 各一份（React 用 shadcn，Vue 用 shadcn-vue），
+  由注册表按 flavor 解析（§12.13.5）。
+
+不追求「一套 setter 跨框架运行」—— 那需要自造 mount/dispose 宿主，与整树重渲染、
+输入法/焦点、Context 桥接全都冲突，已否（§12.4.2）。
+
+| 层 | 内容 | 框架要求 |
+|---|---|---|
+| 协议 / 数据 | `ComponentMeta` / `PropMeta` / `SetterRef` / `PageSchema` / `Command` | **必须无框架**（`protocol` / `model`） |
+| 设计时逻辑 | session / 命令网关 / 命中 / 样式解析 / 属性行解析 / setter 注册表 | **必须无框架**（`designer-core`，§12.13） |
+| 设计时 UI | `PropertyPanel` / `StyleSetter` / `StyleSetterExtras` / `setters` / `ui/*` | **按 flavor 一份**：`designer-react`（shadcn/Radix）· `designer-vue`（shadcn-vue/Reka） |
+| 运行时物料 | `reactBindings` / `vueBindings` | 各一套，props 契约中立 |
+
+**数据链**（现状已满足，无需改造）：
+
+```
+ComponentMeta(纯数据) → PropertyPanel 按 PropMeta.type/options/setter 选控件
+  → onCommit(unknown) → SetProps / SetText / SetFlag / SetDirective(纯数据)
+  → PageSchema → postMessage(lc:schema) → 画布 adapter
+```
+
+全仓核对：`designer` 对 `renderer` 只有 3 处 **type-only** import
+（`MaterialRegistry`，M2 换成 `MaterialMetaSource`），**没有任何运行时 import**；
+`PropertyPanel` 的 import 只有 `protocol` 的 `PropMeta`、`model` 的 `Command`、
+`./setters`、`./ui/*`（shadcn）和 CSS Module。所以切换 `RENDERER_KIND` 时，
+属性面板、样式页签、面包屑**零改动**。同一份 `ComponentMeta` 同时被 React 物料
+与 Vue 物料使用，setter 也照样能编辑 Vue 物料的属性 —— 这正是 §12.4 描述/实现
+分离的直接收益。
+
+**继续用 shadcn/ui 的边界**（延续既有约定「lowcode 只是参考、不引入额外组件、
+保持统一 shadcn UI」）：
+
+- `packages/designer-react/src/ui/*`（Input / Select / Slider / Switch / ToggleGroup /
+  Button / Textarea，底层 Radix）**只允许 designer 内部引用**；Radix 依赖留在
+  `designer/package.json`，不进 `renderer-core`、不进任何 adapter。
+- `renderer-react` 的物料**不得**从 designer 或 shadcn 取控件：物料是可独立发布的
+  运行时资产，designer 的 shadcn 组件还带编辑器皮肤。物料要按钮就用原生元素或
+  自己的 UI 实现。
+- Vue adapter 同样不得引入 shadcn —— 它是运行时，不是编辑器。
+- **两套编辑器 UI 各用自己框架的 shadcn 对应物**：React 侧 `shadcn/ui`（Radix），
+  Vue 侧 `shadcn-vue`（Reka UI）。两者是同一套设计语言的两个移植，不是两套设计；
+  共用一份 CSS Module 与 token 保证版式一致（§12.13.2）。**不得**换成 Element Plus
+  / Ant Design Vue / Ark UI 成品组件 —— 那会同时破坏视觉一致与「不引入额外组件」，
+  也让两版无法共享样式文件。
+- **跨框架范式参照不得变成组件替换**：Ark UI / Zag.js 只作为 §12 的**架构参照**
+  （core + 薄 adapter、锁步版本，见 §12.4.2），不作为运行时依赖引入。Ark UI 是
+  headless 零样式，若以「支持多框架」为由把 `designer-react/src/ui/*` 从 shadcn/Radix
+  换掉，会直接破坏已对齐 lowcode-engine 的视觉（Radix Select 的 Portal、
+  ToggleGroup 的 #5584FF 选中态、统一 placeholder 色等），也违反「保持统一
+  shadcn UI、不引入额外组件」的既有约定。
+- 若要做 **Vue 版编辑器 UI**：不是「重写一套控件」那么简单 —— 先把设计时逻辑抽成
+  `designer-core`，再写 `designer-vue`。顺序、契约与判据见 §12.13。
+
+**本规范内 setter 侧只有 3 项收口**（都在协议 / 约束层，不改控件实现）：
+
+1. `PropValueType` 的 `'reactnode'` → `'node'`（§12.4 协议净化）；`'func'` 明确为
+   「**不允许**存进 schema」——setter 产出的值必须是 JSON 可序列化的纯数据，
+   函数 / React 元素 / VNode 会在序列化往返中丢失，Vue 侧也无法还原。当前
+   `PropertyPanel` 的 `BoolSetter` / `NumberSetter` / `SelectSetter` / `JsonSetter` /
+   `TextSetter` 已符合，`'reactnode'` / `'func'` 也没有消费方。
+2. `SetterRef` 保持纯数据形态（见 §12.4.2 推荐方案：收敛为**语义 kind 枚举**
+   + JSON `props`，而不是任意组件实现名）；setter 的实现与映射表只存在于
+   designer（design-time 解析），adapter 不得提供或覆盖 setter 实现。Vue 物料要
+   特殊控件，办法是在共享 `ComponentMeta` 里写 `setter: 'color'` 这样的语义 kind，
+   designer 映射到内置 shadcn 控件，而不是让画布框架参与。
+   **注意：写本节时映射表尚未实现、`SetterRef` 是未接线的协议**；现已由 M4 接线
+   （§12.12.6 末），本节保留作为决策依据。方案取舍见 §12.4.2。
+3. 样式页签产出的 `style` 必须是 camelCase 普通对象（React `style` 与 Vue `:style`
+   都吃），不得产出 `className` / 框架事件 / CSS-in-JS 对象。
+
+### 12.4.2 自定义 setter 扩展点与「Vue setter」的边界
+
+**先把三种容易混为一谈的问法分开**：
+
+| 问法 | 结论 | 归属 |
+|---|---|---|
+| Vue **物料**要一个特殊属性控件 | 支持，且**不需要**用 Vue 写控件 | 本期目标 |
+| 用 **Vue 组件**实现自定义 setter，挂进 React 设计器 | 技术上可行，本期不做 | v2 演进 |
+| 整个编辑器 UI（含全部 setter）改成 Vue | 另一套产品、另一份规范 | 不做（§12.4.1） |
+
+#### 现状核查：`SetterRef` 曾经是未接线的协议（M4 已接线）
+
+这一条是回答「后续支持吗」的前置条件。`protocol/src/material.ts` 定义了
+`SetterRef = string | { componentName, props? }`，但全仓消费只有
+`PropertyPanel.tsx:300` 的一处字符串硬比较 `meta.setter === 'TextAreaSetter'`：
+
+- **没有 `SetterRegistry`**，`componentName` 无法按名查找；
+- **`SetterRefObject.props` 零消费**，对象形态实际不可用；
+- `PropRow` 是 if/else 硬分派，且 setter 判断排在 `options` / `type` **之后**，
+  与函数注释声明的「显式 setter > options > type」优先级不符。
+
+也就是说：**当时连 React 自定义 setter 都不支持**。在 meta 里写任何非
+`TextAreaSetter` 的名字都会被静默忽略、回落成 `TextSetter`。谈 Vue setter 之前，
+得先有「自定义 setter 扩展点」这一层。
+
+**容易混淆的一点**：仓库里确实有 `MaterialRegistry`（`renderer/src/registry.ts`），
+但它注册的是 `{ meta, component }`（**物料实现**），不是 setter 控件。当前完整链路：
+
+```text
+renderer/materials/index.ts:56   builtinMaterials（20 个 {meta, component}）
+  → App.tsx:86                  createMaterialRegistry(...)  // Map<componentName>
+  → App.tsx:100                 createDocument(schema, registry)
+  → model/node.ts:29            this.meta = resolver.getMeta(...)
+  → PropertyPanel.tsx:203       node.meta?.props → 过滤 style → declared.map
+  → PropertyPanel.tsx:287       PropRow 的 if/else 硬分派
+```
+
+setter 控件由 `designer-react/src/setters.tsx` **静态导出 5 个组件**（`Text` / `Number` /
+`Bool` / `Select` / `Json`），`PropertyPanel` 顶部硬 import，**没有任何按名查找**。
+实际分派顺序曾是 `bool → options → number → object/array → setter ===
+'TextAreaSetter' → 默认 Text`，与注释声明的优先级不符：带 `options` 的属性写
+`setter` 永远不生效（**已于 M-L3-2 修，见 §12.12.6**：现在显式 `setter` 最优先，
+且对象形态 `{ componentName }` 也认）。物料 meta 里写了 `setter` 的只有 2 处
+（`renderer/src/materials/blocks.tsx:116` 的 `FeatureCard.desc`、`:208` 的
+`CodeBlock.code`），值都是 `'TextAreaSetter'`。`props.style` 被 `PropsTab` 过滤，
+由 `StyleTab` 单独处理，不走 `PropRow`。M2 把 registry 换成 `MaterialMetaSource`
+时不要误以为这里已经有一套 setter 注册机制。
+
+#### 方案评审：中立扩展点（`SetterHost`）值不值得做
+
+最初设想是引入框架中立的挂载契约（`SetterContext` + `mount(el, ctx): dispose`），
+React 控件用 `createRoot` 适配、Vue 控件用 `createApp` 适配，宿主只认接口不认框架。
+
+| 好处 | 说明 |
+|---|---|
+| 协议干净 | `SetterRef` 纯数据，宿主接口里没有 `ReactNode` / `VNode` |
+| 框架隔离 | 框架知识集中在适配层，未来加 Vue / Web Component 不改协议与宿主 |
+| 修掉静默回落 | 建立注册表后，未注册的 setter 名字不再被无声忽略 |
+| 概念一致 | 与 §12.4 的「描述 / 实现分离」同构 |
+
+**但代码核查后判定不采纳**，坏处是实的、收益是未来的：
+
+| 坏处 | 依据 |
+|---|---|
+| 自造微前端容器 | `mount` / `dispose` / ctx 重放是一套自己发明的生命周期协议，只为「默认不做」的 v2 付现成本（YAGNI） |
+| 与现有重渲染模型打架 | `Designer` 靠 `doc.subscribe(refresh)` 整树重渲染；每个 setter 一个 `createRoot` 后，适配层要自己把新 ctx 推进每个 root，`setters.tsx` 已处理的中文输入法 composition 与聚焦时光标跳动很容易被重新踩出来 |
+| 焦点 / Portal 需重验 | `ui/select.tsx` 的 Radix `SelectContent` 走 Portal，跨多个独立 root 的焦点归还、Esc 关闭链要额外验证 |
+| 类型安全退化 | `SetterProps` 的强类型在 `value: unknown` 的命令式边界丢失；DevTools 里从一个 root 变成多个 |
+| 当前连桥接收益都没有 | 全仓 `designer-react/src` grep 不到 `createContext` / `useContext` / `Provider`，没有 Context 需要跨 root 桥接（若将来加主题 / i18n 才会成为问题） |
+| 破坏 schema 自描述 | 允许注入「组件实现名」后，换一个编辑器（Vue 版、服务端预览、文档生成）都得提供同名实现，否则属性不可编辑 —— 等于把刚从物料抽掉的耦合又搬进 setter |
+
+#### 推荐方案 A：语义 kind + 声明式 meta + 内置映射 + 可注入注册表
+
+关键区分：**「协议中立」≠「宿主渲染机制中立」**。框架边界应该画在
+`protocol` 这一层，不需要画进 `PropertyPanel` 内部 —— `SetterRef` 里永远只有
+一个字符串，designer 的映射表用 React 类型**不构成任何泄漏**。
+
+1. **`SetterRef` 从「组件实现名」收敛为「语义 kind」**：有限枚举
+   `'text' | 'textarea' | 'number' | 'bool' | 'select' | 'json' | 'color' | 'icon' | 'spacing' | 'expression' | ...`，
+   而不是 `'ColorSetter'` 这种任意组件名。`props` 只允许 JSON 纯数据。
+   语义 hint 与实现无关：任何框架的编辑器都能各自实现同名 `color` 控件，
+   schema 保持自描述、可移植。
+2. **优先扩展描述而非注入实现**：颜色、图标、间距、单位、数据源绑定这类需求，
+   先增强 `PropMeta` 的声明式字段（`options` / `min` / `max` / `step` / `unit` /
+   `format` / `multiple` / `dataSource`），让内置控件组合覆盖；确实不够再加一个
+   内置 kind，而不是开一个组件注入口。
+3. **内置映射表 + 可注入注册表**：默认是
+   `Record<SetterKind, SetterRegistration>`，`PropertyPanel` 按 kind 查表、查不到给
+   明确诊断再回落内置分派；按 kind 优先于 `options` / `type`，顺带修正上面那处
+   优先级不符（属 bug fix，单独记录）。注册表**可被宿主注入覆盖**，这是自定义
+   setter 的正式入口（形态见下节）；注册项与 `SetterContext` 属于**公开契约**，
+   写进 `protocol`，不再只是 designer 的内部实现细节。
+4. **归属**：映射表只在 `designer`；adapter / 物料不得提供、覆盖或按需下载
+   setter。`SetterRef` 的解析发生在 design-time，画布完全不参与。
+
+| 收益 | 说明 |
+|---|---|
+| 零额外抽象 | 5 个现有控件不动，无 `createRoot`、无生命周期协议、无 Context 桥接 |
+| 现有交互零回归 | 输入法 composition、聚焦草稿、整树重渲染同步、Radix Portal 焦点全部原样保留 |
+| 类型安全 | `SetterProps` 强类型贯通，映射表编译期检查 kind 完整性 |
+| schema 自描述 | 换任何框架的编辑器只需实现同一组语义 kind，不依赖某份组件实现 |
+| Vue 物料照常支持 | 共享 `ComponentMeta` 写 `setter: 'color'` 即可，Vue 物料与画布 `kind` 都不参与 |
+
+**阶段 1 纳入 M4**：只做 `SetterRef` 净化 + 声明式 meta + 内置映射表 +
+`registerSetter()` 注入点；注册表未命中时走现有分派，行为不变。
+
+#### 自定义 setter：四种消费方与「独立 render」的两种形态
+
+用户提议「setter 也按框架走自己的独立 render」。这个方向在**包边界**上成立、在
+**运行时挂载**上不成立 —— 必须拆开看，否则会把上面刚否掉的 `SetterHost` 又请回来。
+
+**先看能力缺口**（`designer-react/src/setters.tsx:25`）：`SetterProps` 只有 5 个字段
+`value / options / placeholder / multiline / onCommit`。用它写自定义 setter 做不了
+下列任何一件事，而这些正是「需要自定义」的典型场景：
+
+| 缺什么 | 缺了做不了 |
+|---|---|
+| `meta`（`min` / `max` / `step` / `unit` / `format`） | 单位数值输入、范围滑块、格式化显示 |
+| `field`（属性名） | 数据源绑定、按属性名走不同规则 |
+| 节点 / 页面只读快照 | 「条件显示」「联动其他属性」类 setter |
+| `batch()` | 一次写多字段（间距四向、边距简写），且只进一条历史 |
+| `disabled` | 页面锁定 / 只读态下正确禁用控件 |
+
+所以「支持自定义 setter」的真实成本不在渲染方式，而在**一次性把 `SetterContext`
+设计够** —— 它一旦对外发布就是破坏性变更，比包名难改得多。`batch` 有现成通路：
+`SetProps` 接受 `Record<string, unknown>`，`mergeWith` 按 `nodeId + 排序键` 合并
+（`commands.ts:132`），多键写仍是**一条**历史记录；`StyleSetter.tsx:238` 的
+`batch` 就是同款做法。
+
+**「独立 render」有两种形态，只有一种对**：
+
+| 形态 | 含义 | 判定 |
+|---|---|---|
+| R1 实现独立 | setter 实现按框架分包（`setter-react` / `setter-vue`），由**各自框架的编辑器直接渲染** | ✅ 采纳。这正是 Ark UI / Zag 绑定层的形态，也是你提的方向 |
+| R2 容器独立 | 每个 setter 用 `createRoot` / `createApp` 单独挂载，自建 `mount(el, ctx)` 生命周期 | ❌ 不作为默认路径。R1 **不需要**它：React 版编辑器里 setter 就是普通 React 组件，没有额外渲染机制 |
+
+**四种消费方，解法不同**（这是上一轮方案 A 的盲点）：
+
+| 消费方 | 场景 | 解法 | 本期 |
+|---|---|---|---|
+| A 编辑器团队 | 加颜色 / 图标 / 间距 / 表达式控件 | 新增**内置 kind** + 控件实现，随编辑器发布，保证皮肤与值契约一致 | ✅ |
+| B 物料作者（本仓） | 某物料要特殊控件 | 共享 `ComponentMeta` 写 `setter: 'color'`（语义 kind、JSON 纯数据）；**不需要**自带实现 | ✅ |
+| C 业务方 / 第三方 | 公司设计系统的取色器、带远程搜索的选人器 | `registerSetter()` 注册进注入的注册表；schema 只存 kind 名，**换实现不改 schema、不需迁移** | ✅ 注册表可注入即可，**不必拆包** |
+| D 非本框架实现 | Web Component、遗留 Vue2 控件、带自有 DOM 的富文本 | 写一个薄 React 包装组件（`ref` + `customElements` / 原生挂载）走 `{ component }`，**不需要**内建挂载契约 | ✅（配 `{ load }` 按需拉） |
+
+关键判断：**C 类不需要拆包**。第三方 setter 若是纯 React 组件，它只需要 React +
+自己的 UI，连 `designer` 都不用 import，类型从 `protocol` 的 `SetterContext` 拿。
+拆 `setter-react` 的收益是「复用我们的 shadcn 控件壳 + 独立版本治理」，不是
+「能不能自定义」—— 这两件事经常被混为一谈。
+
+**注册项形态：把「独立 render」落在可选接口上，而不是默认路径上**：
+
+```ts
+type SetterRegistration =
+  | { component: ComponentType<SetterContext> }                              // 默认快路径
+  | { load: () => Promise<SetterModule | SetterComponent> }                   // 编辑中按需加载
+  | { dynamic: (ctx: SetterContext) => SetterComponent | SetterRegistration }; // 引擎 isDynamic 等价物
+
+interface SetterRegistry {
+  register(kind: SetterKind, entry: SetterRegistration | SetterComponent, source?: string): void;
+  /** 未注册返回 undefined —— 调用方必须给诊断，不允许静默回落 */
+  get(kind: string): RegisteredSetter | undefined;
+  /** 版本号 + 订阅：注册发生在编辑过程中时，面板靠它刷新 */
+  getVersion(): number;
+  subscribe(listener: () => void): () => void;
+}
+```
+
+默认路径（`component`）零额外抽象，就是今天的 5 个控件；`{ load }` 只在首次用到时
+才拉包，`{ dynamic }` 只给「按上下文换控件」的场景。**内建 `mount` 契约被彻底去掉**
+—— 非本框架实现用一个薄 React 包装组件即可。与「所有人先付」的 `SetterHost` 相反，
+成本只落在用到的人身上，这也是「自定义 setter」能同时满足「可插拔」和「零回归」的
+原因。
+
+**值契约跟着 kind 走**：每个 kind 自带 `normalize / validate / serialize` 三个纯
+函数（放 `protocol`，可单测）。好处是同一 kind 换实现（React / Vue / 第三方）时
+行为一致，第三方写入非法值时能在提交前拒绝并提示，而不是等物料渲染时静默回落。
+
+#### 被否备选与触发条件
+
+| 备选 | 判定 | 触发条件 |
+|---|---|---|
+| `SetterHost` 自造挂载契约（**全局强制**） | 不采纳 | 非本框架实现用薄 React 包装组件接入即可（上节 D 类），不内建 `mount`；若真出现「同一属性面板必须混挂多框架 setter」，更该整组替换编辑器 UI |
+| Web Component（Custom Elements + CustomEvent） | v2 备选 | 若需要**第三方**跨框架提供 setter，浏览器原生生命周期 + Shadow DOM 隔离比自造 `SetterHost` 标准；代价是要引 WC 链、shadcn 包壳别扭、跨 Shadow DOM 的输入法与焦点更麻烦 |
+| Vue 组件实现 setter 挂进 React 面板 | v2，默认不做 | 见下 |
+| 整套 Vue 版编辑器 UI | 不做 | 另一套产品、另一份规范（§12.4.1） |
+| Lexical 式 `setter-core` / `setter-react` / `setter-vue` 三包 | 见下方范式评估 | 两个触发条件任一成立才拆：① 第三方要**复用我们的控件壳**（否则只需注入注册表）；② 有**独立 Vue 版编辑器**产品 |
+
+#### 范式评估：能不能照搬 Lexical 的 core + 框架绑定包
+
+先核实范式本身（2026-11-06 查 npm registry）：Lexical 官方 API 文档写的是
+「Framework Agnostic Core — ... with **official React bindings**」，实际只有
+`@lexical/react` 是官方（Meta 6 名 maintainer）。Vue 侧是社区单人维护的
+`lexical-vue`，实测版本差：
+
+| 包 | 版本 | 关键事实 |
+|---|---|---|
+| `lexical`（core，官方） | **0.53.0** | Meta 维护，GitHub Actions trusted publisher |
+| `lexical-vue`（社区） | **0.18.0** | `dependencies` 里**硬钉** `lexical: 0.50.0` 及整套 `@lexical/*@0.50.0`，落后 core 3 个 minor；且 core 放在 `dependencies` 而非 `peerDependencies`，会与宿主的 0.53.0 装成两份 |
+
+也就是说「core + 各框架包」最大的现实成本不是设计，而是**绑定包版本漂移 +
+core 被复制多份**。但这是**维护策略**问题，不是范式固有缺陷：下方 Ark UI 的实测
+证明官方同仓维护多套绑定可以完全锁步。另补一处归因更正 —— 导致装出两份 core
+的是**版本钉死不一致**（0.50.0 vs 0.53.0），不是把 core 放进 `dependencies`；
+框架无关的 core 放 dependencies 只要版本一致就能 dedupe。§12.3 已按这两类依赖
+分别约束。
+
+**对引擎整体：方向正确，且 §12 已经是这个结构。**
+
+| Lexical | 本项目 |
+|---|---|
+| `lexical` core（EditorState / 节点 / 命令 / 自研 DOM reconciler） | `protocol` / `model` / `drag` / `renderer-core`（schema / Command / 纯 DOM 命中） |
+| `@lexical/react` | `renderer-react` |
+| `lexical-vue`（社区） | `renderer-vue`（**同仓自建**，避免漂移） |
+| 同一应用只装一套绑定 | `VITE_RENDERER_KIND` 装配期二选一（§12.7） |
+
+**对 setter：不照搬三包拆分**，因为厚薄比例正好相反。Lexical 的 core 自己操作
+contenteditable DOM、持有可序列化状态，绑定层只做「接响应式状态 / 注册插件 /
+桥接 decorator node」；而我们 setter 的状态全在 `Document`（已在 `model`），
+剩下几乎全是 UI —— `setters.tsx` 的中文输入法 composition、受控草稿、光标保护，
+以及 `ui/*` 的 Radix 控件。**Lexical 自己也没把输入控件放进 core**，它们就在
+`@lexical/react` / `lexical-vue` 里。再抽一个 `setter-core` 只会与 `protocol` /
+`model` 重复分层：语义 kind、`PropMeta`、值 normalize / validate / serialize 本就
+是纯数据契约，放 `protocol` 即可。
+
+实测拆包成本：`designer-react/src/ui/*` 的 7 个控件不只被 `setters.tsx` 引用，
+`PropertyPanel` / `StyleSetter` / `StyleSetterExtras` 都在 import；`--lc-placeholder`
+等编辑器皮肤变量由 `apps/shared/src/styles.css` 提供、散落在 8 个 CSS Module。
+拆出 `setter-react` 要连带搬 shadcn + Radix 依赖与 CSS 变量归属，designer 其余面板
+全部改 import，收益却只是把「已经在 protocol 的契约」换个包名。
+
+**值得借的是 Extensions 那层**：Lexical 新版 `defineExtension` 是框架无关的
+（同一个 `RichTextExtension` 在 React / Vue / Svelte 通用），绑定包只负责渲染。
+对应到 setter 就是方案 A 的自然延伸 —— **共享「行为契约」（kind 枚举 + 值
+normalize / validate / serialize + 联动规则，纯函数、可单测），UI 控件由各框架
+编辑器按同一组 kind 自己注册**。这样 Vue 侧若真要做独立编辑器，`setter-contract`
+可直接复用，不必重写规则，也不必把 React 控件挂进 Vue 面板。
+
+由此新增两条硬约束（适用于所有 `*-react` / `*-vue` 绑定包）：
+1. 同仓维护、**锁步版本号**：core 与所有绑定包同版本发布，装配期校验一致；
+2. 一个装配只引入**一套**绑定包，禁止宿主同时 import 两个框架的绑定（§12.7）。
+
+#### 范式评估 2：Ark UI / Zag.js —— 更贴近的正面参照
+
+用户提议参考 `ark-ui.com/docs`。核实后确认，它比 Lexical 更贴合 §12 的诉求：
+**公共 core + 官方同仓维护的多框架包 + 各自引入**，且实测不存在版本漂移。
+
+**包结构实测**（2026-11-06 查 npm registry）：
+
+| 包 | 版本 | 关键事实 |
+|---|---|---|
+| `@ark-ui/react` | **5.40.0** | `repository.directory: packages/react`；`peerDependencies: react >=18 / react-dom >=18` |
+| `@ark-ui/vue` | **5.40.0** | `repository.directory: packages/vue`；`peerDependencies: vue >=3.5` |
+| 两者共同点 | — | 同为 `chakra-ui/ark` 仓、**同一 `gitHead` `9a3f857e`**、同批 maintainer、同版本发布；官方同时维护 React / Vue / Solid / Svelte 四套绑定 |
+| `@zag-js/core` | **1.47.0** | 描述「A minimal implementation of xstate fsm for UI machines」；`dependencies` 只有 `@zag-js/utils` + `@zag-js/dom-query`，**零框架依赖** |
+| 两包的 `@zag-js/*` | 全部 **1.47.0** | 各 60+ 个机器包（`dialog` / `select` / `slider` / `toggle-group` / `radio-group` / `color-picker` …）版本逐一相同，**唯一差异是 `@zag-js/react` vs `@zag-js/vue` 这一个适配包** |
+
+**Zag 的三层职责**（官方文档 `overview/installation`、`overview/whats-a-machine`）：
+`machine()` 用有限状态机描述状态 / 转换 / context（只操作 DOM、框架无关）→
+`connect(service, normalizeProps)` 产出 prop getters（`getRootProps()` 等，含
+ARIA / `data-*` / 事件）→ 各框架适配器提供 `useMachine` + `normalizeProps`，
+只做「响应式接线 + props 格式归一」（React `onKeyDown` vs Vue `onKeydown`、style
+数值 vs 带单位字符串）。官网 about 页原话是「state machines that interact solely
+with the DOM. Framework-specific adapters handle events and state management」，
+Zag 官网则是「Machines handle the logic. You handle the UI」。
+
+**对引擎整体：印证 §12，并给出「薄适配层」的量化尺度。** 框架差异应收敛到
+**一个**适配包，其余（schema / Command / 命中规则 / `shouldPlacePlaceholder` /
+DOM props 契约）全在 core。§12.3 的 `renderer-react` / `renderer-vue` 也应做到
+「除框架适配文件外逐一同构」。`normalizeProps` 与现有 `evaluator` 产出纯数据
+`IRNode`、adapter 只做 `createElement` / `h()` 归一是同构思路，**不需要新增一层**。
+
+**对 setter：结论不变，且论证更强。** Zag 明确把「UI / 输入控件」留在框架层，
+core 里只有交互状态机；我们 setter 的状态已在 `Document`，剩下的中文输入法
+composition、受控草稿、光标保护、Radix Portal 焦点恰恰属于「You handle the UI」
+那部分。Zag 要摊平状态机成本靠的是 45+ 个复杂组件（DatePicker / ColorPicker /
+TreeView …），当前 setter 只有 5 个基础输入控件（`Text` / `Number` / `Bool` /
+`Select` / `Json`），引入状态机是过度设计。因此 **方案 A 与 Ark UI 同构而非相反**：
+`setter-contract`（kind 枚举 + 值 normalize / validate / serialize，纯函数）对应
+Zag 的 machines，各框架编辑器的控件映射表对应 adapters。
+
+**借 / 不借清单**：
+
+| 借 | 说明 |
+|---|---|
+| 同仓锁步版本的治理目标 | 从「防漂移的补救」升级为有正面实证的可达目标；§12.3 已按两类依赖重写 |
+| 「框架差异收敛到一个适配包」的验收尺度 | 写进 §12.9，两套 adapter 除适配文件外应逐一同构 |
+| 行为契约与渲染分离 | 方案 A 的 `setter-contract` 定位对齐 Zag machines |
+
+| 不借 | 理由 |
+|---|---|
+| 状态机 / `connect` prop getters | 5 个基础控件，YAGNI；`Document` 已是唯一状态源 |
+| 60+ 个细粒度机器包 | 规模不匹配，一个 `renderer-core` 足够 |
+| Ark UI 组件本身 | headless 零样式，会破坏已对齐 lowcode-engine 的 shadcn 皮肤（§12.4.1 红线） |
+
+**触发条件**（两个，任一成立才拆）：① 第三方要复用我们的 shadcn 控件壳 ——
+只自定义控件本身用注册表注入即可，不必拆包；② 有独立 Vue 版编辑器产品。
+Ark UI 证明它在**治理上可行**，但决定因素仍是**有没有第二个消费方**，不是技术
+可行性；本期没有，故 M1~M5 不拆。同时确认上一轮留的分支：Ark UI 范式对应的是
+「独立 Vue 版编辑器引 `setter-vue`」，**不是**「在 React designer 里按需挂 Vue
+setter 包」—— 后者仍是阶段 2 已否的路径。
+
+#### 阶段 2：Vue 写的 setter（v2，默认不做）
+
+推荐方案下 Vue setter **不是**加一个适配层就完事 —— 它需要自己的一套控件，
+代价不在技术而在一致性：
+
+| 代价 | 说明 |
+|---|---|
+| 三份运行时共存 | 宿主 React + setter Vue + 画布框架，与「一次装配只启用一套框架」的初衷相悖 |
+| shadcn 皮肤无法复用 | `designer-react/src/ui/*` 是 React/Radix；Vue setter 自带控件会让同一属性面板出现两种视觉 |
+| 隔离与生命周期 | 样式沙箱、卸载 unmount、值外溢同步、输入法 composition、焦点管理都要重做 |
+| 收益为零 | setter 是设计时资产，与画布框架正交；Vue 物料只需要语义 kind |
+
+**结论（回答「setter 需要适配 Vue 吗」）：本期不需要，也不产出任何 Vue 适配
+代码** —— 不建 `setter-vue` 包、不写 Vue 控件、不在 designer 里加载 Vue runtime。
+Vue 团队要用编辑器，走 §12.7.1 的 iframe 嵌入，属性面板仍是 React + shadcn。
+
+更合理的路径是**做独立 Vue 版编辑器 UI，按同一组语义 kind 实现自己的控件**
+（schema 不变、协议不变），而不是往 React 面板里挂 Vue setter。因此新增约束：
+**一个编辑器实例内只启用一种 setter 实现族**（默认 React + shadcn），不允许
+混挂。这与 §12.2 C2 同思路，但作用域是设计时 UI，不是画布。
+
+**对「二选一」语义无影响**：C2 约束运行时画布，setter 属于设计时空，两者正交。
+Vue setter 若落地，画布仍可以是 React，反之亦然。
+
+### 12.5 驱动与 adapter 接口
+
+`Driver<Output>` 保持不变（§5.1），补一层 adapter 把「挂载」也收进框架实现：
+
+```ts
+export interface DriverOptions {
+  /** 编辑态才注入空容器占位；运行态必须关掉 */
+  editorPlaceholder?: boolean;
+}
+
+export interface RendererAdapter<Output = unknown> {
+  readonly kind: FrameworkKind;
+  readonly bindings: MaterialBindings<unknown>;
+  createDriver(registry: MaterialRegistry, options: DriverOptions): Driver<Output>;
+  /** 挂载到画布根，返回卸载函数；整树重渲染时先 dispose 再 mount */
+  mount(container: HTMLElement, output: Output): () => void;
+}
+
+export function loadAdapter(kind: FrameworkKind): Promise<RendererAdapter>;
+```
+
+- `createReactDriver` / `createVueDriver` 都是 `createDriver` 的具体实现：
+  `createElement(Component, props, ...children)` ↔ `h(Component, props, children)`，
+  `key` / `data-node-id` / `data-edit-flags` 语义一致。
+- `shouldPlacePlaceholder` 与 `flagString` 属于**框架中立规则**，挪进 `core`，
+  两套 driver 共用，避免两份判断漂移。
+- `mount` 存在的理由：`createRoot` / `createApp` 是框架 API，画布应用不该知道。
+- `Driver.renderRoot` 的输出只在本框架内流转，**绝不跨 postMessage 传递**。
+
+### 12.6 画布宿主契约（保持现状，不许框架化）
+
+| 项 | 约定 |
+|---|---|
+| 装载 | 同源 iframe，`canvas.html`；`canvasUrl` 由宿主给出（现为 `new URL('canvas.html', location.href)`） |
+| 握手 | 画布 → 宿主 `lc:canvas-ready`；宿主 → 画布 `lc:schema`（全量 schema + padding） |
+| 根节点 | `[data-lc-canvas]`，`position:relative; display:flex; flex-direction:column` |
+| 更新 | schema 每次变化整树重渲染（D14）；编辑态 `mode:'edit'` 保证 1 节点 ↔ 1 DOM（D7） |
+| 拦截 | 画布原生监听：`dragstart` 阻止、`a[href]` 点击阻止导航 |
+| 隔离 | 画布文档不加载设计器代码；设计器不加载画布物料代码 |
+
+`canvas.html` 是**装配边界**：换框架只换这个入口加载的 adapter，宿主文件不动。
+
+### 12.7 装配与「二选一」
+
+```ts
+// apps/shared/src/framework.ts —— 构建时常量，便于 tree-shake
+export const RENDERER_KIND: FrameworkKind =
+  import.meta.env.VITE_RENDERER_KIND === 'vue' ? 'vue' : 'react';
+
+// ① 宿主侧（index.html）：只要 meta，不加载任何 adapter
+const metaSource = createMetaRegistry(builtinMaterialMetas);
+const document = createDocument(schema, metaSource, page);
+<Designer document={document} metaSource={metaSource} ... />
+
+// ② 画布侧（canvas.html）：只加载选中那一个 adapter
+const adapter = await loadAdapter(RENDERER_KIND);
+const registry = createBindingRegistry(
+  builtinMaterialMetas, adapter.bindings, RENDERER_KIND,
+);
+const driver = adapter.createDriver(registry, { editorPlaceholder: true });
+const ir = evaluate(schema.componentsTree, { mode: 'edit', scope: {}, resolver: registry });
+const dispose = adapter.mount(canvasRoot, driver.renderRoot(ir));
+```
+
+约束：
+
+- `loadAdapter` 用动态 `import()` 按 `kind` 分支，配合构建时常量替换，保证产物里
+  **只有一套**框架实现；另一套不进 bundle。
+- `createBindingRegistry` 校验 `registry.kind === adapter.kind`；`Document` 与
+  `Designer` 只持有 `MaterialMetaSource`，拿不到 `resolve`，从类型上杜绝宿主触碰组件。
+- `Designer` 现有 `registry` prop 类型改为 `MaterialMetaSource`（名称可保留）。
+  改动面很小：全仓只有 `getMeta` / `has` / `list` 三处调用
+  （`Designer.tsx:311`、`drop-context.ts:118`、`MaterialPanel.tsx:43`），且都是
+  type-only import；`list()` 返回值从 `MaterialDefinition[]` 改成 `ComponentMeta[]`
+  后，面板里 `.meta` 这一层解包去掉即可。
+- 预览页（`/preview`，独立 HTML 入口）与画布用**同一个** `RENDERER_KIND`，
+  `sessionStorage` 只传 schema（框架无关），运行态 `mode:'runtime'`、`editorPlaceholder:false`。
+- **禁止**：一个 `Document` 挂两个 adapter、按 `componentName` 分派到不同框架、
+  运行时通过 URL 热切换 `kind`（连 dev 也不留 URL 覆盖 —— 两个 flavor 就是两个
+  server，见 §12.13.6）。
+
+#### 12.7.1 Vue 宿主的接入形态
+
+「Vue 怎么引入」要按**消费方**分，三种情况互不相同：
+
+| 消费方 | 引入什么 | 需要 designer 吗 | 何时可用 |
+|---|---|---|---|
+| ① 生产渲染：Vue 业务系统把 `PageSchema` 渲染成页面 | `renderer-vue` + `renderer-core`（纯运行时） | 不需要 | M5 才有 `renderer-vue` |
+| ② 设计端：Vue 团队要用这个编辑器 | `designer-react` 以 iframe / 路由懒加载嵌入 | 需要 | 现在就有 |
+| ③ 整套 Vue 版编辑器 | `designer-vue` + `designer-core` + `designer-ui` | 需要 | **已定稿，见 §12.13**（M-L3-3~5） |
+
+**① 生产渲染：纯 Vue 应用里只有 Vue，没有 React。**
+
+```ts
+// Vue 应用入口（目标态，M5 落地）
+import { evaluate, createBindingRegistry, builtinMaterialMetas } from '@lowcode-next/renderer-core';
+import { createVueAdapter } from '@lowcode-next/renderer-vue';
+import schema from './page.json';
+
+const adapter = createVueAdapter();          // 内部即 createApp，业务方不直接调 Vue API
+const registry = createBindingRegistry(builtinMaterialMetas, adapter.bindings, 'vue');
+const driver = adapter.createDriver(registry, { editorPlaceholder: false });
+const ir = evaluate(schema.componentsTree, { mode: 'runtime', scope: {}, resolver: registry });
+const dispose = adapter.mount(document.getElementById('app')!, driver.renderRoot(ir));
+```
+
+调用序列与 §12.7 的画布装配**完全一致**，差别只有 `mode: 'runtime'`、
+`editorPlaceholder: false`、以及不经过 `loadAdapter` 的运行时分支。
+
+这条路径里 `react` **完全不在依赖树中** —— 前提是 M1/M3 把 `renderer` 的 `react`
+从 `dependencies` 挪到 `peer`，并把求值器拆进 `renderer-core`。这正是 M1 的首要目的。
+
+**② 设计端：Vue 宿主嵌 React 编辑器，两种方式。**
+
+| 方式 | 做法 | 代价 | 建议 |
+|---|---|---|---|
+| iframe 独立部署 | 编辑器单独构建/部署一个页面，Vue 应用 `<iframe src=".../designer">` | 跨文档只能走 `postMessage`；多一次文档加载 | **推荐**：样式与运行时天然隔离，Monaco 不进业务主包，可独立发版 |
+| 同页路由懒加载 | `const Designer = lazy(() => import('@lowcode-next/designer'))` | Vue 应用同时装 Vue + React 两套 runtime；tailwind preflight 与全局样式要收敛 | 次选：仅当必须共享登录态 / DOM 上下文 |
+| 微前端（qiankun / wujie） | 子应用挂载 | 沙箱、路由、样式都要额外治理 | 不推荐，收益不抵成本 |
+
+iframe 方式的交换契约只有两个纯数据消息：
+
+```ts
+// Vue 宿主 → 编辑器
+frame.contentWindow.postMessage({ type: 'lc:load', schema }, editorOrigin);
+// 编辑器 → Vue 宿主
+window.addEventListener('message', (event) => {
+  if (event.origin !== editorOrigin) return;
+  if (event.data?.type === 'lc:save') api.savePage(event.data.schema); // PageSchema
+});
+```
+
+**③ 三层运行时共存是合法的，别把 C2 理解成「整页只能一个框架」。**
+
+C2（§12.2）约束的是**一个画布一个框架**，而画布本身在 iframe 里，所以下面这种
+组合完全成立，也是 Vue 团队的常态：
+
+```text
+Vue 业务系统（vue runtime）
+  └─ iframe #1 编辑器（react runtime：designer + shadcn/Radix + Monaco）
+       └─ iframe #2 画布（RENDERER_KIND 决定：vue 或 react runtime）
+```
+
+反过来，若 Vue 团队只想要编辑器、暂时不需要 Vue 物料，把画布 `kind` 设为 `react`
+更省 —— 少一份 runtime，等 `renderer-vue` 稳定再切。切换只改构建时常量，编辑器与
+schema 都不动。
+
+**构建注意（M5 前必须处理）**：
+
+- `apps/shared/vite.base.ts` 的 `resolve.dedupe` 目前是 `react` / `react-dom` /
+  `vue`（两个 app 共用一份配置），加新适配时必须同步
+  （响应式会失效，症状比 React 双份更隐蔽）。
+- `canvasUrl` 是 `new URL('canvas.html', location.href)`（`Designer.tsx:124`），
+  Vue 版入口沿用同名 `canvas.html` 即可无缝替换，`Designer` 不用改。
+- Monaco 只属于编辑器，不进 `renderer-react` / `renderer-vue`；iframe 部署下它
+  天然不进业务主包。
+
+**与 setter 的关系**：①② 都**不需要** Vue 版 setter —— ① 是纯运行时、没有属性面板；
+② 的属性面板是编辑器内的 React + shadcn 控件，编辑的是共享 `ComponentMeta`，与画布
+`kind` 无关。③（`designer-vue`）需要 Vue 控件：复用 `setter-contract`，按 flavor 注册
+第二份实现，重写的是控件而非规则（§12.13.5）。
+
+**两条路线的成本差**：② 是今天就能用的 iframe 集成，改动量近乎为零；③ 是
+M-L3-1~5 的完整轨道（Vue 视图层 ≈ 7 400 行）。**先问「是嵌入还是要自建编辑器」，
+再决定走哪条** —— 这是本节最重要的判断，不要因为「支持 Vue」四个字就默认走 ③。
+
+### 12.8 迁移步骤（每步独立可验证、前四步零行为变化）
+
+| 步 | 内容 | 验收 |
+|---|---|---|
+| M0 | 本节规范冻结，确认 §12.11 决策点 | 无代码改动 |
+| M1 | 新建 `renderer-core`：搬 `evaluate` / `IRNode` / `Driver` / `MaterialResolver` / `shouldPlacePlaceholder` / `flagString` / `builtinMaterialMetas`；`renderer` 保留别名层 | React 画布视觉零回归 |
+| M2 | `designer` 的 `registry` 改为 `MaterialMetaSource`，去掉对具体类的 type import | 130 单测 + 拖拽/命中/属性面板回归 |
+| M3 | `renderer-react` 收敛为 `RendererAdapter`，`react` 从 dependencies 改 peer；`canvas.html` / `preview` 走 `loadAdapter` | 产物中 react 只由宿主提供 |
+| M4 | 协议净化 `'reactnode'` → `'node'`、收紧 `'func'` 与 setter 产出值约束（§12.4.1）；`SetterRef` 收敛为语义 kind + JSON `props`、增强 `PropMeta` 声明式字段、写 `SetterContext` / `SetterRegistration` / 每个 kind 的 `normalize·validate·serialize` 进 `protocol`、建内置映射表 + `registerSetter()` 注入点（§12.4.2 方案 A，未命中时走现有分派，零行为变化）；补「物料契约」检查（唯一根 + attrs 透传 + 无框架专有 props） | 同一 schema 序列化往返一致；内置 setter 视觉与输入法交互零回归 |
+| M5 | 新建 `renderer-vue`，实现 `createVueDriver` / 20 个物料绑定 / `mount` | 见 §12.10 |
+
+M1~M4 每一步都要跑 `npx tsc -b`、`npx vitest run`、`pnpm build` 与 5173 浏览器
+冒烟（0 error / 0 warning / 0 pageerror / 无 Vite overlay）；按项目约定，期间
+**不新增测试用例**，最后统一补齐。
+
+**设计时（L3）另有独立轨道** `M-L3-1`~`M-L3-5`，见 §12.13.7。它与上表并行、互不
+阻塞，唯一交汇点是 `designer-core` 导出的 session 与 setter 契约 —— 因此
+`M-L3-1`（抽 core）应排在 `M4`（setter 接线）之前，否则 setter 接线要写两遍。
+
+### 12.9 验收标准（多框架）
+
+- [ ] `packages/{protocol,model,drag,renderer-core}/src` grep 不到 React / Vue 字样
+- [ ] `KIND=react` 与 `KIND=vue` 加载同一 `landingSchema`，去掉框架私有属性后，
+      `data-node-id` 的序列与层级完全一致
+- [ ] 两种 `KIND` 下：拖入物料、跨容器移动、选中/悬停框、面包屑、属性面板改样式
+      行为一致；滚动时虚线框不抖动（§7.4.1）
+- [ ] `createBindingRegistry` 在缺/多一个物料绑定时抛错并列出差集
+- [ ] `registry.kind !== adapter.kind` 时抛错
+- [ ] 两套 adapter 的框架差异收敛到**一个**适配包：core 与所有绑定包版本一致，
+      除 `create*Driver` 类适配文件外逐一同构（Ark UI / Zag 参照，§12.4.2）
+- [ ] 产物检查：Vue 构建不含 `react-dom/client` 的画布路径，React 构建不含 Vue runtime
+- [ ] 同一 `ComponentMeta` 在两种 `KIND` 下，属性面板控件集合与写回的 `props`
+      完全一致；`PropertyPanel` / `setters.tsx` 不出现按 `kind` 分支、不 import adapter
+- [ ] `SetterRef` 是有限语义 kind 枚举、可 JSON 序列化往返；未知 kind 有明确诊断，
+      不静默回落成 `TextSetter`；协议内不含组件引用 / VNode / `ReactNode`
+- [ ] `meta.setter` 的 kind 优先于 `options` / `type`（修正现优先级 bug）：带
+      `options` 的属性写 `setter` 必须生效
+- [ ] `SetterContext` 只含纯数据与回调，无 `ReactNode` / `VNode` / 组件实例；
+      `batch()` 多键写入只产生**一条**历史记录（`SetProps` 按 `nodeId + 排序键` 合并）
+- [ ] 同一 `SetterKind` 换实现（`registerSetter()` 覆盖内置）不改 schema、不需
+      数据迁移；第三方 setter 写入非法值时被该 kind 的 `validate` 拒绝并有可见提示
+- [ ] 编辑器两个 flavor 互不污染：`designer-react` 的产物 grep 不到 `vue`，
+      `designer-vue` 的产物 grep 不到 `react` / `react-dom`；两者只共享
+      `designer-core` / `designer-ui`（§12.13.6）
+- [ ] 同一 `SetterKind` 在 React 与 Vue 各有实现时，`registry.match(kind)` 在各自
+      flavor 下命中自己那份；只注册了别的 flavor 时报 `flavor-mismatch`（可见诊断，
+      不渲染、不静默回落）——§12.13.5
+- [ ] Vue 宿主接入只依赖 `renderer-vue` / `renderer-core` 与 `PageSchema`（纯运行时
+      场景不需要任何编辑器包，§12.7.1）
+
+### 12.10 风险
+
+| 风险 | 应对 |
+|---|---|
+| 两套物料行为漂移 | meta 共享 + `shouldPlacePlaceholder` 等规则进 core + §12.9 的 DOM 序列比对 |
+| 框架绑定包版本漂移（core 升级、Vue 包落后） | 同仓锁步版本 + 装配期版本校验（§12.3）；反面参照 `lexical-vue` 硬钉旧 core，正面参照 Ark UI 四套绑定锁步 5.40.0 / Zag 1.47.0 |
+| 把「跨框架范式」当成替换 shadcn 的理由 | Ark UI / Zag 只作架构参照，不进依赖；`designer-react/src/ui/*` 固定 shadcn/Radix（§12.4.1 红线） |
+| Vue 多根组件丢 attrs | §12.4 契约第 1 条 + M4 的物料契约检查 |
+| Vue 主应用与 adapter 各装一份 vue（`dedupe` 漏配） | `resolve.dedupe` 补 `vue`；产物检查两份 runtime（§12.7.1） |
+| Vue 宿主同页嵌 React 编辑器导致样式互相污染 | 默认 iframe 独立部署，同页懒加载仅作次选（§12.7.1） |
+| `list()` 返回值变更影响面板 | M2 一并改，调用点只有 3 处 |
+| 动态 import 把两套框架都打进产物 | 构建时常量替换 + 产物检查（§12.9） |
+| Vue setter 与 React 版视觉不一致、实例内混挂多框架 | §12.13 两条硬约束：两版 import **同一个 `*.module.css` 与 token**（版式天然一致）+ 注册表按 flavor 解析（一个实例只启用一族实现） |
+| 两套编辑器 UI 行为漂移（同一 schema 两版表现不同） | 逻辑全在 `designer-core`；判据是「命令序列 → `doc.toSchema()` 字节一致」，测 core 不测 UI（§12.13.7） |
+| 为「支持 Vue」先写 Vue 版、后补 core | 顺序写进 §12.13.7：M-L3-1 必须先行；否则 `style`/`props`/`tree` 规则复制两份，之后必然分叉 |
+| 把「iframe 嵌编辑器」误升级成「自建 Vue 编辑器」 | §12.7.1 的成本对比先摆出来：iframe 近乎零成本，双框架是 ≈7 400 行视图层 |
+| meta 里写了自定义 `setter` 名字但被静默忽略 | M4 建内置映射表 + `registerSetter()` 注入点 + 未知 kind 显式诊断（§12.9） |
+| 自定义 setter 开成组件注入口，破坏 schema 自描述 | 方案 A 用语义 kind + 声明式 `PropMeta`，不由协议携带实现名；注册表键是 **kind**，不是组件名（§12.4.2） |
+| 第三方 setter 写入不合法值，画布静默回落 | 每个 kind 自带 `normalize` / `validate` / `serialize` 纯函数，提交前校验并给可见提示（§12.4.2） |
+| `SetterContext` 成事实公开 API 后难改 | 一经发布即按公开契约对待：只允许新增可选字段，不删字段、不改既有语义；与绑定包同走锁步版本（§12.3） |
+| 把「按框架分 setter 包」误当成自定义的前置条件，过早拆三个包 | §12.3 已记实测成本（`ui/*` 297 行 / 4 处引用）；C 类消费方用注入注册表即可。**`ui-react` 仍不拆**；`designer-core` / `designer-ui` 不是「按框架分」，而是「逻辑 / 样式 与 视图分」，由 §12.13 触发 |
+| 表达式沙箱（M6）引入框架对象 | `EvalContext.scope` 只允许纯数据，求值器留在 core |
+
+### 12.11 决策记录（7 项；第 6、7 项已按用户决策定稿，其余按建议默认）
+
+> 第 6 项已由用户拍板：**参考 lowcode 的注册表逻辑，支持自定义 setter 在编辑中
+> 加载**，已写入 §12.4.2 与 §12.12.5~12.12.6。其余 5 项维持建议值（可单独推翻，
+> 不阻塞 M1 开工）。
+>
+> Ark UI / Zag.js 已按用户建议**采纳为架构参照**（只借「core + 薄适配层 +
+> 同仓锁步版本」的结构，不引入任何运行时依赖、不替换 shadcn），落在 §12.3 /
+> §12.4.1 / §12.4.2 / §12.9 / §12.10；**不新增第 7 项待确认**。
+
+1. **Vue 实现形态**：建议 Vue 3.5+ `defineComponent` + `h()`（与 React driver 同构、
+   无需 SFC 编译链），而不是 `.vue` 单文件模板。**仅约束画布物料**；编辑器 UI
+   （`designer-vue`）用 SFC —— 模板量大、构建期编译、与运行时无关（§12.13.8）。
+2. **物料 CSS 归属**：建议抽成独立 `@lowcode-next/materials-css`，两个 adapter 都
+   只 import 同一份（class 名是 DOM 契约，不能两套各写一份）。
+3. **包命名**：建议保留 `@lowcode-next/renderer` 作为 React 实现的兼容别名，新增
+   `renderer-core` / `renderer-vue`；激进方案是彻底改名，代价是全仓 import 变更。
+4. **二选一的粒度**：建议构建时 `VITE_RENDERER_KIND` 常量（可 tree-shake）；dev
+   可加 URL 覆盖，但产物里不允许运行时切换。
+5. **编辑器宿主是否允许嵌进 Vue 业务系统**：建议允许（独立 React 应用，iframe /
+   微前端，只交换 `PageSchema`），但本节不把它纳入「二选一」语义。
+6. **自定义 setter 的扩展点形态 —— 已定稿**（用户决策：参考 lowcode 注册表逻辑，
+   支持自定义 setter 在编辑中加载）：`registerSetter` / `loadSetters` 运行时注册 +
+   带版本号的 observable 注册表，属性面板订阅刷新；注册项三种形态 `{ component }` /
+   `{ load }` / `{ dynamic }`，**不内建 `mount`**（非 React 实现用薄包装组件）。
+   `SetterContext`（`value` / `field` / `meta` / `scope` / `batch` / `disabled`）与每个
+   kind 的 `normalize·validate·serialize` 写进 `protocol` 作为公开契约；key 推荐语义
+   kind，lowcode 旧组件名走别名表。**不采纳** `SetterHost`。包拆分
+   （`ui-react → setter-react → designer`）仍按触发条件，本期不拆。
+   契约落在 `packages/designer-core/src/setter-registry.ts`，**M4 已接到属性面板**
+   （§12.12.6 末；注册表为空时行为与接线前完全一致）。
+7. **L3 是否支持 Vue —— 已定稿**（用户决策：**L3 也要支持 Vue**）：L3 拆四件
+   —— `designer-core`（零框架：session / 命令网关 / 拖拽装配 / iframe 桥 / 样式解析 /
+   属性行解析 / 大纲算法 / setter 注册表）+ `designer-ui`（共享 CSS Module 与 token，
+   不放组件）+ `designer-react` + `designer-vue`；setter 契约加
+   **flavor** 维度（`SetterRegistry({ flavor })` + `match()` 三态）。顺序不可颠倒：
+   先 M-L3-1 抽 core，再写第二套 UI。全文见 §12.13，落地判据见 §12.13.7。
+
+### 12.12 最终架构（定稿）
+
+> 本节是 §12 的收敛版：把前 11 小节的决策压成**一张分层图 + 一份包清单 + 四条不锁
+> 架构的保证 + 一张扩展点表**。与前面表述冲突时，以本节为准；细节仍回看对应小节。
+
+#### 12.12.1 一句话
+
+**内核只认数据与 DOM，框架知识只落在适配器包，setter 是设计时可插拔资产。**
+
+三条推论，也是「不锁系统架构」的实际含义：
+1. 换渲染框架 = 加一个 adapter 包，协议 / 模型 / 拖拽 / 设计器零改动；
+2. 换 setter 实现 = 注册表换一项，schema 零迁移；
+3. 换编辑器 UI 框架（如 Vue 版）= 加 `designer-vue`，**只重写视图层**，复用
+   `designer-core` 与全部契约（定稿见 §12.13）。
+
+#### 12.12.2 分层
+
+```text
+┌─ L4 装配 ────────────────────────────────────────────────────────┐
+│ apps/playground-react / -vue：各绑一个 designer-*，画布仍 React     │
+│ · 共用 apps/shared（画布 / 预览 / schema / 样式 / Vite 基座）       │
+│ · 注入 setter 注册表（按 flavor）                                   │
+└───────────────┬──────────────────────────────┬───────────────────┘
+                │                              │
+   ┌────────────▼─────────────┐   ┌────────────▼─────────────────┐
+   │ L3 设计时（视图层二选一）  │   │ L2 适配（框架唯一落点）        │
+   │ designer-react │ designer-vue                            │
+   │ 属性面板 / 大纲 / 浮条 /  │   │ renderer-react │ renderer-vue │
+   │ Monaco / setter / shadcn  │   │ createDriver · bindings      │
+   └────────────┬─────────────┘   └────────────┬─────────────────┘
+                │  session + setter 契约（纯数据）│
+   ┌────────────▼──────────────────────────────▼─────────────────┐
+   │ L3-core designer-core（零框架）：DesignerSession / 命中 /     │
+   │ 拖拽装配 / iframe 桥 / 样式解析 / 大纲算法 / setter 注册表     │
+   ├──────────────────────────────────────────────────────────────┤
+   │ L1 内核（零框架）                                             │
+   │ protocol · model · drag · renderer-core                      │
+   │ schema / Command / 命中 / IR / 求值 / 值 normalize·validate   │
+   └──────────────────────────┬──────────────────────────────────┘
+                              │
+   ┌──────────────────────────▼──────────────────────────────────┐
+   │ L0 宿主：同源 iframe 画布 · 业务应用 · 任意框架宿主（iframe）  │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+依赖**单向向下**，禁止回指：`L1` / `designer-core` 不认识 `L2/L3` 的视图层；
+`designer-react` / `designer-vue` 只依赖 `designer-core` 的公开导出；`L0` 只通过
+`postMessage` 与 DOM 契约通信。
+
+#### 12.12.3 包清单
+
+| # | 包 | 层 | 依赖 | 框架 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `protocol` | L1 | `zod` | 无 | 现有 |
+| 2 | `model` | L1 | `protocol` | 无 | 现有 |
+| 3 | `drag` | L1 | 零 | 无 | 现有 |
+| 4 | `renderer-core` | L1 | `protocol` | 无 | **M1 拆出** |
+| 5 | `renderer-react` | L2 | `core`，`react` 为 peer | React | **M3 收敛** |
+| 6 | `renderer-vue` | L2 | `core`，`vue` 为 peer | Vue 3 | **M5** |
+| 7 | `designer-core` | L3-core | `protocol` / `model` / `drag` | 无 | **已拆出（M-L3-1）** |
+| 8 | `designer-ui` | L3 | 无（只放 CSS + 图标数据；**无构建、无 TS 工程**） | 无 | **已拆出（M-L3-2）** |
+| 9 | `designer-react` | L3 | `designer-core` / `designer-ui`，`react` 为 peer | React | 现有（M-L3-1 已改名） |
+| 10 | `designer-vue` | L3 | `designer-core` / `designer-ui`，`vue` 为 peer | Vue 3 | **M-L3-3 已交付只读骨架**；属性面板 / 数据源见 M-L3-4~5 |
+| 11 | `apps/playground-react` / `playground-vue` | L4 | 各绑一个 `designer-*` + **一个** adapter，共用 `apps/shared` | 每个 app 固定一种组合 | 现有（2026-11-06 拆成两个 app） |
+| 12 | `setter-contract` | L1 | `protocol` | 无 | 可并入 protocol |
+| 13 | `setter-react` / `ui-react` | L2/L3 | 见 §12.3 | React | 条件拆分 |
+
+第 12、13 项是**条件包**，不是本期交付物：`setter-contract` 先作为 `protocol` 内的
+类型与纯函数存在；`setter-react` / `ui-react` 只在「第三方要复用控件壳」时拆
+（成本实测见 §12.3）。注意 `designer-core` / `designer-ui` **不是**条件包：
+它们是「L3 支持 Vue」的前置条件，不拆就只能复制逻辑（§12.13.1）。
+
+#### 12.12.4 四条硬保证（可验收，不是口号）
+
+| # | 保证 | 判据 |
+|---|---|---|
+| G1 | 内核与设计时核心无框架 | `packages/{protocol,model,drag,renderer-core,designer-core}/src` 里没有 `from 'react'` / `from 'vue'` / `@radix-ui` / `lucide` 的 **import**（注释里提到框架名不算） |
+| G2 | 框架差异收敛到一个适配包 | 两套 adapter 除 `create*Driver` 适配文件外逐一同构；core 与绑定包锁步版本 |
+| G3 | DOM 是唯一跨框架协议 | 命中/高亮/拖拽只依赖 `data-node-id` / `data-edit-flags` / `[data-lc-canvas]` + `getBoundingClientRect`，不认组件树 |
+| G4 | 新增框架零渗透 | 新增 adapter 只需实现 `RendererAdapter`（`createDriver` + `bindings` + `mount`）+ 一套物料；协议 / 模型 / 设计器 / setter 均不改 |
+
+再加两条设计时约束：
+
+| # | 保证 | 判据 |
+|---|---|---|
+| G5 | setter 只认语义 kind | schema 里只有 kind 名，没有组件引用；换实现不改 schema、不需迁移 |
+| G6 | 设计时逻辑只有一份 | `designer-core` 之外不允许出现 `Command` 构造 / 历史栈操作 / 命中计算 / 样式字符串解析；两版 UI 只做「订阅快照 + 渲染」（§12.13.4） |
+
+#### 12.12.5 四类扩展点
+
+| 扩展点 | 契约 | 注册 / 装配方式 | 新增时改动 | 运行时可 |
+|---|---|---|---|---|
+| 物料的 React 实现 | `ComponentMeta` + `reactBindings` | adapter 装配期 `createBindingRegistry` | 加 adapter 包 | 否 |
+| 物料的 Vue 实现 | 同上 + `vueBindings` | 同上，`kind=vue` | 加 adapter 包 | 否 |
+| **自定义 setter** | `SetterKind` + `SetterContext` + `SetterRegistration`（带 flavor） | `registerSetter` / `loadSetters` | **零改动** | **是** |
+| 数据源 | `DataSourceConfig` | 宿主传 `document.setDataSource` | 零改动 | 是 |
+| 渲染框架 | `RendererAdapter` | 构建时 `VITE_RENDERER_KIND` | 加 adapter 包 | 否 |
+| 编辑器 UI 框架 | `DesignerSession` + DOM/CSS 契约 | 看 app 依赖哪个 `designer-*`（`package.json`） | 加 `designer-*` 包 + 一个 app（§12.13） | 否 |
+
+「运行时可」这一列是这套架构与 lowcode 原版的关键差异：lowcode 的 `registerSetter`
+是启动期一次性写入，注册后属性面板不会响应；本地把注册表做成**带版本号的
+observable**，`PropertyPanel` 用 `useSyncExternalStore` 订阅，所以「编辑中加载」成立。
+
+#### 12.12.6 自定义 setter 的解析与加载链路
+
+**解析**（每次渲染属性行）：
+
+```text
+meta.setter
+  → setterKindOf()            // 归一：'TextAreaSetter' → 'textarea'，对象形态取 componentName
+  → registry.match(kind)      // 注册表构造时绑定 flavor（'react' / 'vue'）
+      ├─ { status:'hit', { component } } → 直接渲染（默认路径，零额外开销）
+      ├─ { status:'hit', { load } }      → 首次用到才 import()，pending 渲染占位
+      ├─ { status:'hit', { dynamic } }   → 按 ctx 求值，结果再走上面两支（只递归一层）
+      └─ { status:'missing' | 'flavor-mismatch' } → 可见诊断 + 按 type 回落内置控件
+                                                    （**不静默**）
+```
+
+优先级：**注册表命中 > 显式 `setter` > `options` > `type`**。
+
+其中的 `setter` 一层已修（原实现排在最后、且只比较字符串字面量 `'TextAreaSetter'`，
+导致「带 `options` 的属性写 `setter` 不生效」与「`{ componentName }` 对象形态不认」
+两个坑）。现在由 `designer-core` 的 `resolvePropControl` 统一决定：先用 `setterKindOf`
+把声明归一成语义 kind（认对象形态与旧组件名别名），命中内置 kind 就直接用，否则才走
+`options` / `type` 推导。**一个函数、两套编辑器共用** —— 这正是把规则搬进 core 的收益。
+非内置 kind（如 `color`）此处退回类型推导，由属性面板在**查注册表命中后**覆盖
+（M4 已接线，见本节末）。
+
+**加载**（编辑过程中）：
+
+```text
+registerSetter / loadSetters
+  → registry.emit()（version++）
+  → PropertyPanel 的 useSyncExternalStore 快照变化
+  → 重新渲染属性行，新控件出现
+  → schema 不变、历史栈不变
+```
+
+API 形态对齐 lowcode，另加 flavor 与异步入口：
+
+```ts
+// React 编辑器：注册表绑 flavor，注册代码不用重复写框架名
+const setters = new SetterRegistry({ flavor: 'react' });
+registerSetter('color', ColorSetter, { registry: setters });
+registerSetter({ icon: { load: () => import('./IconSetter') } }, undefined, { registry: setters });
+
+// 编辑中批量（第三方包按框架分入口）
+await loadSetters(async () => (await import('@acme/lc-setters')).react, { registry: setters });
+```
+
+**M4 落地状态（已完成）**：
+
+| 项 | 结果 |
+|---|---|
+| 行模型 | `PropertyRowModel` 新增 `setterKind`（`meta.setter` 归一后的**原始意图**，与推导出的 `control.kind` 分开：`color` 不会被悄悄当成 `text`）；新增 `isBuiltinSetterKind()` |
+| 查表键 | **`kind = row.setterKind ?? control.kind`**。显式声明优先，所以「注册 `text` 全局替换所有文本控件」也成立；作者写了 `color` 就按 `color` 查，查不到才好报错 |
+| 订阅 | `PropertyPanel` 用 `useSyncExternalStore(setters.subscribe, setters.getVersion)`；`setters` prop 缺省 `defaultSetterRegistry`，宿主 `registerSetter(...)` 无需传参即可生效 |
+| 渲染 | 新增 `designer-react/src/SetterSlot.tsx`：`{ component }` 直接渲染 / `{ load }` 首次用到才 `import()`（`WeakMap` 按注册项对象缓存，热替换即失效）/ `{ dynamic }` 每次按 ctx 求值（只下钻一层）。失败渲染原因，**不静默空白** |
+| flavor | `DESIGNER_FLAVOR = 'react'`；`match(kind, flavor)` 三态，`flavor-mismatch` 渲染诊断并临时回落，不会把 Vue 组件塞进 React 树 |
+| 诊断 | 两条：① flavor 不匹配；② `setterKind` 非内置且未注册（`meta.setter` 写了但没人实现）。都独占一行、红底，见 `PropertyPanel.module.css` 的 `.setterIssue` |
+| 零回归 | 注册表为空时 `match` 返回 `missing` → 走原内置映射；`FeatureCard.desc` / `CodeBlock.code` 的 `TextAreaSetter` 归一为 `textarea`（内置），行为与接线前一致 |
+| 演示 | playground `?setter=demo`：`main.tsx` 里**动态 `import()`** 一个覆盖 `textarea` 的实现并注册，验证「编辑器已跑起来之后注册 → 面板立刻刷新」。不加参数则不注册任何东西 |
+
+`scope.page` 用 getter 而不是直接求值：属性面板一次几十行，而 `toSchema()` 是整页深拷贝；
+只有 setter 真读 `scope.page`（联动 / 数据源类）时才付这个代价。
+
+Vue 编辑器把 `flavor: 'vue'` 换成自己的值、注册 `/vue` 入口即可，**契约一字不改**。
+框架无关实现（Web Component、只吐 DOM 的渲染函数）不传 flavor，落到 `'*'`，
+两套 UI 都能取到。
+
+与 lowcode 注册表的四点差异（都是修正，不是偏离）：
+
+| lowcode | 本地 | 原因 |
+|---|---|---|
+| 启动期注册，面板不响应 | 版本号 + 订阅，运行时可注册 | 「编辑中加载」是本期明确需求 |
+| `isDynamic` 布尔标记区分组件/动态 setter | 用**字段名** `component` / `load` / `dynamic` 区分 | 两者运行时都是函数，标记在自定义组件上会误判 |
+| `getSetter` 查不到返回 null，面板静默空掉 | 未注册渲染可见诊断并回落 | 静默失败最难查 |
+| key 是任意组件名 | key 推荐语义 kind，旧组件名走别名表 | schema 自描述、可移植 |
+| 表只有一份，实现钉死在引擎自己的 UI 框架 | 实现带 **flavor 标签**，注册表按 flavor 解析 | L3 双框架（§12.13），且能显式报出「拿 React setter 给 Vue 用」 |
+
+React 版 `setters.tsx` 的 5 个内置控件**不需要改**：`SetterContext extends
+SetterProps`，现有控件直接接收新上下文（多出来的字段不读）。Vue 版按同一份
+`SetterProps` 另写 5 个等价控件（§12.13.5）——**契约一份，实现按 flavor 一份**。
+
+#### 12.12.7 二选一的边界（不要和「不锁架构」混为一谈）
+
+| 层 | 是否随 `kind` 切换 | 变量 | 说明 |
+|---|---|---|---|
+| 画布 / 预览渲染 | **是**，构建时二选一 | `VITE_RENDERER_KIND` | 产物里只有一套框架 runtime |
+| 设计器 UI（含 setter） | **是，但独立**，由 app 决定 | `package.json`（没有变量） | 与画布框架正交，四种组合都合法（§12.13.6） |
+| 协议 / 模型 / 拖拽 / 求值 / 设计时逻辑 | 否 | — | 本来就没有框架 |
+
+两个变量**互不牵连**：`react` 编辑器 + `vue` 画布（Vue 团队自建物料、复用 React
+编辑器）和 `vue` 编辑器 + `react` 画布都成立 —— 它们之间只交换 `PageSchema` 与
+DOM 契约，没有 import 关系。
+
+「Vue 宿主 → React/Vue 设计器（iframe）→ 任一框架画布」三层 runtime 共存是
+**合法**的：C2 约束的是「一个画布一个框架」，不是「一个页面只能有一个框架」。
+设计器被嵌进业务系统时走 iframe，只交换 `PageSchema`（§12.7.1）。
+
+#### 12.12.8 落地顺序与每步的零回归判据
+
+| 步 | 内容 | 判据 |
+|---|---|---|
+| M1 | 抽 `renderer-core`，`react` 改 peer | 画布渲染结果逐 DOM 一致 |
+| M2 | `designer` 只依赖 `MaterialMetaSource` | 属性面板/大纲/拖拽行为不变 |
+| M3 | React 收敛为 `renderer-react` | 同上，产物仍单框架 |
+| M4 | 协议净化 + setter 注册表 + 编辑中加载 | **注册表部分已接线**（§12.12.6 末）；未注册任何 setter 时行为**完全不变**（`match` 返回 `missing` 即走原内置映射）。协议净化未动 |
+| M5 | `renderer-vue` + `vueBindings` | 同一 schema，`data-node-id` 序列与层级一致 |
+
+setter 这一步（M4）的判据可以更强：**注册表为空时 `PropRow` 走的就是原来那条
+分派链**（`match` → `missing` → 内置映射），所以视觉与输入法行为零回归；只有显式
+注册后才切到注册的实现。接线时把原来的 if/else 抽成了 `builtinSetter()` 一个函数，
+分支顺序与原来逐字一致。
+
+**L3 双框架是另一条正交轨道**（`M-L3-1`~`M-L3-5`，见 §12.13.7）：它只动设计时，
+不碰画布与协议。两条轨道可以并行，唯一交汇点是 `designer-core` 对外导出的
+session 与 setter 契约 —— 所以 `M-L3-1` 必须在 `M4` 接线之前落地，否则 setter
+接线要写两遍。
+
+#### 12.12.9 什么时候才该动这套架构
+
+反向约束，防止过度设计：
+
+| 触发 | 动作 |
+|---|---|
+| 出现第二个**渲染**框架 | 加 adapter，G4 自然满足（Vue 已验证路线） |
+| 非浏览器运行时要渲染（SSR / 小程序 / 原生） | adapter 增加 `mount` 环境分支，core 不动 |
+| 第三方要**分发** setter 包并复用控件壳 | 拆 `ui-react` → `setter-react`（顺序不可颠倒，否则成环） |
+| 需要多编辑器实例隔离 | `new SetterRegistry()` 注入，已支持（对应引擎 `viewName` 分库） |
+| 需要 Vue 版编辑器 UI | **已定稿**：拆 `designer-core` + `designer-ui` + `designer-vue`，见 §12.13 |
+
+除以上五种，保持现状。
+
+### 12.13 L3 双框架（designer-core + designer-react / designer-vue）
+
+> 用户决策：**L3 也要支持 Vue**。本条推翻 §12.4.1 原先的「设计时 UI 固定 React」，
+> 但**不推翻**它的核心论点 —— setter 的**契约**必须无框架（纯数据进、`Command` 出），
+> **实现**按编辑器 flavor 各一份。与 §12.12 冲突处以本节为准。
+
+#### 12.13.1 先说清代价：为什么不能「直接写个 Vue 版」
+
+现状核查（`packages/designer-react/src`，抽包前）：
+
+| 指标 | 数值 | 含义 |
+|---|---|---|
+| `.tsx` 文件 / 行数 | 22 个 / **7 377 行** | 视图层体量 ≈ 内核的 2 倍 |
+| `.module.css` | 14 个 | 版式全在 CSS Module 里，不在组件属性里 |
+| hook 调用 | **187 处** | 状态几乎全部挂在组件内 |
+| 单文件最重 | `Designer.tsx` 878 行 / **48 处 hook**；`StyleSetter.tsx` 975；`TreePanel.tsx` 971；`StyleSetterExtras.tsx` 928 | 逻辑与视图交织 |
+| 已分离的纯逻辑 | 7 文件 / **1 025 行**（`dom` 144、`drop-context` 212、`float-bar` 180、`hierarchy` 98、`tree-layout` 100、`clone` 41、`setter-registry` 250） | 可直接搬进 core |
+
+但真正的问题不是「行数要写两遍」，而是**下面这些规则现在埋在视图文件里**：
+
+| 规则 | 现在住在哪 | 复制一份的后果 |
+|---|---|---|
+| 样式字符串 ↔ 样式对象（`removeUnit` / `toKebab` / `toCamel` / `styleToCssCode` / `parseToData`） | `StyleSetter.tsx` 5 个私有函数 | 一个编辑器能存进 `0px`、另一个存进 `0`，同一 schema 渲染不同 |
+| 多值简写拆合（`splitUnit` / `multiPart` / `pairValue` / `addUnit`） | `StyleSetterExtras.tsx` 9 个私有函数 | 四向边距在两版里合并顺序不一致，历史记录键不同 |
+| 大纲折叠默认值 / 节点标签（`nodeLabel` / `nodeText` / `collapsedByDefault`） | `TreePanel.tsx` | 打开同一页面，两版默认展开的层级不同 |
+| 属性行过滤与排序（去 `style`、按 `PropMeta` 分组） | `PropertyPanel.tsx` 的 `PropsTab`/`PropRow` | 同一物料两版显示的属性集合不同 |
+| 提交网关（`commit` → `History.execute` → `onSchemaChange`） | `Designer.tsx` 的 `useCallback` | 一版能撤销、一版漏了历史 |
+
+结论：**不做 `designer-core` 直接写 Vue 版 = 把上表复制第二份**。之后任何一侧修 bug
+都会让两版行为分叉，而且分叉无法用「DOM 一致」判据兜住（DOM 一样、行为不同）。
+所以顺序不可颠倒：**先抽 core，再写第二套 UI**。
+
+#### 12.13.2 三层拆分
+
+```text
+designer-core   (零框架)  DesignerSession · 命令网关 · 拖拽装配 · iframe 桥
+                          命中/滚动 · 大纲算法 · 样式解析 · 属性行解析 · setter 注册表
+      ▲                    ▲
+      │ 公开导出            │ 公开导出（同一份 CSS Module 文件 / 同一份 token）
+designer-react          designer-vue
+(shadcn/Radix/lucide)   (shadcn-vue/Reka/@lucide/vue)
+      │                    │
+      └──── 各自只做「订阅快照 + 渲染」，不含任何写操作 ────┘
+```
+
+`designer-core` 的组成（新写的只有 `session` 与三个纯函数模块，其余是搬家）：
+
+| 模块 | 内容 | 来源 |
+|---|---|---|
+| `session.ts` | `DesignerSession`：device / canvasWidth / draft / historyState / dragging / 左栏页签 / 钉住 / 数据源编辑 / revision；`commit` / `undo` / `redo` / `save` / `select` / `selectQuietly` / `hover` / `removeSelected` / `locate` / `attachFrame` / `dispose`。拖拽装配、iframe 桥、reveal 作为私有方法收在同一个类里（**不再拆 `drag.ts` / `bridge.ts` / `reveal.ts`**：它们共享 10 个私有字段，拆文件只会来回传 `this`） | 从 `Designer.tsx` 抽出 |
+| `materials.ts` | `MaterialLookup`（只要 `has` / `getMeta`）+ `defaultInsertTemplate` | 新增（解掉对 `MaterialRegistry` 具体类的依赖） |
+| `style.ts` | `removeUnit` / `toKebab` / `toCamel` / `styleToCssCode` / `parseToStyleData` / `splitUnit` / `multiPart` / `pairValue` / `addUnit` | 从 `StyleSetter(+Extras)` 抽出 |
+| `props.ts` | 属性行过滤排序 + **setter 解析优先级**（注册表 > `options` > `type`） | 从 `PropertyPanel` 抽出 |
+| `tree.ts` | `nodeLabel` / `nodeText` / `collapsedByDefault` | 从 `TreePanel` 抽出 |
+| `dom` / `drop-context` / `float-bar` / `hierarchy` / `tree-layout` / `clone` / `setter-registry` | 原样搬 | 已有 1 025 行 |
+| `monaco` | worker 装配仍留在 `designer-react/src/monaco-setup.ts`：`@monaco-editor/react` 是 React 绑定，Vue 侧要自己包挂载，**不进 core**（§12.13.8） | 暂不搬 |
+
+`designer-ui` 只放**两版都要一字不差的东西**，不放组件，也**不建 TS 工程、不产出
+dist**（纯资源包，`exports` 直接指向 `src`）：
+
+1. 14 个 `*.module.css`（两包 import **同一个文件** → CSS Module 的 class 名由文件路径
+   与内容生成，两版拿到同一组名字，版式不会漂）；实测 CSS 内无 `url()` / `composes` /
+   跨文件 `@import`，所以搬包是纯位移，没有资源相对路径要跟着改；
+2. `tokens.css`：宿主可能想改的三个令牌（`--lc-placeholder` / `--lowcode-next-bg` /
+   `--lowcode-next-fg`）在这里给默认值。写法是 **`:where(:root)`（特异性 0）**，
+   宿主任何位置写的 `:root { … }` 都能覆盖 —— 若写成 `:root`，本文件晚加载时会把宿主
+   的覆盖反压回去，这种 bug 极难查。组件内部几何与配色（`--face-color` /
+   `--rail-width` / `--line` / `--brand` …）属于各组件自己的 module，不进 tokens；
+3. **图标契约**：`icon-paths.ts` 只导出 `ICON_PATHS`（iconfont symbol → path 数据）与
+   `IconName` 语义名。React 侧 `EngineIcon` 与 Vue 侧各自的渲染函数都读这份数据 ——
+   共享的是**图形数据**，不是组件实例；
+4. **DOM 契约**（`data-node-id` / `data-selected` / `data-hovered` / `data-lc-canvas` /
+   `data-lc-overlay` 的语义）目前**只有本规范第 G3 条**，暂未落成代码常量。
+   M-L3-3 已经真的用到这些属性（Vue 版的大纲行、选中框、浮条都按同一套选择器写），
+   但**仍然不抽 `dom-contract.ts`**：两版各写一次字面量、没有第三处消费者，
+   抽出来只会得到一个「谁都不敢改」的常量表。等出现第三个读者（比如 Vue 版属性面板、
+   或外部插件），再连同 G3 一起固化。
+
+#### 12.13.3 `DesignerSession` 契约
+
+```ts
+export interface DesignerSnapshot {
+  revision: number;                 // 单调递增；整树重渲染的触发依据（D14 粒度不变）
+  device: 'default' | 'tablet' | 'phone';
+  canvasWidth: number | null;
+  canvasDraft: string | null;
+  frameReady: number;
+  dragging: boolean;
+  history: { canUndo: boolean; canRedo: boolean };
+  selectable: { selectedId: string | null; hoverId: string | null };
+  ui: { leftTab: string; pinned: boolean; paneOpen: boolean };
+  dataSourceEditing: { draft: DataSourceConfig; isNew: boolean } | null;
+}
+
+export class DesignerSession {
+  constructor(options: {
+    document: DocumentImpl;
+    /** 只要 has / getMeta，不绑定 MaterialRegistry 具体类（M2 收口） */
+    materials: MaterialLookup;
+    canvasPadding?: number;
+    onSchemaChange?: (schema: PageSchema) => void;
+    storage?: Pick<Storage, 'getItem' | 'setItem'> | null;  // 钉住偏好，测试可注入
+    canvasUrl?: string;                                     // 默认 canvas.html
+  });
+
+  /** 快照：**引用稳定**，没变化就返回同一个对象（否则 useSyncExternalStore 会死循环） */
+  getSnapshot(): DesignerSnapshot;
+  subscribe(listener: () => void): () => void;
+
+  /* 生命周期：构造纯状态，副作用在 start() 之后发生 */
+  start(): void;                       // 文档/历史订阅、快捷键、拖拽引擎
+  update(patch: { canvasPadding?: number; onSchemaChange?: (s: PageSchema) => void }): void;
+
+  // 唯一写通道：都进历史栈
+  commit(command: Command): void;
+  undo(): void;
+  redo(): void;
+  save(): void;
+
+  // 选择 / 视口
+  select(id: string | null, options?: { reveal?: boolean }): void;
+  hover(id: string | null): void;
+  removeSelected(): void;
+  locate(id: string): void;
+
+  // 左栏 / 数据源（纯 UI 状态，不进历史）
+  setLeftTab(tab: string): void;
+  toggleLeftTab(tab: string): void;
+  setPaneOpen(open: boolean): void;
+  togglePin(): void;
+  closePane(): void;
+  editDataSource(draft: DataSourceConfig, isNew: boolean): void;
+  closeDataSourceEditor(): void;
+  applyDataSource(next: DataSourceConfig): void;
+
+  // 画布尺寸
+  setDevice(key: CanvasDevice): void;
+  setCanvasDraft(value: string | null): void;
+  commitCanvasDraft(): void;
+
+  // 画布挂载（DOM 生命周期，唯一允许持有 DOM 引用的地方）
+  attachFrame(frame: HTMLIFrameElement): void;
+  detachFrame(): void;
+  getCanvas(): HTMLElement | null;
+  getFrame(): HTMLIFrameElement | null;
+
+  dispose(): void;                  // **可重入**：StrictMode 下 mount→unmount→mount 复用同一实例
+}
+```
+
+四条硬约束：
+
+1. **快照引用稳定**：`getSnapshot()` 只在 state 真正变化时换对象 —— React 的
+   `useSyncExternalStore` 会因为「每次新对象」无限重渲染，Vue 侧同理会触发多余 watcher。
+2. **session 不认识视图**：不 import 任何组件、不返回 JSX/VNode、不持有对 React/Vue
+   实例的引用；`attachFrame` 拿到的是原生 `HTMLIFrameElement`。
+3. **写操作只有一条通道**：`DesignerSession` 之外不允许 `new InsertNode(...)` 或
+   `history.execute(...)`（G6 的判据）。
+4. **不引入新的状态模型**：session 只是把现在散在 `Designer.tsx` 的 `useState` / `ref`
+   / `effect` 搬进类里，**粒度仍是整树重渲染**（D14 不变）。所以 React 版切换前后可以
+   用 DOM 快照逐字节比对。
+
+#### 12.13.4 两种绑定：各 20 行，没有逻辑分支
+
+React：
+
+```tsx
+const session = useMemo(() => new DesignerSession({ document: doc, materials, setters }), [doc]);
+const snap = useSyncExternalStore(session.subscribe, session.getSnapshot);
+const setFrame = useCallback((el: HTMLIFrameElement | null) => el ? session.attachFrame(el) : undefined, [session]);
+useEffect(() => () => session.dispose(), [session]);
+```
+
+Vue：
+
+```ts
+const session = new DesignerSession({ document: doc, materials, setters });
+const snap = shallowRef(session.getSnapshot());
+const off = session.subscribe(() => { snap.value = session.getSnapshot(); });
+const frameEl = ref<HTMLIFrameElement | null>(null);
+onMounted(() => { if (frameEl.value) session.attachFrame(frameEl.value); session.start(); });
+onBeforeUnmount(() => { off(); session.dispose(); });   // 组件作用域内 onScopeDispose 等价
+```
+
+两段代码的形状完全一致，因为逻辑都在 session 里。**这是「L3 支持 Vue」唯一需要
+保证的事**：视图层无行为。（`onBeforeUnmount` 与 `onScopeDispose` 在组件内等价；
+用前者是因为 `mountDesigner()` 之外没有更外层 effectScope。）
+
+#### 12.13.5 setter 的 flavor 维度（契约变更，已落地）
+
+setter 是**实现**，schema 只有 kind（G5 不变）。因此「同一 kind 在两套 UI 里各有一份
+实现」不是例外，而是常态：
+
+```ts
+export type SetterFlavor = string;          // 'react' / 'vue' / 自定义
+export type SetterImpl = unknown;          // 核心不解释，UI 层各自收窄
+
+const reactSetters = new SetterRegistry({ flavor: 'react' });
+const vueSetters   = new SetterRegistry({ flavor: 'vue' });
+
+reactSetters.register('color', ColorSetter);            // 打上 'react'
+vueSetters.register('color',   ColorSetterVue);         // 打上 'vue'
+reactSetters.register('divider', WebComponentSetter);   // 不传 flavor → '*'，两版通用
+
+reactSetters.match('color');  // { status: 'hit' }
+vueSetters.match('color');    // { status: 'hit' }（自己那份）
+reactSetters.match('color');  // 若只有 vue 实现 → { status: 'flavor-mismatch' }
+```
+
+`match()` 三态（`hit` / `missing` / `flavor-mismatch`）的意义：**「React setter 拿给
+Vue 面板用」必须报出来**。直接渲染会炸在别的框架的组件内部实现上，比空着更难查；
+静默回落到 `TextSetter` 则是 §12.4.2 已经否掉的失败模式。
+
+- 内置 6 个 kind（`text` / `textarea` / `number` / `bool` / `select` / `json`）**每版
+  一份实现**：`setters.tsx`（React，一行不改）+ `setters-vue.ts`（Vue，按同一份
+  `SetterProps` 写）。契约一份、实现一份，不是「一套 setter 跨框架运行」——
+  后者就是已被否掉的 `SetterHost` 路线。
+  内置实现**不进注册表**，由 `PropRow` 直接映射（`builtinSetter()`）：这样注册表为空
+  时行为与接线前完全一致。反过来说，**注册同名 kind 就能整体替换内置控件**
+  （playground 的 `?setter=demo` 就是覆盖 `textarea`），不需要改物料和 schema。
+- 第三方分发包按框架分入口，对齐 Lexical 的 `@lexical/react`：
+  `@acme/lc-setters/react` 与 `/vue`，各自把对方框架只写进 `peerDependencies`。
+  反面教材是 `lexical-vue` 在 `dependencies` 里硬钉 `lexical@0.50.0`，与 `lexical@0.53`
+  同时存在 → 装两份 core。**教训：core 只能由 peer + 锁步版本进入。**
+- 一个编辑器实例只启用一种 flavor（`new SetterRegistry({ flavor })` 注入），不允许
+  同一属性面板里混挂两套实现族。
+- 已落地：`packages/designer-core/src/setter-registry.ts` 已去掉 `import type { ComponentType }
+  from 'react'`，改为 flavor 标签 + `match()` 三态 + `kinds()` / `mismatches()` 诊断；
+  **M4 已接线**（`PropertyPanel` 订阅版本号 + `SetterSlot` 三态渲染）；注册表为空时
+  行为与接线前完全一致。
+
+#### 12.13.6 四种组合都合法（不是二选一，是两次二选一）
+
+| 编辑器 UI ↓ \ 画布 → | `renderer-react` | `renderer-vue` |
+|---|---|---|
+| `designer-react` | 全 React 单页（今天） | Vue 团队自建物料、复用 React 编辑器 |
+| `designer-vue` | React 物料、Vue 团队自建编辑器 | 全 Vue |
+
+变量只剩 `VITE_RENDERER_KIND`（画布/渲染层，仍是构建期常量）。**编辑器 flavor 没有
+变量** —— 它由「是哪个 app」决定，见下。两者之间只交换 `PageSchema` 与 DOM 契约，
+**没有 import 关系**（G1 保证 core 谁都不认）。
+
+**flavor 的载体是包，不是构建参数**（2026-11-06 二次修正，这条改过两版）：
+
+| 版本 | 做法 | 问题 |
+|---|---|---|
+| v1 | `?designer=vue` URL 运行时开关 | 一份产物同时含两套编辑器 + 两套 UI 框架，「部署的是哪个 flavor」不可静态判定 |
+| v2 | `define` 注入 `__DESIGNER_KIND__` 编译期常量 | 产物确实互斥了，但这是**在一个包里模拟包的边界**：`main.tsx` 里那行 `if` 的唯一职责就是「选装哪个包」，本该由 `package.json` 表达 |
+| **v3（现在）** | `apps/playground-react` 依赖 `designer-react`；`apps/playground-vue` 依赖 `designer-vue` | — |
+
+v3 让互斥性从「Rollup 折叠保证」升级为「**依赖图里根本没有**」：Vue app 的
+`node_modules` 里没有 `designer-react`，所以不存在需要 DCE 掉的分支，`main.tsx`
+里也没有任何判断（两个 app 的入口都是 `import '@pg/styles.css'` + `boot()`）。
+判据从「grep 产物」变成「`pnpm ls` 一眼可见」。
+
+这就是 Ark UI 的形态（§12.4.2 范式评估 2）：一个 core + 每框架一个绑定包，
+**消费方装哪个就是哪个**，框架本体放 `peerDependencies`；`@ark-ui/react` 与
+`@ark-ui/vue` 同版本同 gitHead 各自发布，没有 `__ARK_KIND__` 这种东西。
+
+两个 app 共用 `apps/shared`（画布、预览、示例 schema、样式入口、Vite 基座）——
+这些与编辑器框架无关，是同一份素材，写两遍没有意义。但**画布与预览仍是 React**，
+所以 Vue app 也依赖 `react` / `react-dom`：那不是矛盾，正是矩阵里
+「Vue 编辑器 + React 画布」那一格。
+
+**产物互斥的判据要扣掉渲染层**：Vue app 的产物里**仍然有 React** —— 那是
+`canvas.html`（画布 iframe）与 `preview.html`（运行态预览）的 chunk（实测落在
+`canvas-*.js` / `preview-*.js` / `client-*.js`），它们走 `renderer-react`，正是矩阵里
+「Vue 编辑器 + React 画布」那一格，不属于编辑器视图。所以判据是「**编辑器 chunk**
+不含另一套视图层」，而不是「整包 grep 不到 react」。
+
+**三份 HTML 入口，各自决定加载什么**（`index.html` / `canvas.html` / `preview.html`，
+两个 app 各一套）：入口 chunk 里因此**没有任何运行时分支**，连编译期判断也没有。
+预览早期做成 `?preview=1` 运行时开关 —— 靠动态 `import()` 也能拆出独立 chunk，但入口里
+始终留着一个 `isPreview` 判断，URL 语义也模糊（同一个 HTML 两种身份）；改成独立入口后
+连这个判断都不需要了。
+
+`/preview` 这个干净路径由 `apps/shared/vite.base.ts` 的 `previewRoute()` 中间件映射到
+`preview.html`（dev 与 `vite preview` 都生效）。**真实部署（nginx / 静态托管）需要在
+托管侧加同一条 rewrite**；不加也能用 `/preview.html`，只是地址带后缀。
+
+不合法的是另外两件事：① 同一编辑器实例内混用两套 setter 实现族；② 同一画布内混用
+两个渲染框架（C2 不变）。
+
+#### 12.13.7 落地顺序与判据
+
+| 步 | 内容 | 判据（缺一不可） |
+|---|---|---|
+| M-L3-1 | 抽 `designer-core`：搬 7 个纯模块 + 新建 `session` + 从视图抽 `style`/`props`/`tree`；`designer` 改名 `designer-react`，成为薄壳 | ① `designer-core/src` grep 不到 `react`/`vue`/`@radix-ui`/`lucide`；② React 版 DOM 快照与抽包前逐一致；③ `npx tsc -b` + `npx vitest run` 全绿；④ playground 无感 |
+| M-L3-2 | 抽 `designer-ui`（14 个 module.css + `tokens.css` + 图标数据） | ① 两版 import 同一份 CSS 文件（不是复制）；② 逐像素截图比对零差异（当前未做，见下方落地状态）；③ 生产产物里 CSS 总量与抽包前一致 |
+| M-L3-3 | `designer-vue` 只读骨架：Shell + 大纲 + 物料 + 选中框 + 浮条 | 同一 schema：选中/悬停/滚动/框位置与 React 版一致；无可写入口 |
+| M-L3-3b | playground 拆成 `playground-react` / `playground-vue` 两个 app（+ 共用 `apps/shared`），删掉 `__DESIGNER_KIND__` 与 `--mode` 机制 | 互斥由**依赖图**保证：各自的编辑器 chunk 里没有另一套视图层（不是靠 DCE） |
+| M-L3-4 | Vue 属性面板 + 5 个内置 setter + 样式面板 | **同一节点、同一操作序列 → `doc.toSchema()` 输出与 React 版字节一致** |
+| M-L3-5 | Vue 数据源面板 + 拖拽收口（自动滚动、placeholder、跨容器） | 拖入/移动后 schema 与 React 版一致；撤销栈深度相同 |
+
+**M-L3-1 落地状态（已完成，2026-11-06）**：
+
+| 项 | 结果 |
+|---|---|
+| `packages/designer-core` | 新建；依赖只有 `protocol` / `model` / `drag`；`grep -E "react|vue|@radix-ui|lucide"` 为空 |
+| 搬迁 | `dom` / `drop-context` / `float-bar` / `hierarchy` / `tree-layout` / `clone` / `setter-registry` + 4 个既有测试（130 个用例全绿） |
+| 新抽 | `session.ts`（`DesignerSession`）、`style.ts`（15 个纯函数，从 `StyleSetter(+Extras)` 抽出）、`props.ts`（`buildPropertyModel` / `resolvePropControl`，从 `PropertyPanel` 抽出）、`tree.ts`（`nodeLabel` / `nodeText` / `collapsedByDefault`，从 `TreePanel` 抽出）、`materials.ts`（`MaterialLookup`，解掉对 `MaterialRegistry` 具体类的依赖） |
+| `Designer.tsx` | 878 行 → **347 行**，只剩视图：`useSyncExternalStore(session.subscribe, session.getSnapshot)` + 手势翻译；hook 从 48 处降到 8 处（2×`useRef` / 1×`useMemo` / 2×`useEffect` / 1×`useSyncExternalStore` / 2×`useCallback`） |
+| 验证 | `npx tsc -b` ✓、`npx vitest run` 130/130 ✓、`pnpm build` ✓（仅既有 Monaco chunk 提示）、playground `tsc --noEmit` ✓ |
+| 改名 | `packages/designer` → `packages/designer-react`，包名 `@lowcode-next/designer-react`（`git mv` + `pnpm install` 重链）；同步改根 `tsconfig` / `vitest.config` / playground 的 `tsconfig.paths` / `vite.alias` / `package.json` / `App.tsx` 共 7 处引用 |
+| **未做** | ① `dom-contract.ts`（见 §12.13.2 第 4 点）；② Vue 侧 setter 实现族 |
+
+**M-L3-2 落地状态（已完成）**：
+
+| 项 | 结果 |
+|---|---|
+| `packages/designer-ui` | 新建；**无 `tsconfig`、无 `dist`**，`exports` 指向 `src`（`./tokens.css`、`./*.module.css`、`./icon-paths`） |
+| 搬迁 | 14 个 `*.module.css`（3 227 行）全部搬入，`git mv` 保留历史 |
+| 新增 | `tokens.css`（`:where(:root)` 三个令牌）、`icon-paths.ts`（从 `EngineIcons.tsx` 拆出的 240 行纯 path 数据 + `IconName`） |
+| 引用改写 | `designer-react` 的 16 个文件、共 14 类 CSS 导入改为 `@lowcode-next/designer-ui/<Name>.module.css`；根因是**同一份文件**而不是「两套同名样式」 |
+| 解析链 | playground `vite.alias` + `tsconfig.paths`、`vitest.config` 各加一条前缀映射到 `packages/designer-ui/src`；`designer-react/src/env.d.ts` 补 `declare module '*.css'`（给 `tokens.css` 的副作用导入） |
+| 验证 | `npx tsc -b` ✓、`npx vitest run` 130/130 ✓、`pnpm build` ✓、dev server 下 **14/14 CSS Module 全部 HTTP 200** 且返回真实 hash 类名（如 `root_15ie7_829`）、生产产物 `main-*.css` 含 `--lowcode-next-bg` 与各 module 类名 |
+| 未做 | 全页逐像素截图 diff（M-L3-3 期间做了**几何比对**，见下）；`dom-contract.ts` |
+
+**M-L3-3 落地状态（已完成，2026-11-06）—— `designer-vue` 只读骨架**：
+
+| 项 | 结果 |
+|---|---|
+| `packages/designer-vue` | 新建；SFC + `@lucide/vue` + `vue`（`exports` 指向 `src`，因为 `.vue` 无法由 `tsc -b` 产出 `dist`）；`tsconfig` 只编 `.ts`（`emitDeclarationOnly`），`*.vue` 由 `env.d.ts` 声明 |
+| 组件 | `Designer` / `DesignerShell` / `ActivityRail` / `LeftPane` / `MaterialPanel` / `TreePanel` + `TreeNode`（SFC 自引用递归）/ `SelectionBorders` / `FloatToolbar`（只读）/ `PaneHeader` / `MatIcon` / `EngineIcon` / `BrandMark` |
+| 绑定方式 | `shallowRef(session.getSnapshot())` + `session.subscribe()`，`onMounted` 才 `attachFrame` + `start`，`onScopeDispose` 退订 —— 与 §12.13.4 的 6 行样例一致，无逻辑分支 |
+| 几何下沉 | 新增 `designer-core/src/borders.ts`：`computeSelectionBoxes()`（选中/悬停框的测量、跨 frame 换算、扣浮层、贴边收 1px）与 `measureFloatAnchor()`；**React 版改成调用它**，从"两版各算一遍"变成"同一函数" |
+| 只读边界 | 不接 `onSchemaChange`、不构造 `Command`；物料不拖、行内动作（隐藏/锁定/重命名/删除）不渲染、浮条只有标题 chip 与祖先链；顶栏保留设备档 / 宽度 / 预览，去掉撤销 / 重做 / 保存 |
+| **判据（实测）** | 同一 schema、同一 1600×900 视口：`frameNodes` 93 = 93；选中框 `1217×61 @ (1,1)` = `1217×61 @ (1,1)`；滚动 260px 后选中框 `1217×62 @ (1,-260)` 且悬停框 `620×56.75 @ (299.5,14.4375)` **逐像素相同**；浮条 `top` 相同（43px） |
+| 浮条的唯一差异 | `left` 1149（React）vs 1209（Vue）：只读骨架没有删除/复制/锁定三个按钮，条更窄，而 `placeFloatBar` 是**右对齐到节点右缘**，位置随宽度变。这是内容差异，不是规则差异 |
+| 产物判据（实测，见 §12.13.6） | `playground-react` 产物：编辑器 chunk `main-*.js` 348.71 kB，`grep -E "__v_isReactive|effectScope|createApp\\("` **零命中**。`playground-vue` 产物：编辑器 chunk `main-*.js` 157.86 kB，`grep -i react` 6 次全部是 Vue 自己的 `__v_isReactive` 子串与落地页文案（「拖拽层不认识 React」），react-dom 只出现在 `canvas-*.js` / `preview-*.js` / `client-*.js`（渲染层，与编辑器 flavor 正交） |
+
+**M-L3-3b 落地状态（已完成，2026-11-06）—— playground 拆成两个 app**：
+
+起因是用户对 v2 的质疑：`?designer=vue` 是运行时开关，错；改成 `__DESIGNER_KIND__`
+编译期常量后产物确实互斥了，但仍然要「构建完才知道是哪个 flavor」。对照 Ark UI
+（§12.4.2）才发现它根本没有这类开关：**flavor 的载体是包，消费方装哪个就是哪个**。
+
+| 项 | 结果 |
+|---|---|
+| 目录 | `apps/playground-react`（依赖 `designer-react`，5173）/ `apps/playground-vue`（依赖 `designer-vue`，5174）/ `apps/shared`（共用宿主代码，不是 app） |
+| `apps/shared` | `canvas.tsx` + `canvas.css`（iframe 画布）、`preview.tsx`、`preview-route.ts`、`schemas/landing.ts`(+test)、`shell.module.css`、`styles.css`（Tailwind 唯一入口）、`vite.base.ts`（`defineApp()`）、`scripts/reset-vite-cache.mjs` |
+| 各 app 只有 | `index.html` / `canvas.html` / `preview.html`、`vite.config.ts`（~15 行，只声明 `port` + 插件）、`tsconfig.json`、`package.json`、`boot.ts(x)`，画布/预览各一个 3 行薄壳（`import '@pg/canvas'`） |
+| 删掉 | `.env.vue`、`build:vue` / `dev:vue`、`__DESIGNER_KIND__` 与 `define`、按 mode 分的 `cacheDir`、`main.tsx` 里的 `if`（两个入口现在都只有 `import '@pg/styles.css'` + `boot()`） |
+| 依赖方向 | Vue app 也装 `react` / `react-dom` —— 画布与预览走 `renderer-react`，那是渲染层（矩阵「Vue 编辑器 + React 画布」），不是编辑器视图 |
+| 判据（实测） | 两个 dev server 各自 200；`iframeNodes` 都是 93、console 零 error；react app 的 chunk 全是 `.tsx`、vue app 全是 `.vue`；`playground-react` 产物 grep 不到任何 Vue runtime；vue 编辑器 chunk 里的 `react` 字样只命中 `__v_isReactive` 与落地页文案 |
+| 预览链路 | Vue 版点「预览」→ sessionStorage 写入 12 732 字符 → `/preview` 渲染运行态页面、无编辑器外壳 |
+
+两个配套坑（都写进了代码注释）：
+
+1. **`apps/shared` 必须有自己的 `package.json`**。它不是 app，但 `canvas.tsx` /
+   `preview.tsx` 直接 `import 'react'`，而模块解析从**文件位置**上溯 `node_modules`——
+   没有清单就没有 `apps/shared/node_modules`，`tsc` 立刻一片 TS2307。现在它是
+   workspace 包（`@lowcode-next/playground-shared`），`react` / `react-dom` 放
+   `peerDependencies` + `devDependencies`，`vite` / `tailwindcss` 只作 devDep 提供解析。
+2. **Vite 8 的 `configLoader: 'native'` 要求相对 import 带扩展名**：
+   `import { defineApp } from '../shared/vite.base.ts'`，两个 app 的 `tsconfig` 因此开了
+   `allowImportingTsExtensions`（它们都是 `noEmit`，不会产出 `.d.ts`）。
+
+**M-L3-3 期间修掉的两个既有缺陷（都不是 Vue 引入的）**：
+
+| 缺陷 | 症状 | 根因 | 修法 |
+|---|---|---|---|
+| playground 漏 alias `@lowcode-next/designer-core` | 改 `designer-core/src` **完全不生效**，画布/选中框行为停在最后一次 `tsc -b` 的 `dist` 上 | 其余包都 alias 到 `src`，唯独 core 走 `package.json` 的 `exports` → `dist/index.js`；`dist` 在 `node_modules` 之外的 workspace 包，Vite 不监听其变化 | `vite.alias` + `tsconfig.paths` 补一条；**这条属于「不做会浪费半天排查」的工程债**，注释写在配置里 |
+| 画布首屏握手只有一半 | 打开编辑器画布空白，点一下节点才出现 | `canvas.tsx` 发 `lc:canvas-ready`，但 `DesignerSession` 从未监听；`bindFrame()` 的那次 `postSchema()` 可能早于画布注册 `message` | session 侧监听握手 + `bindFrame()` 里按 DOM 结果补发（最多 6 次 × 120ms，画布出现 `[data-node-id]` 即停）；canvas 侧在拿到首份 schema 前每 150ms 重发 ready（最多 20 次） |
+
+**M-L3-3 未做**：① SFC 静态类型校验 —— `vue-tsc@3` 与仓库使用的 TypeScript 7 不兼容
+（`ERR_PACKAGE_PATH_NOT_EXPORTED`），本轮靠「Vite 构建 + SSR `renderToString` 冒烟
+（零 Vue 警告）+ 浏览器实测」兜住；② `TitleTooltip`（Vue 版暂时用原生 `title`）；
+③ 属性面板（M-L3-4）、数据源与拖拽（M-L3-5）；④ `dom-contract.ts`（理由见 §12.13.2 第 4 点）。
+
+M-L3-4 的判据是整套方案的关键：它把「两版行为一致」变成可执行断言 —— **命令序列驱动
+session，比对序列化输出**，完全不依赖 UI。也就是说，正确性测试写在 `designer-core`
+（node 环境，零浏览器），UI 层只需要一小批冒烟用例。这同时解决了「谁来维护两套 UIView
+测试」的成本问题：**不测 UI，测 core**。
+
+#### 12.13.8 成本、边界与优先级
+
+- **成本**：Vue 版视图层 ≈ 7 400 行同量级重写，但逻辑 0 行重写（全部在 core）。
+  按 M-L3-3/4/5 三段交付，第一段只读（不能编辑）就已经能验证架构成立 ——
+  **M-L3-3 已交付：12 个组件 / 约 1 900 行 SFC，几何与 React 版逐像素对齐**（见 §12.13.7）。
+- **Vue 侧技术选型**（对齐现有 shadcn 红线）：`shadcn-vue`（底层 `reka-ui`）+ Tailwind
+  + **`@lucide/vue`**。注意不是 `lucide-vue-next` —— 后者已被官方标记 deprecated
+  （`Please use @lucide/vue instead`），装 `^1.0.0` 会拿到一个只有占位内容的旧包。
+  M-L3-3 尚未引入 shadcn-vue / reka（只读骨架没有交互控件），到 M-L3-4 写 setter 时再加。
+  **不引入** Element Plus / Ant Design Vue / Naive UI —— 与「保持统一 shadcn UI、
+  不引入额外组件」的既有约定冲突。
+- **`.vue` SFC 可用**：与 §12.11 第 1 项「Vue 用 `defineComponent` + `h()`」不冲突 ——
+  那一条约束的是**画布物料**（要在 iframe 里被 registry 动态构造、要无编译链、要同构），
+  编辑器 UI 是设计时资产、构建期编译、模板量大，SFC 可读性明显更好。
+- **Monaco**：`monaco-editor` 本身与框架无关，两版共用 `designer-core/monaco` 的 worker
+  装配；Vue 侧自己包 20 行挂载，不引第三个「Vue Monaco 包装库」（它就是当年
+  `lexical-vue` 那种版本钉死的来源）。
+- **优先级（重要）**：如果真实需求只是「Vue 业务系统里要能编辑页面」，**iframe 嵌现有
+  React 设计器**（§12.7.1）成本是 L3 双框架的百分之一，且已经可用。只有下面两条成立
+  时才值得走 M-L3-1~5：
+  1. Vue 团队要**独立维护/定制**编辑器 UI（加自己的面板、自己的 setter 生态）；
+  2. 产品要求编辑器产物不含任何 React runtime（合规 / 体积 / 技术栈统一）。
+- **不做**：同一实例混框架渲染；`SetterHost`（自造 mount/dispose）；把两版塞进同一个包
+  用运行时分支；为了跨框架把 `ui/*` 从 shadcn 换成 Ark UI。
+
+#### 12.13.9 决策记录（新增 5 项）
+
+| # | 决策 | 理由 |
+|---|---|---|
+| D-L3-1 | L3 拆 `designer-core` / `designer-ui` / `designer-react` / `designer-vue` | 逻辑只有一份，视图两套；否则必然分叉（§12.13.1） |
+| D-L3-2 | `designer-core` 用**类 + 快照订阅**，不用 signals / 响应式对象 | 两套框架都能接：React 走 `useSyncExternalStore`，Vue 走 `shallowRef`；signals 会偏袒一方 |
+| D-L3-3 | setter 契约加 flavor 维度，注册表按 flavor 解析，`match()` 三态 | 实现必然按框架分家，契约不能假装统一（§12.13.5） |
+| D-L3-4 | 共享 CSS Module 文件 + token，而非「两套样式对齐」 | 版式靠人肉对齐必然漂移；同一文件 → 同一 hash，天然一致 |
+| D-L3-5 | 正确性测在 core（命令序列 → schema 比对），不测两套 UI | 双份 UI 测试成本高且测不到逻辑；core 是唯一行为源 |
+| D-L3-6 | flavor 的载体是**包**：两个 app 各自依赖一个 `designer-*`，**不做** URL 运行时切换、**也不做** `__DESIGNER_KIND__` 编译期常量 | 前两版分别错在「运行时切换」（一份产物两套编辑器）和「在一个包里模拟包边界」（`if` 的唯一职责是选装哪个包，本该由 `package.json` 表达）；包级形态与 Ark UI 同构，互斥由依赖图保证而不是 DCE（§12.13.6） |

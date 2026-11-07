@@ -8,10 +8,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "pnpm --filter @lowcode-next/playground dev",
-    "build": "pnpm build:types && pnpm --filter @lowcode-next/playground build",
+    "dev": "pnpm --filter @lowcode-next/playground-react dev",
+    "dev:vue": "pnpm --filter @lowcode-next/playground-vue dev",
+    "build": "pnpm build:types && pnpm -r --filter \"./apps/*\" build",
     "build:types": "tsc -b",
-    "typecheck": "tsc -b && tsc -p apps/playground --noEmit",
+    "typecheck": "tsc -b && tsc -p apps/playground-react --noEmit && tsc -p apps/playground-vue --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rimraf packages/*/dist apps/*/dist *.tsbuildinfo packages/*/*.tsbuildinfo"
