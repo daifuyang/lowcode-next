@@ -10,9 +10,7 @@
   },
   "dependencies": {
     "@lowcode-next/designer-react": "workspace:*",
-    "@lowcode-next/model": "workspace:*",
-    "@lowcode-next/protocol": "workspace:*",
-    "@lowcode-next/renderer": "workspace:*",
+    "@lowcode-next/lowcode-react": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

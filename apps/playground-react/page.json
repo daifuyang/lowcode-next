@@ -1,0 +1,128 @@
+{
+  "version": "1.0.1",
+  "componentsMap": [
+    { "componentName": "Div", "package": "@lowcode-next/materials-react", "exportName": "Div" },
+    { "componentName": "Section", "package": "@lowcode-next/materials-react", "exportName": "Section" },
+    { "componentName": "Heading", "package": "@lowcode-next/materials-react", "exportName": "Heading" },
+    { "componentName": "Text", "package": "@lowcode-next/materials-react", "exportName": "Text" },
+    { "componentName": "Button", "package": "@lowcode-next/materials-react", "exportName": "Button" },
+    { "componentName": "Grid", "package": "@lowcode-next/materials-react", "exportName": "Grid" },
+    { "componentName": "Card", "package": "@lowcode-next/materials-react", "exportName": "Card" },
+    { "componentName": "StatCard", "package": "./StatCard", "exportName": "StatCard" }
+  ],
+  "componentsTree": {
+    "id": "page_root",
+    "componentName": "Div",
+    "props": { "style": { "minHeight": "100vh", "background": "#f8fafc" } },
+    "children": [
+      {
+        "id": "hero_section",
+        "componentName": "Section",
+        "props": { "tone": "light", "padding": "lg" },
+        "children": [
+          {
+            "id": "hero_heading",
+            "componentName": "Heading",
+            "props": { "level": 1, "tone": "gradient", "align": "center" },
+            "children": ["接入你自己的组件"]
+          },
+          {
+            "id": "hero_text",
+            "componentName": "Text",
+            "props": { "size": "lg", "tone": "muted", "align": "center" },
+            "children": [
+              "左边是物料面板，中间是画布。画布与编辑器共用同一棵 React tree —— 你的 Context、样式、状态都能直接用。"
+            ]
+          },
+          {
+            "id": "hero_actions",
+            "componentName": "Div",
+            "props": {
+              "style": {
+                "display": "flex",
+                "gap": 12,
+                "justifyContent": "center",
+                "marginTop": 8
+              }
+            },
+            "children": [
+              {
+                "id": "hero_btn_primary",
+                "componentName": "Button",
+                "props": { "variant": "primary", "size": "lg" },
+                "children": ["拖一个组件试试"]
+              },
+              {
+                "id": "hero_btn_outline",
+                "componentName": "Button",
+                "props": { "variant": "outline", "size": "lg" },
+                "children": ["看物料配置"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stats_section",
+        "componentName": "Section",
+        "props": { "tone": "muted", "padding": "md" },
+        "children": [
+          {
+            "id": "stats_grid",
+            "componentName": "Grid",
+            "props": { "columns": 3, "gap": 20 },
+            "children": [
+              {
+                "id": "stat_live",
+                "componentName": "StatCard",
+                "props": { "label": "月度活跃", "value": "12,480", "hint": "较上月 +8.2%" }
+              },
+              {
+                "id": "stat_materials",
+                "componentName": "StatCard",
+                "props": {
+                  "label": "已接入物料",
+                  "value": "21",
+                  "hint": "20 个内置 + 1 个业务组件"
+                }
+              },
+              {
+                "id": "stat_bundle",
+                "componentName": "StatCard",
+                "props": { "label": "首屏代码", "value": "3 行", "hint": "一次 mountEditor 调用" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "next_section",
+        "componentName": "Section",
+        "props": { "tone": "light", "padding": "md" },
+        "children": [
+          {
+            "id": "next_card",
+            "componentName": "Card",
+            "props": { "tone": "outline" },
+            "children": [
+              {
+                "id": "next_heading",
+                "componentName": "Heading",
+                "props": { "level": 3 },
+                "children": ["这个页面由 page.json 描述"]
+              },
+              {
+                "id": "next_text",
+                "componentName": "Text",
+                "props": { "tone": "muted" },
+                "children": [
+                  "在画布里拖拽调整，结构变化会实时回写到文档。整份 schema 就是普通 JSON，存数据库或文件都行。"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

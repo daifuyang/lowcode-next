@@ -65,11 +65,21 @@ function node(type: string, children: IRNode[] = [], extra: Partial<IRNode> = {}
   return { id: 'n1', key: 'n1', type, props: {}, children, ...extra };
 }
 
+/**
+ * 取到「组件本身」的元素。
+ *
+ * 现在 Driver 会给每个节点套一层 `FaultBoundary`（用户组件抛错时只坏一块），
+ * 所以 `render()` 返回的是边界元素，真正的组件在它的 `children` 里。
+ */
+function renderComponent(input: IRNode, options?: { editorPlaceholder?: boolean }): ReactElement<{ children?: unknown }> {
+  const boundary = createReactDriver(registry, options).render(input) as ReactElement<{
+    children?: ReactElement<{ children?: unknown }>;
+  }>;
+  return boundary.props.children as ReactElement<{ children?: unknown }>;
+}
+
 function childrenOf(input: IRNode): unknown[] {
-  const element = createReactDriver(registry, { editorPlaceholder: true }).render(
-    input,
-  ) as ReactElement<{ children?: unknown }>;
-  const children = element.props.children;
+  const children = renderComponent(input, { editorPlaceholder: true }).props.children;
   if (children === undefined) return [];
   return Array.isArray(children) ? children : [children];
 }
@@ -155,9 +165,6 @@ describe('ReactDriver 空容器占位', () => {
   });
 
   it('不以编辑态创建驱动（运行态）时不挂占位', () => {
-    const element = createReactDriver(registry).render(node('Box')) as ReactElement<{
-      children?: unknown;
-    }>;
-    expect(element.props.children).toBeUndefined();
+    expect(renderComponent(node('Box')).props.children).toBeUndefined();
   });
 });

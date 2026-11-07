@@ -3286,8 +3286,8 @@ v3 让互斥性从「Rollup 折叠保证」升级为「**依赖图里根本没�
 | 项 | 结果 |
 |---|---|
 | 目录 | `apps/playground-react`（依赖 `designer-react`，5173）/ `apps/playground-vue`（依赖 `designer-vue`，5174）/ `apps/shared`（共用宿主代码，不是 app） |
-| `apps/shared` | `canvas.tsx` + `canvas.css`（iframe 画布）、`preview.tsx`、`preview-route.ts`、`schemas/landing.ts`(+test)、`shell.module.css`、`styles.css`（Tailwind 唯一入口）、`vite.base.ts`（`defineApp()`）、`scripts/reset-vite-cache.mjs` |
-| 各 app 只有 | `index.html` / `canvas.html` / `preview.html`、`vite.config.ts`（~15 行，只声明 `port` + 插件）、`tsconfig.json`、`package.json`、`boot.ts(x)`，画布/预览各一个 3 行薄壳（`import '@pg/canvas'`） |
+| `apps/shared` | `canvas.css` / `canvas-channel.ts`（iframe 画布，框架相关部分已按 §12.13.10 移入各 app）、`preview-route.ts`、`pages.ts`（页面登记表，§12.13.12）、`schemas/landing.ts`(+test)、`shell.module.css`、`styles.css`（Tailwind 唯一入口）、`vite.base.ts`（`defineApp()`）、`scripts/reset-vite-cache.mjs` |
+| 各 app 只有 | `vite.config.ts`（~15 行，只声明 `port` + 插件）、`tsconfig.json`、`package.json`、入口 `main`。<br>**Vue（仍走独立入口页）**：`index.html` / `canvas.html` / `preview.html` 三份 + 画布/预览各一个薄壳。<br>**React（§12.13.13 起改 Portal）**：只有 `index.html`（`entries: { main: 'index.html' }`），画布不再需要入口文件；业务侧文件是 `materials.json` + `page.json` + 一个自定义组件 |
 | 删掉 | `.env.vue`、`build:vue` / `dev:vue`、`__DESIGNER_KIND__` 与 `define`、按 mode 分的 `cacheDir`、`main.tsx` 里的 `if`（两个入口现在都只有 `import '@pg/styles.css'` + `boot()`） |
 | 依赖方向 | Vue app 也装 `react` / `react-dom` —— 画布与预览走 `renderer-react`，那是渲染层（矩阵「Vue 编辑器 + React 画布」），不是编辑器视图 |
 | 判据（实测） | 两个 dev server 各自 200；`iframeNodes` 都是 93、console 零 error；react app 的 chunk 全是 `.tsx`、vue app 全是 `.vue`；`playground-react` 产物 grep 不到任何 Vue runtime；vue 编辑器 chunk 里的 `react` 字样只命中 `__v_isReactive` 与落地页文案 |
@@ -3422,3 +3422,201 @@ Vue app 的默认页因此从落地页改成「最小示例」（只用 Div + Bu
 |---|---|---|
 | D-L3-7 | 物料以**包**为单位注册与卸载（`use` / `unuse`），注册表带 `version` + `subscribe` | 「随时加入不同的包」需要包级身份（谁装的、整包摘）；散装 `register` 只能加不能卸，且改不动面板 |
 | D-L3-8 | 描述与实现分包（`materials` ← `materials-react` / `materials-vue`），**渲染层也按框架分包**（`renderer-core` ← `renderer` / `renderer-vue`） | 只拆物料不拆 driver，Vue 画布仍要 React；只拆 driver 不拆物料，编辑器仍绑死一套实现。两处一起拆，跨框架依赖才真正消失 |
+
+#### 12.13.12 playground 收敛为「一次装配」（易用性，2026-11-07）
+
+起因是用户看完物料链路后的判断：**playground 是面向使用者的，应该开箱即用**。
+当时的实际门槛是「要读懂物料包 / 描述面 / 实现面 / 装配这一整套概念，才能把编辑器
+跑起来」—— 这种门槛不该出现在入口。
+
+两个分叉点由用户拍板（`AskUserQuestion`），都选了保守项：
+
+| 分叉 | 选择 | 含义 |
+|---|---|---|
+| 零配置入口放哪 | **只简化 playground** | 不动 `designer-*` 的对外 API，不引入包级 `mountDesigner('#root', { schema })` |
+| 画布入口 | **先保留三个 HTML** | `canvas.html` / `preview.html` 与 iframe 装载方式都不动 |
+
+改动（两个 app 对称）：
+
+| 前 | 后 |
+|---|---|
+| `main` → `boot` → `App` → `materials`（4 跳） | `main` → `App`（2 跳） |
+| `App.tsx` 里混着页面表、URL 解析、`try/catch`、渲染 | `pages.ts`（数据）/ `createDesigner()`（装配）/ `App.tsx`（渲染） |
+| 四步对象图：建 registry → merge bindings → `createDocument` → `<Designer>` | 一次 `createDesigner(schema, key)` |
+| 每个调用点各写一遍 `try/catch` | 返回判别联合 `{ ok: true, registry, document }` / `{ ok: false, message }` |
+
+三个文件各有唯一职责，且**「要改什么就打开哪个文件」**：
+
+| 文件 | 职责 | 什么时候打开 |
+|---|---|---|
+| `apps/shared/src/pages.ts` | 页面登记表（`DEMO_PAGES` + `pickPage`） | 换成自己的页面 |
+| `apps/playground-*/src/materials.ts` | 物料装配（`registry` + `bindings`） | 加自己的物料包 |
+| `apps/playground-react/src/App.tsx` | 挑页 → 装配 → 渲染 | 一般不用改 |
+
+`pages.ts` 放在 `apps/shared`（零框架纯数据），两个 app 读同一份 —— 换页面时两版
+同时生效，不会一边改了另一边忘。`pickPage(fallback)` 的回退值由调用方给：React 缺省
+`landing`，Vue 缺省 `sample`（物料只实现了 3 个，打开落地页会大面积兜底）。
+
+**为什么删掉 `boot.ts(x)` 而不是保留**：它原来做的三件事（挂载、装配、选页）现在各有
+归属，合并进 `main` 后「启动过程」在一个文件里读完，不必再跳一层。Vue 侧没有 App
+组件层，装配 + 挂载都在 `main.ts` —— 这是两侧唯一的结构差异，本来就有。
+
+**没做**（都是更彻底的「开箱即用」，被明确推迟）：
+
+1. 包级一键入口 `mountDesigner('#root', { schema })` —— 业务方现在仍要抄 3 个文件，
+   只是每个都短且职责单一；
+2. 免掉 `canvas.html` / `preview.html` —— 这才是「开箱即用」真正的门槛（业务方要配
+   多页构建 + 预览路由），但要动 iframe 装载方式（srcdoc / Vite 插件），风险最大。
+
+验证：`tsc -b` 与两个 app `--noEmit` 均 0 错误，vitest 130/130；两版编辑器无头渲染
+正常（React 落地页 / Vue 最小示例）；`?page=landing` 在 Vue 侧实测生效（落地页贴边、
+未实现的物料落红框），说明新的 `pickPage` 与原 URL 逻辑等价。
+
+> 上面那条「没做」里的第 2 项（免掉 `canvas.html` / `preview.html`）在下一节做掉了，
+> 而且用的不是当时设想的 srcdoc / Vite 插件，是 Portal。
+
+#### 12.13.13 接入层 `lowcode-react`：一次 `mountEditor`，零入口文件（2026-11-07）
+
+**上一节解决的是「playground 自己写得短」，这一节解决的是「接入方写得少」。**
+两者不是一回事：上一轮改完，业务方要跑起来仍然得写约 250 行管道（装配注册表、建
+document、画布入口、消息通道、错误态），而且必须先读懂「物料包 / 描述面 / 实现面 /
+装配」四个概念才能动手。那不是接入体验。
+
+##### 一、先看 lowcode-engine 怎么做的
+
+读 `packages/designer/src/builtin-simulator/` 得到三条：
+
+| 它的做法 | 对我们的意义 |
+|---|---|
+| 画布文档由 `doc.write()` 现场生成，assets 拼成 `<link>` / `<script>` 注入（`create-simulator.ts:91-102`） | 用户不需要 `canvas.html`，宿主可以自己造文档 |
+| 同源 iframe 直接互持对象（`win.LCSimulatorHost = host`），`designer` 与 `react-simulator-renderer` 里 **`postMessage` 零命中** | 我们那 99 行 `canvas-channel` 是多余的一层 |
+| `enableStrictNotFoundMode` 双模式 + `FaultComponent`（ErrorBoundary） | 错误兜底要分「未注册」与「渲染抛错」两种，且编辑态/运行态表现不同 |
+
+##### 二、没有照抄它：改用 Portal
+
+它注入 **UMD** 脚本，是因为要支持远程物料包与跨域场景。我们两样都不需要，而 ESM 下
+`<script type="module">` 指向的入口 URL 只有打包后才知道，dev/prod 两套路径 —— 这是
+新引入的坑。
+
+换成更直接的做法：**父窗口用 React Portal，把画布内容投进 iframe 的 `document`。**
+
+```
+Designer（父树）
+  └─ <iframe>            ← 空壳：document 由 prepareCanvasDocument 现场写出
+       └─ createPortal(<CanvasSurface />, iframeDoc.body)
+```
+
+画布 DOM 仍在独立 document 里（样式、滚动、`@media` 照旧隔离），但**内容属于父树**。
+
+两次实验验证（`apps/playground-react/probe*.tsx`，验证通过后已删除）：
+
+| 验证项 | 结果 |
+|---|---|
+| `createRoot` 挂到 iframe document → 渲染 → state 更新 → 跨 document 合成事件（click 含 mousedown/mouseup） | **4/4 PASS** |
+| Portal 投进 iframe → 父树 Context 可读 → 点击冒泡回父树 handler | **3/3 PASS** |
+
+相对 `doc.write` 注入脚本，Portal 一次性消掉四个坑：
+
+| 原方案的坑 | Portal 方案 |
+|---|---|
+| 画布入口 URL 在 ESM 下拿不到 | 不需要入口 |
+| 模块执行两遍，用户模块级单例（store / 计数器）分裂成两份 | 不执行第二遍 |
+| 用户的 Provider（主题 / i18n / query client）在画布里拿不到 | 同一棵 React tree，天然穿透 |
+| 用户样式要在画布侧再 import 一次 | `prepareCanvasDocument` 从父文档克隆 `<style>` / `<link>` |
+| ~100 行 `postMessage` + ready 重发 | 删除（React 侧；Vue 仍走旧路径） |
+
+##### 三、分层：新增最外层包
+
+```text
+protocol
+  ├─ materials ── materials-react / materials-vue
+  ├─ renderer-core ── renderer / renderer-vue
+  └─ designer-core ── designer-react / designer-vue
+        └────────────┴──────────────┐
+                                    ▼
+                        lowcode-react（接入层）
+```
+
+`@lowcode-next/lowcode-react` 是**唯一**允许同时依赖「编辑器 + 物料实现 + 渲染 + 模型」
+的包。前几层各解决一个层面，接线这件事必须有人做，落在这里最合适 —— 塞进
+`designer-react` 会让它从视图层变成依赖 `materials-react` / `renderer` 的复合包，
+把 §12.13.10 刚理清的分层弄浑。
+
+`designer-react` 的改动只有一个可选 prop：
+
+```ts
+renderCanvas?: (padding: number) => ReactNode;
+```
+
+给了它就走 `canvasMode: 'portal'`（造文档 + portal + `markCanvasReady()`）；
+不给就是原来的独立入口页 + `postMessage`。**`designer-vue` 一行未改。**
+
+`markCanvasReady()` 是新增的：独立入口页靠 iframe 的 `load` 事件通知「画布 DOM 就绪」，
+而 portal 内容要等 React commit 之后才出现 —— 那时 `load` 早发过了，`getCanvas()` 还是
+`null`，设计宽度量不到、选中框与拖拽全都失效。所以由宿主在画布首帧后补一次。
+
+##### 四、接入方要写什么
+
+```tsx
+// main.tsx —— 全部内容
+import '@pg/styles.css';                    // 编辑器皮肤
+import { mountEditor } from '@lowcode-next/lowcode-react';
+import materials from './materials.json';   // 物料描述
+import page from './page.json';             // 初始页面
+import { StatCard } from './StatCard';      // 自己的组件
+
+mountEditor({
+  container: '#root',
+  schema: page,
+  materials,
+  components: { StatCard },
+  includeBuiltin: true,
+});
+```
+
+| | 改前 | 改后 |
+|---|---|---|
+| 管道代码 | `App.tsx` 48 + `materials.ts` 70 + `canvas-body.tsx` 59 + `preview-body.tsx` 66 + 两个入口薄壳 15 ≈ **258 行** | `main.tsx` 约 30 行（含注释） |
+| 要理解的概念 | 物料包 / 描述 / 实现 / 装配 / Driver / 消息通道 | **物料 JSON + 组件映射** |
+| HTML 入口 | 3 个 | **1 个**（`canvas.html` / `preview.html` 删除） |
+| 多页构建配置 | `rollupOptions.input` 三份 | `entries: { main: 'index.html' }`（`defineApp` 新参数） |
+
+业务组件那一侧的契约只有一条，写在 `StatCard.tsx` 的注释里：**把收到的 props 透传到
+根元素**（`{...rest}`）。漏了它，`data-node-id` 落不到 DOM 上，选中框画不出来、拖拽算
+不出落点、属性面板改值定位不到节点。
+
+##### 五、错误分级
+
+`renderer` 新增 `FaultBoundary`（逐节点包一层），`ReactDriverOptions` 新增 `mode`：
+
+| 情形 | 编辑态 | 运行态 |
+|---|---|---|
+| 物料未注册 | 红框 + 组件名 + 「检查 materials 的 componentName，或 components 里漏了同名实现」 | 一行灰字「内容暂不可用」 |
+| 组件渲染抛错 | 红框 + `error.message` + 重试按钮 | 同上 |
+| 页面 JSON 非法 / 物料包冲突 | 整屏 `FatalScreen`（带 issue 列表） | — |
+
+上一轮那条「装配期全量校验」（`assertMetaBindings` 缺实现就抛）在接入层改成**收集清单
++ `console.warn`**：接入别人的组件时少传一个实现是常态，不该让整个编辑器打不开。只有
+「两个包抢同一个 `componentName`」仍然抛 —— 那确实无解。
+
+`mode` 缺省按 `editorPlaceholder` 推断，所以旧的 `createReactDriver(input, { editorPlaceholder: true })`
+调用点不用改。
+
+##### 六、验证（全部实测）
+
+| 项 | 结果 |
+|---|---|
+| `tsc -b` + 两个 app `--noEmit` | 0 错误 |
+| `vitest` | 130/130（`react-driver.test.ts` 跟着 FaultBoundary 调整了断言位置） |
+| CDP 实测（开发态） | iframe 内 16 节点；物料面板 **21 个**，含「业务组件 / 数据卡」；点选后 `data-selected` 与属性面板同步；真实鼠标拖拽 **16 → 17 节点**；console **0 error / 0 warning** |
+| 错误态 | 临时插入 `NotExist` 节点：红框 + 排查文案按预期渲染，其余节点不受影响 |
+| 生产构建 | React 产物**只有 `index.html`**（Vue 仍三页）；`<link>` 样式克隆生效，画面与开发态一致 |
+| Vue 编辑器 | 未受影响（`canvasMode` 默认 `frame`） |
+
+##### 七、还没做
+
+1. **运行态预览**：`mountPreview` 未导出（用户明确说先不要），「预览」按钮现在置灰。
+   Portal 方案下它只是「同一个 `CanvasSurface` 换 `mode: 'runtime'`」，成本很低。
+2. **编辑器皮肤仍要接入方自备**：`designer-react` 的 shadcn 类依赖一份 Tailwind 入口。
+   这是下一层的问题，不在接入层能藏掉。
+3. **`node.meta` 仍是构造时缓存**（同 §12.13.10 第 1 条）—— 与画布装载方式无关。

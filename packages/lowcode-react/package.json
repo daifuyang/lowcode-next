@@ -1,0 +1,32 @@
+{
+  "name": "@lowcode-next/lowcode-react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@lowcode-next/designer-core": "workspace:*",
+    "@lowcode-next/designer-react": "workspace:*",
+    "@lowcode-next/materials": "workspace:*",
+    "@lowcode-next/materials-react": "workspace:*",
+    "@lowcode-next/model": "workspace:*",
+    "@lowcode-next/protocol": "workspace:*",
+    "@lowcode-next/renderer": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  }
+}

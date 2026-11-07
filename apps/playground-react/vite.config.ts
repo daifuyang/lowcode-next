@@ -17,4 +17,6 @@ export default defineApp({
   appDir: import.meta.dirname,
   port: 5173,
   plugins: [react(), tailwindcss()],
+  // 只有编辑器入口：画布是 Portal 进 iframe 的，不再需要 canvas.html / preview.html
+  entries: { main: 'index.html' },
 });

@@ -74,8 +74,18 @@ export interface DesignerSessionOptions {
   onSchemaChange?: (schema: PageSchema) => void;
   /** 左栏「钉住」偏好的存储；默认 localStorage，测试可注入内存实现 */
   storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
-  /** 画布入口页；默认相对当前 location 的 `canvas.html` */
+  /** 画布入口页；默认相对当前 location 的 `canvas.html`。`portal` 模式忽略 */
   canvasUrl?: string;
+  /**
+   * 画布装载方式（§12.14）。
+   *
+   * - `frame`（默认）：iframe 指向独立入口页，schema 经 `postMessage` 推入。
+   *   画布代码在自己的 document 里执行，跨 frame 传不了函数，所以必须有入口模块。
+   * - `portal`：iframe 文档由宿主现场写出，画布内容用 React Portal 投进去，
+   *   与编辑器**同一棵树** —— 用户组件、Context、样式全部直接可用。
+   *   此时不推消息、不听握手，改由 `markCanvasReady()` 通知首帧就绪。
+   */
+  canvasMode?: 'frame' | 'portal';
 }
 
 const PIN_KEY = 'lowcode-next:left-fixed';
@@ -92,6 +102,7 @@ export class DesignerSession {
   private onSchemaChange?: (schema: PageSchema) => void;
   private readonly storage: Pick<Storage, 'getItem' | 'setItem'> | null;
   private readonly canvasUrl: string;
+  private readonly canvasMode: 'frame' | 'portal';
 
   /* --- 状态 --- */
   private device: CanvasDevice = 'default';
@@ -132,6 +143,7 @@ export class DesignerSession {
     this.storage = options.storage === undefined ? safeLocalStorage() : options.storage;
     this.canvasUrl =
       options.canvasUrl ?? new URL('canvas.html', globalThis.location.href).toString();
+    this.canvasMode = options.canvasMode ?? 'frame';
     this.pinned = this.readPinned();
     this.snapshot = this.buildSnapshot();
   }
@@ -198,24 +210,28 @@ export class DesignerSession {
     this.disposers.push(() => globalThis.document.removeEventListener('keydown', onKeyDown));
 
     /**
-     * 画布就绪握手（`canvas.tsx` 在 effect 里发 `lc:canvas-ready`）。
+     * 画布就绪握手（独立入口页在 effect 里发 `lc:canvas-ready`）。
      *
      * 只有这一半是**必须**的：iframe 的 `load` 早于画布组件的 effect 时，
      * `bindFrame()` 里那次 `postSchema()` 打在空地上（画布还没注册 message 监听），
      * 表现就是"打开编辑器，画布一片空白，点一下属性面板才出来"。
      * 收到握手补发一次，首屏才稳定 —— 与框架无关，两版都走这条路径。
+     *
+     * `portal` 模式没有独立入口页，也就没有这条消息，见 `markCanvasReady()`。
      */
-    const onCanvasReady = (event: MessageEvent) => {
-      if (!this.frame) return;
-      // 只认同源消息：`event.source` 在跨 frame 时是另一种 proxy，拿它和
-      // `contentWindow` 做 `===` 在部分环境下不成立（headless 实测过），
-      // 而 `postSchema()` 是幂等的全量推送，多收一条无副作用。
-      if (event.origin !== globalThis.location.origin) return;
-      if ((event.data as { type?: string } | null)?.type !== 'lc:canvas-ready') return;
-      this.postSchema();
-    };
-    globalThis.addEventListener('message', onCanvasReady);
-    this.disposers.push(() => globalThis.removeEventListener('message', onCanvasReady));
+    if (this.canvasMode === 'frame') {
+      const onCanvasReady = (event: MessageEvent) => {
+        if (!this.frame) return;
+        // 只认同源消息：`event.source` 在跨 frame 时是另一种 proxy，拿它和
+        // `contentWindow` 做 `===` 在部分环境下不成立（headless 实测过），
+        // 而 `postSchema()` 是幂等的全量推送，多收一条无副作用。
+        if (event.origin !== globalThis.location.origin) return;
+        if ((event.data as { type?: string } | null)?.type !== 'lc:canvas-ready') return;
+        this.postSchema();
+      };
+      globalThis.addEventListener('message', onCanvasReady);
+      this.disposers.push(() => globalThis.removeEventListener('message', onCanvasReady));
+    }
 
     this.disposers.push(this.createDrag());
     syncHistory();
@@ -227,6 +243,20 @@ export class DesignerSession {
     frame.addEventListener('load', this.frameLoadHandler);
     // 同源且已经加载完（刷新 / 热更新后 src 命中缓存）时 load 不会再来一次
     if (frame.contentDocument?.readyState === 'complete') this.handleFrameLoad();
+  }
+
+  /**
+   * `portal` 模式：画布内容已经渲染进 iframe 文档。
+   *
+   * 独立入口页靠 iframe 的 `load` 事件通知「画布 DOM 就绪」，而 portal 的内容
+   * 是 React commit 之后才出现的 —— 那时 iframe 的 load 早就发过了，`getCanvas()`
+   * 还是 null，宽度量不到、iframe 桥也挂不上。所以由宿主在画布首帧后显式调一次。
+   *
+   * 幂等：`measureBaseWidth` 只在 `baseWidth === null` 时生效，重复调用只是
+   * 重挂一次 iframe 桥（`bindFrame` 开头会先清旧的），不会累积监听。
+   */
+  markCanvasReady(): void {
+    this.handleFrameLoad();
   }
 
   detachFrame(): void {
@@ -738,6 +768,7 @@ export class DesignerSession {
   }
 
   private postSchema(): void {
+    if (this.canvasMode === 'portal') return;
     const frameWin = this.frame?.contentWindow;
     if (!frameWin) return;
     frameWin.postMessage(

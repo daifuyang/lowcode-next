@@ -1,0 +1,21 @@
+[
+  {
+    "componentName": "StatCard",
+    "title": "数据卡",
+    "group": "业务组件",
+    "props": {
+      "label": { "title": "标题", "type": "string", "defaultValue": "月度活跃" },
+      "value": { "title": "数值", "type": "string", "defaultValue": "12,480" },
+      "hint": { "title": "说明", "type": "string" },
+      "style": { "title": "样式", "type": "object" }
+    },
+    "configure": {
+      "component": { "isContainer": false },
+      "supports": { "style": true, "condition": true }
+    },
+    "defaultSchema": {
+      "componentName": "StatCard",
+      "props": { "label": "月度活跃", "value": "12,480", "hint": "较上月 +8.2%" }
+    }
+  }
+]

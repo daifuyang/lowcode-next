@@ -12,6 +12,7 @@
     { "path": "./packages/drag" },
     { "path": "./packages/designer-core" },
     { "path": "./packages/designer-react" },
-    { "path": "./packages/designer-vue" }
+    { "path": "./packages/designer-vue" },
+    { "path": "./packages/lowcode-react" }
   ]
 }

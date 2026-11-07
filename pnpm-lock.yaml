@@ -23,15 +23,9 @@ importers:
       '@lowcode-next/designer-react':
         specifier: workspace:*
         version: link:../../packages/designer-react
-      '@lowcode-next/model':
+      '@lowcode-next/lowcode-react':
         specifier: workspace:*
-        version: link:../../packages/model
-      '@lowcode-next/protocol':
-        specifier: workspace:*
-        version: link:../../packages/protocol
-      '@lowcode-next/renderer':
-        specifier: workspace:*
-        version: link:../../packages/renderer
+        version: link:../../packages/lowcode-react
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -243,6 +237,43 @@ importers:
         version: 3.5.45(typescript@7.0.2)
 
   packages/drag: {}
+
+  packages/lowcode-react:
+    dependencies:
+      '@lowcode-next/designer-core':
+        specifier: workspace:*
+        version: link:../designer-core
+      '@lowcode-next/designer-react':
+        specifier: workspace:*
+        version: link:../designer-react
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
+      '@lowcode-next/materials-react':
+        specifier: workspace:*
+        version: link:../materials-react
+      '@lowcode-next/model':
+        specifier: workspace:*
+        version: link:../model
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@lowcode-next/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
 
   packages/materials:
     dependencies:

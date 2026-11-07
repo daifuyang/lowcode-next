@@ -54,10 +54,27 @@ export interface AppOptions {
   port: number;
   /** 各 app 自己的框架插件（react / vue）+ 共用插件（tailwind） */
   plugins: PluginOption[];
+  /**
+   * 多页入口，`{ 产物名: html 文件 }`。
+   *
+   * 缺省三页 —— 编辑器 / 画布 / 预览各一个 HTML 入口。这是「画布代码与编辑器
+   * 分开打包」时代的形态：iframe 指向独立入口，跨文档传不了函数，只能各自执行。
+   *
+   * `@lowcode-next/lowcode-react` 的画布是 Portal 进 iframe 的（同一棵 React tree），
+   * 不再需要独立入口，那个 app 只留 `index.html`。
+   */
+  entries?: Record<string, string>;
 }
 
-export function defineApp({ appDir, port, plugins }: AppOptions): UserConfig {
+const DEFAULT_ENTRIES: Record<string, string> = {
+  main: 'index.html',
+  canvas: 'canvas.html',
+  preview: 'preview.html',
+};
+
+export function defineApp({ appDir, port, plugins, entries }: AppOptions): UserConfig {
   const entry = (file: string) => resolve(appDir, file);
+  const pages = entries ?? DEFAULT_ENTRIES;
 
   return {
     plugins: [previewRoute(), ...plugins],
@@ -80,6 +97,7 @@ export function defineApp({ appDir, port, plugins }: AppOptions): UserConfig {
         '@lowcode-next/designer-core': pkgSrc('designer-core'),
         '@lowcode-next/designer-react': pkgSrc('designer-react'),
         '@lowcode-next/designer-vue': pkgSrc('designer-vue'),
+        '@lowcode-next/lowcode-react': pkgSrc('lowcode-react'),
         // designer-ui 只有资源（CSS Module / 图标数据），没有 index 入口，
         // 这里映射到 src 目录本身，子路径按文件名拼接。
         '@lowcode-next/designer-ui': pkgSrc('designer-ui'),
@@ -87,17 +105,12 @@ export function defineApp({ appDir, port, plugins }: AppOptions): UserConfig {
       // ★ 防止同时存在两份 React（hooks 会直接失效）/ 两份 Vue（runtime 各持一份状态）
       dedupe: ['react', 'react-dom', 'vue'],
     },
-    // 多页入口：三份 HTML 各自决定加载什么，入口 chunk 里没有任何运行时分支
-    //   index.html   = 编辑器宿主（flavor 由「这是哪个 app」决定，不在代码里判断）
-    //   canvas.html  = iframe 画布渲染入口（renderer-react，两版都有）
-    //   preview.html = 运行态预览（renderer-react，与编辑器框架无关）
+    // 多页入口：每份 HTML 各自决定加载什么，入口 chunk 里没有任何运行时分支
     build: {
       rollupOptions: {
-        input: {
-          main: entry('index.html'),
-          canvas: entry('canvas.html'),
-          preview: entry('preview.html'),
-        },
+        input: Object.fromEntries(
+          Object.entries(pages).map(([name, file]) => [name, entry(file)]),
+        ),
       },
     },
     server: {

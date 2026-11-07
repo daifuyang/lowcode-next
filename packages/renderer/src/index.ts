@@ -12,3 +12,4 @@ export * from '@lowcode-next/renderer-core';
 
 export { createReactDriver } from './react-driver';
 export type { ReactDriverOptions, ReactRendererInput } from './react-driver';
+export { FaultBoundary } from './fault-boundary';

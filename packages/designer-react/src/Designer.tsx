@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Monitor, Redo2, Smartphone, Tablet, Undo2 } from 'lucide-react';
 import type { Command, DocumentImpl } from '@lowcode-next/model';
 import type { MaterialMetaRegistry } from '@lowcode-next/materials';
@@ -7,6 +8,7 @@ import type { PageSchema } from '@lowcode-next/protocol';
 import { CANVAS_DEVICES, DesignerSession } from '@lowcode-next/designer-core';
 import type { CanvasDevice, SetterRegistry } from '@lowcode-next/designer-core';
 import { ActivityRail, DataSourceTabIcon, MaterialTabIcon, OutlineTabIcon } from './ActivityRail';
+import { prepareCanvasDocument } from './canvas-document';
 import { DataSourceForm } from './DataSourceForm';
 import { DataSourcePanel } from './DataSourcePanel';
 import { DesignerShell } from './DesignerShell';
@@ -34,6 +36,20 @@ export interface DesignerProps {
    * 传自己的实例可以隔离多个编辑器，或绑定 `flavor` 做实现族校验。
    */
   setters?: SetterRegistry;
+  /**
+   * 自渲染画布（§12.14）。给了它就不再用独立入口页：
+   * iframe 文档由本组件现场写出，画布内容用 Portal 投进去，与编辑器同一棵 React tree。
+   *
+   * 入参是画布内边距，返回要渲染的内容；内部必须含一个 `[data-lc-canvas]` 根，
+   * 选中框与拖拽命中都靠它定位。
+   *
+   * 好处：用户组件、Context、样式全部直接可用，没有跨 frame 消息通道，
+   * 也不会把模块再执行一遍。代价是画布代码进主 bundle。
+   *
+   * **函数引用不必稳定**（内部用 ref 取最新值），但内容要跟得上文档变化 ——
+   * 每次 `emit` 会重渲染本组件，直接读 `document` 即可。
+   */
+  renderCanvas?: (padding: number) => ReactNode;
 }
 
 /** 设备档位 → 图标（core 的 `CANVAS_DEVICES` 只描述数据，不认框架与图标） */
@@ -63,9 +79,17 @@ export function Designer({
   canvasPadding = 20,
   onSchemaChange,
   setters,
+  renderCanvas,
 }: DesignerProps) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  /** 画布宿主节点（iframe 的 body）。portal 模式之外恒为 null */
+  const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null);
+
+  // 函数引用每次渲染都会变，不能让 effect 依赖它 —— 否则每帧重建文档、画布闪白
+  const renderCanvasRef = useRef(renderCanvas);
+  renderCanvasRef.current = renderCanvas;
+  const portalMode = renderCanvas != null;
 
   const session = useMemo(
     () =>
@@ -74,17 +98,38 @@ export function Designer({
         materials: registry,
         canvasPadding,
         onSchemaChange,
+        canvasMode: portalMode ? 'portal' : 'frame',
       }),
-    // 只在文档 / 物料注册表换掉时重建；其余 props 由下面的 update() 同步
-    [doc, registry],
+    // 只在文档 / 物料注册表 / 画布装载方式换掉时重建；其余 props 由下面的 update() 同步
+    [doc, registry, portalMode],
   );
 
   useEffect(() => {
     const frame = frameRef.current;
-    if (frame) session.attachFrame(frame);
+    if (!frame) return;
+
+    // portal 模式：文档必须由宿主先写出来，否则 iframe 里没有 body 可投
+    const handle = renderCanvasRef.current ? prepareCanvasDocument(frame) : null;
+    setCanvasHost(handle?.doc.body ?? null);
+
+    session.attachFrame(frame);
     session.start();
-    return () => session.dispose();
+    return () => {
+      session.dispose();
+      handle?.dispose();
+    };
   }, [session]);
+
+  /**
+   * 画布首帧后通知 session。
+   *
+   * 独立入口页靠 iframe 的 `load` 通知就绪；portal 的内容是 React commit 之后
+   * 才进 DOM 的，那一刻 load 早已发过 —— 不补这一次，`getCanvas()` 一直是 null，
+   * 设计宽度量不到、选中框与拖拽全都失效。
+   */
+  useEffect(() => {
+    if (canvasHost) session.markCanvasReady();
+  }, [canvasHost, session]);
 
   // 宿主可能每次渲染都给新的内联回调：同步进 session，避免它捕获旧闭包
   useEffect(() => {
@@ -264,16 +309,22 @@ export function Designer({
         }
         canvas={
           <>
-            {/* 画布文档（同源 iframe）：schema 经 postMessage 推入，画布自己渲染。
-                内容、样式、滚动、@media 全部隔离在 frame 里，宿主只看到一张"纸"。 */}
+            {/* 画布文档（同源 iframe）：内容、样式、滚动、@media 全部隔离在 frame 里，
+                宿主只看到一张"纸"。两种装载方式共用这一个元素，区别只在内容从哪来：
+                - frame 模式：src 指向独立入口页，schema 经 postMessage 推入
+                - portal 模式：不设 src，文档由 prepareCanvasDocument 现场写出，
+                  内容从下面的 createPortal 进来（同一棵 React tree） */}
             <iframe
               ref={frameRef}
               className={styles.canvasFrame}
               // 可访问名称用 aria-label 而不是 title：title 会被 TitleTooltip
               // 接管成气泡，悬停画布就弹一个「画布」，纯噪音
               aria-label="画布"
-              src={session.canvasSource}
+              src={portalMode ? undefined : session.canvasSource}
             />
+            {canvasHost
+              ? createPortal(renderCanvasRef.current!(canvasPadding), canvasHost)
+              : null}
             {/* 编辑覆盖层：选中/悬停边框 + 浮动工具条，画在宿主文档里、盖在 iframe 上。
                 整层 pointer-events: none，点击穿透到 iframe；工具条自己恢复。 */}
             <div ref={overlayRef} className={styles.canvasOverlay}>
