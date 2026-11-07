@@ -18,30 +18,33 @@ import type { PluginOption, UserConfig } from 'vite';
 const pkgSrc = (name: string) => fileURLToPath(new URL(`../../packages/${name}/src`, import.meta.url));
 
 /**
- * `/preview` → `/preview.html`。
+ * 干净路径 → 多页入口：`/preview` → `/preview.html`、`/render` → `/render.html`。
  *
- * 预览是独立 HTML 入口（多页构建的第三个），产物里是 `dist/preview.html`。
  * dev 与 `vite preview` 都由这条中间件把干净路径映射过去，演示时不必贴带
- * `.html` 的地址。**真实部署（nginx / 静态托管）需要在托管侧加同一条 rewrite**，
+ * `.html` 的地址。**真实部署（nginx / 静态托管）需要在托管侧加同样的 rewrite**，
  * 见 DESIGN-v1 §12.13.6。
+ *
+ * 两个入口并排而不是一个：`preview` 是 Vue 版的三页形态（画布也是独立入口），
+ * `render` 是 React 版的消费端入口（§12.14.5）。哪个 app 用哪条，由各自的
+ * `entries` 决定，中间件不区分 —— 映射到不存在的文件时 Vite 自己会 404。
  */
-function previewRoute(): PluginOption {
-  const mapPreview = (url: string | undefined): string | undefined => {
+function entryRoutes(): PluginOption {
+  const rewrite = (url: string | undefined): string | undefined => {
     if (!url) return url;
-    return /^\/preview(?:[?#]|$)/.test(url) ? url.replace(/^\/preview/, '/preview.html') : url;
+    return url.replace(/^\/(preview|render)(?=[?#]|$)/, '/$1.html');
   };
   return {
-    name: 'playground:preview-route',
+    name: 'playground:entry-routes',
     // 不返回函数 = pre 中间件，排在 Vite 内部 html 处理之前
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
-        req.url = mapPreview(req.url);
+        req.url = rewrite(req.url);
         next();
       });
     },
     configurePreviewServer(server) {
       server.middlewares.use((req, _res, next) => {
-        req.url = mapPreview(req.url);
+        req.url = rewrite(req.url);
         next();
       });
     },
@@ -61,7 +64,8 @@ export interface AppOptions {
    * 分开打包」时代的形态：iframe 指向独立入口，跨文档传不了函数，只能各自执行。
    *
    * `@lowcode-next/lowcode-react` 的画布是 Portal 进 iframe 的（同一棵 React tree），
-   * 不再需要独立入口，那个 app 只留 `index.html`。
+   * 不需要画布入口；它的 render 态是独立的消费端页面（`render.html`），所以那个
+   * app 留两页：`index.html` + `render.html`（§12.14.5）。
    */
   entries?: Record<string, string>;
 }
@@ -77,7 +81,7 @@ export function defineApp({ appDir, port, plugins, entries }: AppOptions): UserC
   const pages = entries ?? DEFAULT_ENTRIES;
 
   return {
-    plugins: [previewRoute(), ...plugins],
+    plugins: [entryRoutes(), ...plugins],
     resolve: {
       alias: {
         // 共享宿主代码（画布、预览、示例 schema、样式入口）
@@ -90,6 +94,7 @@ export function defineApp({ appDir, port, plugins, entries }: AppOptions): UserC
         '@lowcode-next/renderer-core': pkgSrc('renderer-core'),
         '@lowcode-next/renderer': pkgSrc('renderer'),
         '@lowcode-next/renderer-vue': pkgSrc('renderer-vue'),
+        '@lowcode-next/render-react': pkgSrc('render-react'),
         '@lowcode-next/drag': pkgSrc('drag'),
         // ★ designer-core 必须显式 alias：它带 dist，漏掉这一条时 `@lowcode-next/designer-core`
         // 会按 package.json 的 exports 解析到 `dist/*.js` —— 于是改 src 不生效（开发时

@@ -3475,7 +3475,7 @@ Vue app 的默认页因此从落地页改成「最小示例」（只用 Div + Bu
 > 上面那条「没做」里的第 2 项（免掉 `canvas.html` / `preview.html`）在下一节做掉了，
 > 而且用的不是当时设想的 srcdoc / Vite 插件，是 Portal。
 
-#### 12.13.13 接入层 `lowcode-react`：一次 `mountEditor`，零入口文件（2026-11-07）
+#### 12.13.13 接入层 `lowcode-react`：一次调用，零入口文件（2026-11-07）
 
 **上一节解决的是「playground 自己写得短」，这一节解决的是「接入方写得少」。**
 两者不是一回事：上一轮改完，业务方要跑起来仍然得写约 250 行管道（装配注册表、建
@@ -3534,8 +3534,13 @@ protocol
   └─ designer-core ── designer-react / designer-vue
         └────────────┴──────────────┐
                                     ▼
-                        lowcode-react（接入层）
+                          render-react（渲染接入）
+                                    ▼
+                          lowcode-react（编辑态接入）
 ```
+
+> 本节的 `lowcode-react` 后来被拆成两层：装配与渲染内核下沉到 `render-react`，
+> 编辑态只保留「document + Designer + canvas portal」。两个形态的完整说明见 §12.14。
 
 `@lowcode-next/lowcode-react` 是**唯一**允许同时依赖「编辑器 + 物料实现 + 渲染 + 模型」
 的包。前几层各解决一个层面，接线这件事必须有人做，落在这里最合适 —— 塞进
@@ -3560,13 +3565,12 @@ renderCanvas?: (padding: number) => ReactNode;
 ```tsx
 // main.tsx —— 全部内容
 import '@pg/styles.css';                    // 编辑器皮肤
-import { mountEditor } from '@lowcode-next/lowcode-react';
+import { createEditor } from '@lowcode-next/lowcode-react';
 import materials from './materials.json';   // 物料描述
 import page from './page.json';             // 初始页面
 import { StatCard } from './StatCard';      // 自己的组件
 
-mountEditor({
-  container: '#root',
+const editor = createEditor('#root', {
   schema: page,
   materials,
   components: { StatCard },
@@ -3615,8 +3619,196 @@ mountEditor({
 
 ##### 七、还没做
 
-1. **运行态预览**：`mountPreview` 未导出（用户明确说先不要），「预览」按钮现在置灰。
-   Portal 方案下它只是「同一个 `CanvasSurface` 换 `mode: 'runtime'`」，成本很低。
+1. **预览入口未接**：「预览」按钮仍置灰（`onPreview` 缺省不传就 disabled）。渲染能力本身
+   已经有了 —— 见 §12.14 的 `LowcodeRender`，缺的只是「点一下怎么打开」这一层。
 2. **编辑器皮肤仍要接入方自备**：`designer-react` 的 shadcn 类依赖一份 Tailwind 入口。
    这是下一层的问题，不在接入层能藏掉。
 3. **`node.meta` 仍是构造时缓存**（同 §12.13.10 第 1 条）—— 与画布装载方式无关。
+
+---
+
+### 12.14 两个形态：编辑态与 render 态（2026-11-07 定稿）
+
+用户明确的根本区分，**不是「预览按钮怎么开」这种细节**：
+
+| | 编辑态 | render 态 |
+|---|---|---|
+| 是什么 | 带编辑器的接入形态 | 纯渲染。既是编辑器的示例预览，也是**未来消费端接入**的形态 |
+| 谁在用 | 做页面的人 | 看页面的人、客户的项目 |
+| 吃什么 | `DocumentImpl`（要订阅、要可编辑） | **schema + 组件映射**，消费端手里只有 JSON |
+| 包 | `@lowcode-next/lowcode-react` | `@lowcode-next/render-react` |
+| 对外 API | `createEditor(container, options)` 函数 | `<LowcodeRender schema materials components />` 组件 |
+
+#### 12.14.1 为什么 render 态要独立成包
+
+三条，都不是洁癖：
+
+1. **它不需要 `DocumentImpl`。** `evaluate` 的入参只有 `componentsTree` 与
+   `{ mode, scope, resolver }`（`renderer-core/src/index.ts:53`）。render 态若为复用
+   编辑态的 `CanvasSurface` 而先 `createDocument`，等于白带一个 `model`。
+2. **它不该跟 monaco 出现在同一个 `node_modules` 里。** `designer-react` 依赖
+   `monaco-editor` / `@monaco-editor/react` / 6 个 `@radix-ui` / `lucide-react` /
+   `tailwind-merge`。bundle 能靠模块图避开，但消费端接入时这些包照样会被安装。
+3. **两个形态必须共用一份内核**，否则迟早出现「编辑器里好好的，线上不一样」——
+   而且这种不一致排查成本极高。
+
+#### 12.14.2 结构
+
+```text
+protocol
+  ├─ materials ── materials-react
+  │                    │
+  ├─ renderer-core ── renderer
+  │                    │
+  │                    ▼
+  │            render-react      渲染接入：assembleMaterials + renderTree + LowcodeRender
+  │              │                依赖链里没有 model、没有 designer
+  │              ▼
+  └──────── lowcode-react      编辑态：document + Designer + canvas portal
+                   └─ 复用 render-react 的装配与内核
+```
+
+`lowcode-react` 不再自己写装配；`CanvasSurface` 只剩「渲染内核 + 文档订阅」：
+
+```tsx
+// lowcode-react/src/canvas.tsx —— 全部渲染逻辑
+const schema = document.toSchema();
+return renderTree(schema.componentsTree, { registry, bindings, mode: 'edit' });
+```
+
+`mode` 是唯一分歧点：`edit` 注入空容器占位、错误块更显眼；`runtime` 都收敛。
+
+#### 12.14.3 命名：向 lowcode 的工厂规范靠
+
+调研得出两条事实：**lowcode 全仓没有 `mount*`**；编辑器是 `init()` / `destroy()`
+（模块级单例，`destroy()` 无参数、靠模块级 `engineContainer`），渲染是
+`export default factory()` 导出的一个**组件**。
+
+照它的规律（`createXxx` 工厂、裸动词生命周期、`isXxx` 判定）：
+
+| 改前 | 改后 | 依据 |
+|---|---|---|
+| `mountEditor(options)` | `createEditor(container, options)` | `createSimulator` 的工厂形态；container 提为第一参，与 `createRoot(container)` 同构 |
+| `reactPackage()` / `vuePackage()` | `createReactPackage()` / `createVuePackage()` | 补动词，与 `createReactDriver` / `createMetaRegistry` 对齐 |
+| `mountRender`（原计划） | `LowcodeRender`（组件） | 渲染要**嵌进**消费端已有的 React 树，声明式才组合得起来 |
+
+两点**有意偏离**：
+
+- 不叫 `init`：lowcode 敢用裸 `init` 是因为它全局单例。`createEditor` 返回 handle，
+  一个页面可以开多个（`WeakMap<HTMLElement, Root>` 按容器管理，重复挂载先卸旧的）。
+- 组件叫 `LowcodeRender` 而非 `LowcodeRenderer`：后者会和 driver 层的 `renderer` 撞名。
+
+#### 12.14.4 render 态的接入代码
+
+```tsx
+// 消费端全部内容
+import '@lowcode-next/render-react';
+import { LowcodeRender } from '@lowcode-next/render-react';
+
+<Route path="/p/:id" element={
+  <LowcodeRender schema={page} materials={materials} components={{ StatCard }} />
+} />
+```
+
+没有 document、没有 registry、没有 canvas、没有 Designer。
+
+错误按「只坏一块」处理：装配失败或 JSON 非法 → `FatalScreen`（内联块，不 fixed、
+不铺满，所以嵌在宿主页面里也不会毁掉整页）；单个组件缺失或抛错 → driver 的
+`UnknownNode` / `FaultBoundary`。
+
+#### 12.14.5 预览：序列化 + 独立入口，**不走 UMD**
+
+「预览」按钮落地（§12.14.6 记为待办的那一项）。三种打开方式里选了第三种，
+并且比 lowcode 的做法更彻底：**预览页自己 `import` 一遍包和组件，不用 UMD、
+不用全局变量、不在 `window` 上挂任何注册表。**
+
+能这么做的原因只有一句：render 态是纯映射 `schema + 物料表 → DOM`。同样的
+schema、同样的物料，渲染结果必然相同 —— 所以两个窗口需要共享的是**源码和
+数据**，不是运行时对象。
+
+对比老方案（lowcode 及本项目上一版 `apps/shared/src/canvas-channel.ts` 那条路）：
+
+| | 共享运行时对象（UMD / 全局注册表） | 各自 import（本方案） |
+|---|---|---|
+| 组件实例 | 必须唯一，靠 `<script>` 全局暴露 | 两个窗口各一份，互不干扰 |
+| 跨文档传函数 | 只能 postMessage，要维护协议与请求应答 | 零 —— 只传 JSON |
+| 组件内部 state | 被带进预览（编辑时点出的 hover、输入的字） | 干净环境，预览从零挂载 |
+| 产物份数 | 各页各打一份 | 同一构建内共享 chunk，**只有一份** |
+
+最后一行是实测的：`dist/render.html` 与 `dist/index.html` 引用的是同一个
+`StatCard-*.js`（Rollup 用共享 chunk 里的模块名命名，体积 335 kB，实际是
+react + render-react + materials-react 的公共部分）和同一份 CSS。
+
+**通道**（`apps/shared/src/preview-route.ts`）：
+
+```
+编辑态                          浏览器                         render 态
+onSchemaChange ──writePreview──► localStorage ──storage 事件──► subscribePreview
+onPreview ──openPreview──► window.open('/render', noopener)
+```
+
+- 用 `localStorage` 而不是 `sessionStorage`：`storage` 事件只在**其他**文档触发，
+  天然是单向广播；镜像到 localStorage 之后 `window.open` 才能加 `noopener`
+  （预览页不反向持有编辑器），刷新也还在。
+- 每提交一次写一遍 → 预览页原地跟着变，不用回编辑器重开。
+- 读取一律过 `parsePageSchema`：旧版本结构、被手工改过的快照当作「没有」，
+  回退到调用方自己的默认页，而不是渲染到一半炸。
+
+**两个入口的文件**
+
+| 文件 | 内容 |
+|---|---|
+| `index.html` + `src/main.tsx` | 编辑态，`createEditor` |
+| `render.html` + `src/render.tsx` | render 态，`<LowcodeRender />` |
+| `src/StatCard.tsx` | 业务组件，两个入口**都 import 它** |
+
+`render.tsx` 与 `main.tsx` 的差别只有两处，正好是两个形态的分界：
+
+| | `main.tsx` | `render.tsx` |
+|---|---|---|
+| 引入 | `createEditor`（函数，接管容器） | `LowcodeRender`（组件，嵌进 React 树） |
+| 独有参数 | `canvasPadding` / `onSchemaChange` / `onPreview` | 无 |
+
+`render.html` 里**不引**编辑器皮肤（`@pg/styles.css` 的 Tailwind preflight +
+shadcn 令牌），只有两条消费端自己的全局样式（`margin: 0` + 字体）。物料自带的
+`materials/styles.css` 由 `render-react` 内部引入。
+
+路由上 `/preview` 与 `/render` 都由 `vite.base.ts` 的同一条中间件映射到同名
+`.html`（改名 `entryRoutes`，原来只处理 `/preview`）：Vue 版仍用三页形态的
+`preview.html`，React 版用 `render.html`，中间件不区分哪个 app。
+
+Vue 侧顺带复用同一条通道：`preview-body.ts` 的 `sessionStorage.getItem` 改成
+`readPreview()`，两侧不再各写一套读写与校验。
+
+#### 12.14.6 验证（实测）
+
+render 态探针（`render-probe.html` + `src/render-probe.tsx`，验证后已删除；
+现在由正式的 `render.html` 接管）：
+
+| 项 | 编辑态 | render 态 |
+|---|---|---|
+| 页面渲染 | 16 节点（iframe 内） | 16 节点（主文档） |
+| 资源数（dev） | **139** | **46** |
+| `designer` 命中 | 59 | **0** |
+| `radix` / `lucide` / `tailwind-merge` | 5 / 1 / 1 | **0 / 0 / 0** |
+| 编辑器界面 | 有（面板 / 顶栏 / 画布留白） | **无**，内容直接贴边 |
+| console error / warning | 0 | 0 |
+
+`render-react/dist` 的实际 import 只有 `protocol` / `materials` / `materials-react` /
+`renderer` / `react`（字符串 `designer` 只出现在注释里）。
+
+预览链路（`/render` headless 实测）：`data-lc-render` 存在、21 个物料全部渲染
+（含「业务组件 / 数据卡」的「月度活跃 12,480」）、`/`、`/render`、`/render.html`、
+`/src/render.tsx` 均 200；编辑器侧预览按钮从 `disabled` 变为可点
+（`title="在新窗口打开运行态预览"`）。
+
+顺带确认编辑态未被改坏：21 个物料、`tsc -b` 与两 app `--noEmit` 0 错误、
+`vitest` 130/130、`pnpm build` 通过（React 产物 `index.html` + `render.html`）。
+
+#### 12.14.7 还没做
+
+1. **Vue 侧还没有等价的 `render-vue`** —— `renderer-vue` 与 `materials-vue` 都在，
+   缺最上面这一层。Vue 的预览仍是手写的 `preview-body.ts`。
+2. **接入方仍需自备 Tailwind 入口** —— `designer-react` 的 shadcn 类依赖它。
+3. **`node.meta` 仍是构造时缓存**（`packages/model/src/node.ts`）—— `unuse()`
+   之后存量节点拿到的是旧 meta。

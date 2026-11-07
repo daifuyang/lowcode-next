@@ -37,7 +37,7 @@ export interface DesignerProps {
    */
   setters?: SetterRegistry;
   /**
-   * 自渲染画布（§12.14）。给了它就不再用独立入口页：
+   * 自渲染画布（§12.13.13）。给了它就不再用独立入口页：
    * iframe 文档由本组件现场写出，画布内容用 Portal 投进去，与编辑器同一棵 React tree。
    *
    * 入参是画布内边距，返回要渲染的内容；内部必须含一个 `[data-lc-canvas]` 根，

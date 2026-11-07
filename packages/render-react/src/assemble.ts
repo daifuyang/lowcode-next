@@ -1,13 +1,16 @@
 /**
  * 物料装配（§12.14）。
  *
- * 用户侧只交两样东西：**物料 JSON**（描述）和**组件映射**（实现）。
+ * 接入方只交两样东西：**物料 JSON**（描述）和**组件映射**（实现）。
  * 这里负责把它们和可选的内置物料合成一个注册表 + 一张扁平组件表，
  * 并把「描述与实现不配对」的情况算出来 —— 但不抛错。
  *
  * 为什么不抛：接入别人的组件时，「少传一个实现」是常态，不是致命错误。
- * 抛错会让整个编辑器打不开，而实际上只有那一个组件不可用。所以改成
+ * 抛错会让整个页面打不开，而实际上只有那一个组件不可用。所以改成
  * 收集成清单上报，让画布自己对那个节点渲染错误块（`UnknownNode`）。
+ *
+ * **两个形态共用这一份。** 编辑态与 render 态对「物料怎么合并」没有分歧，
+ * 分开写迟早出现「编辑器里能拖、线上渲染不出来」。
  */
 
 import type { ComponentMeta } from '@lowcode-next/protocol';
@@ -17,7 +20,7 @@ import { createMetaRegistry } from '@lowcode-next/materials';
 import type { ReactBindings } from '@lowcode-next/materials-react';
 import { builtinReactMaterialPackage, mergeReactBindings } from '@lowcode-next/materials-react';
 
-/** 用户物料的包 id：与内置包分开，方便将来单独 `unuse` */
+/** 用户物料的包 id：与内置包分开，方便单独 `unuse` */
 const USER_PACKAGE_ID = 'user';
 
 /**

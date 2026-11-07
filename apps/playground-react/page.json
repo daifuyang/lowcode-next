@@ -89,7 +89,7 @@
               {
                 "id": "stat_bundle",
                 "componentName": "StatCard",
-                "props": { "label": "首屏代码", "value": "3 行", "hint": "一次 mountEditor 调用" }
+                "props": { "label": "首屏代码", "value": "3 行", "hint": "一次 createEditor 调用" }
               }
             ]
           }

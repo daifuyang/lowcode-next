@@ -51,13 +51,16 @@ export interface VueMaterialPackage {
  * 这正是想要的行为：往 `vueComponents` 里加了一个组件却忘了加名字，或者反过来，
  * 装配期就炸，不用等到拖进画布。
  */
-export function vuePackage(meta: MaterialPackage, components: VueBindings): VueMaterialPackage {
+export function createVuePackage(
+  meta: MaterialPackage,
+  components: VueBindings,
+): VueMaterialPackage {
   assertMetaBindings(meta.metas, Object.keys(components), 'Vue');
   return { meta, components };
 }
 
 /** 内置 Vue 物料包：描述是内置包的子集，只保留已实现的那几个 */
-export const builtinVueMaterialPackage: VueMaterialPackage = vuePackage(
+export const builtinVueMaterialPackage: VueMaterialPackage = createVuePackage(
   subsetPackage(builtinMaterialPackage, vueMaterialNames, '@lowcode-next/materials-vue'),
   vueComponents,
 );

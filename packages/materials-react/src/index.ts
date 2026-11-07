@@ -79,7 +79,7 @@ export function assertBindingsComplete(metas: ComponentMeta[], components: React
  * 用法（多包并存的场景）：
  * ```ts
  * registry.use(builtinMaterialPackage);
- * registry.use(reactPackage(businessMetaPackage, businessComponents));
+ * registry.use(createReactPackage(businessMetaPackage, businessComponents));
  * ```
  */
 export interface ReactMaterialPackage {
@@ -87,13 +87,16 @@ export interface ReactMaterialPackage {
   components: ReactBindings;
 }
 
-export function reactPackage(meta: MaterialPackage, components: ReactBindings): ReactMaterialPackage {
+export function createReactPackage(
+  meta: MaterialPackage,
+  components: ReactBindings,
+): ReactMaterialPackage {
   assertBindingsComplete(meta.metas, components);
   return { meta, components };
 }
 
 /** 内置包 —— 描述 + 实现配好的一份，宿主直接用 */
-export const builtinReactMaterialPackage: ReactMaterialPackage = reactPackage(
+export const builtinReactMaterialPackage: ReactMaterialPackage = createReactPackage(
   builtinMaterialPackage,
   builtinReactComponents,
 );

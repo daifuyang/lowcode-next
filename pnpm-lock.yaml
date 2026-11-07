@@ -26,6 +26,9 @@ importers:
       '@lowcode-next/lowcode-react':
         specifier: workspace:*
         version: link:../../packages/lowcode-react
+      '@lowcode-next/render-react':
+        specifier: workspace:*
+        version: link:../../packages/render-react
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -240,27 +243,21 @@ importers:
 
   packages/lowcode-react:
     dependencies:
-      '@lowcode-next/designer-core':
-        specifier: workspace:*
-        version: link:../designer-core
       '@lowcode-next/designer-react':
         specifier: workspace:*
         version: link:../designer-react
       '@lowcode-next/materials':
         specifier: workspace:*
         version: link:../materials
-      '@lowcode-next/materials-react':
-        specifier: workspace:*
-        version: link:../materials-react
       '@lowcode-next/model':
         specifier: workspace:*
         version: link:../model
       '@lowcode-next/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@lowcode-next/renderer':
+      '@lowcode-next/render-react':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../render-react
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -320,6 +317,28 @@ importers:
       zod:
         specifier: ^4.6.7
         version: 4.6.7
+
+  packages/render-react:
+    dependencies:
+      '@lowcode-next/materials':
+        specifier: workspace:*
+        version: link:../materials
+      '@lowcode-next/materials-react':
+        specifier: workspace:*
+        version: link:../materials-react
+      '@lowcode-next/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@lowcode-next/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/renderer:
     dependencies:

@@ -9,6 +9,7 @@
     { "path": "./packages/materials-vue" },
     { "path": "./packages/renderer" },
     { "path": "./packages/renderer-vue" },
+    { "path": "./packages/render-react" },
     { "path": "./packages/drag" },
     { "path": "./packages/designer-core" },
     { "path": "./packages/designer-react" },

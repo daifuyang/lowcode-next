@@ -12,9 +12,7 @@
     { "path": "../protocol" },
     { "path": "../model" },
     { "path": "../materials" },
-    { "path": "../materials-react" },
-    { "path": "../renderer" },
-    { "path": "../designer-core" },
+    { "path": "../render-react" },
     { "path": "../designer-react" }
   ]
 }

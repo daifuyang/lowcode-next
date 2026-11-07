@@ -77,7 +77,7 @@ export interface DesignerSessionOptions {
   /** 画布入口页；默认相对当前 location 的 `canvas.html`。`portal` 模式忽略 */
   canvasUrl?: string;
   /**
-   * 画布装载方式（§12.14）。
+   * 画布装载方式（§12.13.13）。
    *
    * - `frame`（默认）：iframe 指向独立入口页，schema 经 `postMessage` 推入。
    *   画布代码在自己的 document 里执行，跨 frame 传不了函数，所以必须有入口模块。

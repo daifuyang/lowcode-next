@@ -17,6 +17,7 @@ export default defineApp({
   appDir: import.meta.dirname,
   port: 5173,
   plugins: [react(), tailwindcss()],
-  // 只有编辑器入口：画布是 Portal 进 iframe 的，不再需要 canvas.html / preview.html
-  entries: { main: 'index.html' },
+  // 两个入口：编辑器（index.html）与 render 态（render.html）。
+  // 画布不是入口 —— 它是 Portal 进 iframe 的，与编辑器同一棵 React tree。
+  entries: { main: 'index.html', render: 'render.html' },
 });

@@ -4,12 +4,14 @@ import type { ReactNode } from 'react';
 /**
  * 致命错误页（§12.14）。
  *
- * 只用于「编辑器根本起不来」的情形：容器找不到、页面 JSON 解析失败、
- * 两个物料包抢同一个 `componentName`。这类错误必须让接入方立刻看见，
- * 所以不降级、不吞掉，直接替换整个容器内容。
+ * 只用于「页面根本渲染不出来」的情形：页面 JSON 解析失败、两个物料包抢同一个
+ * `componentName`。这类错误必须让接入方立刻看见，所以不降级、不吞掉。
  *
  * 单个组件缺失/抛错**不走这里** —— 那些交给 Driver 的 `UnknownNode` /
- * `FaultBoundary`，只坏一块，不影响编辑器本身。
+ * `FaultBoundary`，只坏一块，不影响整页。
+ *
+ * 样式不铺满、不 fixed，所以两个形态都能用：编辑态替换编辑器容器，
+ * render 态作为宿主页面里的一个内联块。
  */
 
 export interface FatalScreenProps {

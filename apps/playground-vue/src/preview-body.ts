@@ -1,11 +1,9 @@
 import { createApp, defineComponent, h } from 'vue';
 import { createVueDriver } from '@lowcode-next/renderer-vue';
 import { evaluate } from '@lowcode-next/renderer-core';
-import { parsePageSchema } from '@lowcode-next/protocol';
-import type { PageSchema } from '@lowcode-next/protocol';
 import '@lowcode-next/materials/styles.css';
 import { createVueEditorMaterials } from './materials';
-import { PREVIEW_KEY } from '@pg/preview-route';
+import { readPreview } from '@pg/preview-route';
 import styles from '@pg/shell.module.css';
 
 /**
@@ -16,22 +14,14 @@ import styles from '@pg/shell.module.css';
  * 由同一份实现产生。用 React 物料渲染 Vue 编辑器搭的页面，虽然共用 `lc-*` 样式，
  * 但 DOM 只要有一处不同（比如属性顺序、空文本节点），就会出现两套观感。
  *
- * schema 仍经 sessionStorage 从编辑器传过来 —— 同源新窗口共享。
+ * schema 经 localStorage 从编辑器传过来（同源新窗口共享），读取与校验都收在
+ * `@pg/preview-route` 里 —— 与 React 版共用同一条通道（§12.14.5）。
  */
-function readSchema(): PageSchema | null {
-  try {
-    const raw = sessionStorage.getItem(PREVIEW_KEY);
-    return raw ? parsePageSchema(JSON.parse(raw)) : null;
-  } catch {
-    return null;
-  }
-}
-
 const PreviewApp = defineComponent({
   name: 'PreviewApp',
   setup() {
     const materials = createVueEditorMaterials();
-    const schema = readSchema();
+    const schema = readPreview();
 
     return () => {
       if (!schema) {
@@ -40,7 +30,7 @@ const PreviewApp = defineComponent({
           h(
             'pre',
             { class: styles.code },
-            '请从编辑器的「预览」按钮进入（schema 经 sessionStorage 传递）。',
+            '请从编辑器的「预览」按钮进入（schema 经 localStorage 传递）。',
           ),
         ]);
       }

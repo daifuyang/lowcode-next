@@ -2,7 +2,7 @@
  * 接入示例 —— 这个文件就是要给用户抄的那几行。
  *
  * 全部内容：引一次皮肤、交两份 JSON、交一张「组件名 → 组件」的映射表、
- * 调一次 `mountEditor`。装配注册表、造 document、建画布文档、错误兜底
+ * 调一次 `createEditor`。装配注册表、造 document、建画布文档、错误兜底
  * 都在 `@lowcode-next/lowcode-react` 内部完成，这里不出现任何管道代码。
  *
  * 对比改动之前：`App.tsx` + `materials.ts` + `canvas-body.tsx` +
@@ -12,14 +12,14 @@
 // 编辑器皮肤：Tailwind 入口 + 设计器 CSS 变量。接入方要提供一份等价的入口
 import '@pg/styles.css';
 
-import { mountEditor } from '@lowcode-next/lowcode-react';
+import { createEditor } from '@lowcode-next/lowcode-react';
+import { entryUrl, openPreview, writePreview } from '@pg/preview-route';
 
 import materials from '../materials.json';
 import page from '../page.json';
 import { StatCard } from './StatCard';
 
-const editor = mountEditor({
-  container: '#root',
+const editor = createEditor('#root', {
   schema: page,
   // 物料描述（纯 JSON）与组件实现分开交，靠 componentName 对齐
   materials,
@@ -29,9 +29,14 @@ const editor = mountEditor({
   // 整页布局自己带留白，画布不要再套一层内边距
   canvasPadding: 0,
   onSchemaChange: (schema) => {
-    // 真实项目在这里落盘 / 打点。演示只在控制台留一份，方便看结构
+    // 预览窗口靠这条实时跟随：写进 localStorage，`/render` 那页收到 storage
+    // 事件就地更新。真实项目在这里同时落盘 / 打点。
+    writePreview(schema);
     console.log('[demo] schema 已更新', schema.componentsTree.children?.length ?? 0, '个顶层节点');
   },
+  // 预览 = 换一个入口打开同一份 schema 的快照（§12.14.5）。
+  // `render.html` 自己 import 包与组件，不共享任何运行时对象。
+  onPreview: () => openPreview(editor.getSchema(), entryUrl('render')),
 });
 
 // 调试用：控制台里 `__editor.getSchema()` 可以拿到当前页面
