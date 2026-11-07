@@ -52,7 +52,7 @@ export function FeatureCard(props: Props) {
   return (
     <div className="lc-feature" style={styleOf(props.style)} {...passthrough(props)}>
       {icon ? <span className="lc-feature__icon">{icon}</span> : null}
-      {tag ? <span className="lc-badge lc-badge--accent lc-feature__tag">{tag}</span> : null}
+      {tag ? <span className="lc-tag lc-tag--accent lc-feature__tag">{tag}</span> : null}
       {title ? <h3 className="lc-feature__title">{title}</h3> : null}
       {desc ? <p className="lc-feature__desc">{desc}</p> : null}
       {props.children as ReactNode}

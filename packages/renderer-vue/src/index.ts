@@ -1,6 +1,7 @@
 import { Fragment, h } from 'vue';
 import type { Component, VNode } from 'vue';
 import type { ComponentMeta } from '@lowcode-next/protocol';
+import { PROP_SETTER } from '@lowcode-next/protocol';
 import { flagString, shouldPlacePlaceholder } from '@lowcode-next/renderer-core';
 import type { Driver, IRNode } from '@lowcode-next/renderer-core';
 
@@ -26,6 +27,12 @@ export interface VueRendererInput {
 export interface VueDriverOptions {
   /** 编辑态：给"没内容的容器"塞占位子节点。运行态必须关掉 */
   editorPlaceholder?: boolean;
+  /**
+   * 单 prop 回写（§12.15）：存在时每个节点都会在 props 里收到
+   * `props[PROP_SETTER]`，录入类物料靠它把用户输入写回 schema。
+   * 语义与 React 版 `ReactDriverOptions.setProp` 完全一致。
+   */
+  setProp?: (nodeId: string, propName: string, value: unknown) => void;
 }
 
 const PLACEHOLDER_CLASS = 'lc-container-placeholder';
@@ -48,6 +55,15 @@ export function createVueDriver(
     if (node.editFlags) {
       const flags = flagString(node.editFlags);
       if (flags) props['data-edit-flags'] = flags;
+    }
+
+    if (options.setProp) {
+      const nodeId = node.id;
+      // symbol 键不能直接索引 Record<string, unknown>（TS2538），借 Object.assign 写入
+      Object.assign(props, {
+        [PROP_SETTER]: (propName: string, value: unknown) =>
+          options.setProp!(nodeId, propName, value),
+      });
     }
 
     const children: Array<VNode | string> = node.children.map((child) =>

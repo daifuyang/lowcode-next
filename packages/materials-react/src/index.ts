@@ -4,15 +4,20 @@ import type { MaterialPackage, Props } from '@lowcode-next/materials';
 import { builtinMaterialPackage, assertMetaBindings } from '@lowcode-next/materials';
 import { Div, Stack, Grid, Section, Card } from './components/layout';
 import {
-  Heading,
-  Text,
-  Button,
+  Typography,
   Link,
-  Badge,
-  Icon,
-  Image,
+  Button,
+  Input,
+  TextArea,
+  Select,
+  Checkbox,
+  Switch,
+  Tag,
   Divider,
-  Spacer,
+  Image,
+  Progress,
+  Empty,
+  Alert,
 } from './components/base';
 import { Navbar, Hero, FeatureCard, Stat, CodeBlock, Footer } from './components/blocks';
 
@@ -43,16 +48,27 @@ export const builtinReactComponents: ReactBindings = {
   Section,
   Card,
 
-  // 基础
-  Heading,
-  Text,
-  Button,
+  // 文字
+  Typography,
   Link,
-  Badge,
-  Icon,
-  Image,
+
+  // 操作
+  Button,
+
+  // 录入
+  Input,
+  TextArea,
+  Select,
+  Checkbox,
+  Switch,
+
+  // 展示
+  Tag,
   Divider,
-  Spacer,
+  Image,
+  Progress,
+  Empty,
+  Alert,
 
   // 区块
   Navbar,
@@ -113,16 +129,22 @@ export function mergeReactBindings(packages: ReactMaterialPackage[]): ReactBindi
   return output;
 }
 
-export { Div, Stack, Grid, Section, Card } from './components/layout';
-export {
-  Heading,
-  Text,
-  Button,
+export { Div, Stack, Grid, Section, Card } from './components/layout';export {
+  Typography,
   Link,
-  Badge,
-  Icon,
-  Image,
+  Button,
+  Input,
+  TextArea,
+  Select,
+  Checkbox,
+  Switch,
+  Tag,
   Divider,
-  Spacer,
+  Image,
+  Progress,
+  Empty,
+  Alert,
 } from './components/base';
 export { Navbar, Hero, FeatureCard, Stat, CodeBlock, Footer } from './components/blocks';
+export { PropSetterProvider, usePropSetter } from './prop-setter-context';
+export { PropSetterContext } from './prop-setter-context';

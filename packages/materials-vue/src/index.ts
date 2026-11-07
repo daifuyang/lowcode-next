@@ -6,7 +6,7 @@ import {
   subsetPackage,
 } from '@lowcode-next/materials';
 import Div from './components/Div.vue';
-import Heading from './components/Heading.vue';
+import Typography from './components/Typography.vue';
 import Button from './components/Button.vue';
 
 /**
@@ -29,13 +29,13 @@ import Button from './components/Button.vue';
  */
 
 /** 已实现的物料清单 —— 与 `vueComponents` 的 key 必须一一对应 */
-export const vueMaterialNames = ['Div', 'Heading', 'Button'] as const;
+export const vueMaterialNames = ['Div', 'Typography', 'Button'] as const;
 
 export type VueBindings = Record<string, Component>;
 
 export const vueComponents: VueBindings = {
   Div,
-  Heading,
+  Typography,
   Button,
 };
 
@@ -71,4 +71,4 @@ export function mergeVueBindings(packages: VueMaterialPackage[]): VueBindings {
   return output;
 }
 
-export { Div, Heading, Button };
+export { Div, Typography, Button };

@@ -19,14 +19,17 @@ import { builtinMaterialPackage } from './index';
 const metas = builtinMaterialPackage.metas;
 
 const EXPECTED_ENUMS: Record<string, string[]> = {
-  Heading: ['level', 'tone', 'align', 'weight'],
-  Text: ['size', 'tone', 'align', 'weight', 'as'],
+  Typography: ['type', 'tone', 'align', 'weight'],
   Button: ['variant', 'size'],
   Link: ['tone'],
-  Badge: ['tone'],
+  Tag: ['tone'],
   Stack: ['direction', 'align', 'justify'],
   Section: ['tone', 'padding'],
   Card: ['tone'],
+  Input: ['size'],
+  Select: ['size'],
+  Progress: ['tone'],
+  Alert: ['type'],
 };
 
 describe('物料协议', () => {

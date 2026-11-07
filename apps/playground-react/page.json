@@ -1,35 +1,129 @@
 {
   "version": "1.0.1",
   "componentsMap": [
-    { "componentName": "Div", "package": "@lowcode-next/materials-react", "exportName": "Div" },
-    { "componentName": "Section", "package": "@lowcode-next/materials-react", "exportName": "Section" },
-    { "componentName": "Heading", "package": "@lowcode-next/materials-react", "exportName": "Heading" },
-    { "componentName": "Text", "package": "@lowcode-next/materials-react", "exportName": "Text" },
-    { "componentName": "Button", "package": "@lowcode-next/materials-react", "exportName": "Button" },
-    { "componentName": "Grid", "package": "@lowcode-next/materials-react", "exportName": "Grid" },
-    { "componentName": "Card", "package": "@lowcode-next/materials-react", "exportName": "Card" },
-    { "componentName": "StatCard", "package": "./StatCard", "exportName": "StatCard" }
+    {
+      "componentName": "Div",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Div"
+    },
+    {
+      "componentName": "Section",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Section"
+    },
+    {
+      "componentName": "Typography",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Typography"
+    },
+    {
+      "componentName": "Typography",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Typography"
+    },
+    {
+      "componentName": "Button",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Button"
+    },
+    {
+      "componentName": "Grid",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Grid"
+    },
+    {
+      "componentName": "Card",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Card"
+    },
+    {
+      "componentName": "StatCard",
+      "package": "./StatCard",
+      "exportName": "StatCard"
+    },
+    {
+      "componentName": "Input",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Input"
+    },
+    {
+      "componentName": "TextArea",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "TextArea"
+    },
+    {
+      "componentName": "Select",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Select"
+    },
+    {
+      "componentName": "Checkbox",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Checkbox"
+    },
+    {
+      "componentName": "Switch",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Switch"
+    },
+    {
+      "componentName": "Progress",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Progress"
+    },
+    {
+      "componentName": "Alert",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Alert"
+    },
+    {
+      "componentName": "Tag",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Tag"
+    },
+    {
+      "componentName": "Divider",
+      "package": "@lowcode-next/materials-react",
+      "exportName": "Divider"
+    }
   ],
   "componentsTree": {
     "id": "page_root",
     "componentName": "Div",
-    "props": { "style": { "minHeight": "100vh", "background": "#f8fafc" } },
+    "props": {
+      "style": {
+        "minHeight": "100vh",
+        "background": "#f8fafc"
+      }
+    },
     "children": [
       {
         "id": "hero_section",
         "componentName": "Section",
-        "props": { "tone": "light", "padding": "lg" },
+        "props": {
+          "tone": "light",
+          "padding": "lg"
+        },
         "children": [
           {
             "id": "hero_heading",
-            "componentName": "Heading",
-            "props": { "level": 1, "tone": "gradient", "align": "center" },
-            "children": ["接入你自己的组件"]
+            "componentName": "Typography",
+            "props": {
+              "tone": "gradient",
+              "align": "center",
+              "type": "h1"
+            },
+            "children": [
+              "接入你自己的组件"
+            ]
           },
           {
             "id": "hero_text",
-            "componentName": "Text",
-            "props": { "size": "lg", "tone": "muted", "align": "center" },
+            "componentName": "Typography",
+            "props": {
+              "tone": "muted",
+              "align": "center"
+            },
             "children": [
               "左边是物料面板，中间是画布。画布与编辑器共用同一棵 React tree —— 你的 Context、样式、状态都能直接用。"
             ]
@@ -49,14 +143,24 @@
               {
                 "id": "hero_btn_primary",
                 "componentName": "Button",
-                "props": { "variant": "primary", "size": "lg" },
-                "children": ["拖一个组件试试"]
+                "props": {
+                  "variant": "primary",
+                  "size": "lg"
+                },
+                "children": [
+                  "拖一个组件试试"
+                ]
               },
               {
                 "id": "hero_btn_outline",
                 "componentName": "Button",
-                "props": { "variant": "outline", "size": "lg" },
-                "children": ["看物料配置"]
+                "props": {
+                  "variant": "outline",
+                  "size": "lg"
+                },
+                "children": [
+                  "看物料配置"
+                ]
               }
             ]
           }
@@ -65,17 +169,27 @@
       {
         "id": "stats_section",
         "componentName": "Section",
-        "props": { "tone": "muted", "padding": "md" },
+        "props": {
+          "tone": "muted",
+          "padding": "md"
+        },
         "children": [
           {
             "id": "stats_grid",
             "componentName": "Grid",
-            "props": { "columns": 3, "gap": 20 },
+            "props": {
+              "columns": 3,
+              "gap": 20
+            },
             "children": [
               {
                 "id": "stat_live",
                 "componentName": "StatCard",
-                "props": { "label": "月度活跃", "value": "12,480", "hint": "较上月 +8.2%" }
+                "props": {
+                  "label": "月度活跃",
+                  "value": "12,480",
+                  "hint": "较上月 +8.2%"
+                }
               },
               {
                 "id": "stat_materials",
@@ -89,7 +203,11 @@
               {
                 "id": "stat_bundle",
                 "componentName": "StatCard",
-                "props": { "label": "首屏代码", "value": "3 行", "hint": "一次 createEditor 调用" }
+                "props": {
+                  "label": "首屏代码",
+                  "value": "3 行",
+                  "hint": "一次 createEditor 调用"
+                }
               }
             ]
           }
@@ -98,28 +216,132 @@
       {
         "id": "next_section",
         "componentName": "Section",
-        "props": { "tone": "light", "padding": "md" },
+        "props": {
+          "tone": "light",
+          "padding": "md"
+        },
         "children": [
           {
             "id": "next_card",
             "componentName": "Card",
-            "props": { "tone": "outline" },
+            "props": {
+              "tone": "outline"
+            },
             "children": [
               {
                 "id": "next_heading",
-                "componentName": "Heading",
-                "props": { "level": 3 },
-                "children": ["这个页面由 page.json 描述"]
+                "componentName": "Typography",
+                "props": {
+                  "type": "h3"
+                },
+                "children": [
+                  "这个页面由 page.json 描述"
+                ]
               },
               {
                 "id": "next_text",
-                "componentName": "Text",
-                "props": { "tone": "muted" },
+                "componentName": "Typography",
+                "props": {
+                  "tone": "muted"
+                },
                 "children": [
                   "在画布里拖拽调整，结构变化会实时回写到文档。整份 schema 就是普通 JSON，存数据库或文件都行。"
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        "id": "form_section",
+        "componentName": "Section",
+        "props": {
+          "tone": "light",
+          "padding": "md"
+        },
+        "children": [
+          {
+            "id": "form_heading",
+            "componentName": "Typography",
+            "props": {
+              "type": "h3"
+            },
+            "children": [
+              "表单演示"
+            ]
+          },
+          {
+            "id": "form_caption",
+            "componentName": "Typography",
+            "props": {
+              "type": "body",
+              "tone": "muted"
+            },
+            "children": [
+              "下面的输入都受控：打字、勾选、切换会实时写回 schema（undo/redo 生效）。"
+            ]
+          },
+          {
+            "id": "form_name",
+            "componentName": "Input",
+            "props": {
+              "value": "",
+              "placeholder": "输入点什么试试"
+            }
+          },
+          {
+            "id": "form_select",
+            "componentName": "Select",
+            "props": {
+              "value": "",
+              "options": [
+                "选项一",
+                "选项二",
+                "选项三"
+              ]
+            }
+          },
+          {
+            "id": "form_textarea",
+            "componentName": "TextArea",
+            "props": {
+              "value": "",
+              "placeholder": "多行输入",
+              "rows": 3
+            }
+          },
+          {
+            "id": "form_check",
+            "componentName": "Checkbox",
+            "props": {
+              "label": "我已阅读说明",
+              "checked": true
+            }
+          },
+          {
+            "id": "form_switch",
+            "componentName": "Switch",
+            "props": {
+              "label": "自动保存",
+              "checked": true
+            }
+          },
+          {
+            "id": "form_progress",
+            "componentName": "Progress",
+            "props": {
+              "percent": 40,
+              "showText": true
+            }
+          },
+          {
+            "id": "form_alert",
+            "componentName": "Alert",
+            "props": {
+              "type": "info",
+              "title": "提示",
+              "description": "这是提示条组件，编辑态下关闭按钮不可用。"
+            }
           }
         ]
       }

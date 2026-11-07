@@ -42,6 +42,11 @@ export const CanvasSurface = memo(function CanvasSurface({
         registry: materials.registry,
         bindings: materials.bindings,
         mode,
+        // 录入类物料（Input/Select/…）打字即改 schema：走 command，undo/redo 生效。
+        // 运行态预览页没接这个（renderTree 的 onPropChange 缺省），组件退回内部 state。
+        onPropChange: (nodeId, propName, value) => {
+          document.setProps(nodeId, { [propName]: value });
+        },
       })}
     </div>
   );

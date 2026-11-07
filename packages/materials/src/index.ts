@@ -28,6 +28,7 @@ export {
   num,
   bool,
   pick,
+  getPropSetter,
 } from './props';
 export type { Props, StyleObject } from './props';
 

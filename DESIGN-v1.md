@@ -3812,3 +3812,84 @@ render 态探针（`render-probe.html` + `src/render-probe.tsx`，验证后已�
 2. **接入方仍需自备 Tailwind 入口** —— `designer-react` 的 shadcn 类依赖它。
 3. **`node.meta` 仍是构造时缓存**（`packages/model/src/node.ts`）—— `unuse()`
    之后存量节点拿到的是旧 meta。
+
+### 12.15 原子物料重写（14 个）与录入回写通道（2026-11-07）
+
+#### 12.15.1 清单与取舍
+
+原来的 20 个物料是按「搭一张营销落地页」凑的，三个层次（原子 / 布局 / 页面模板）
+挤在同一张面板里，语义不属于同一层。这轮按 lowcode 基础示例（demo-basic-antd）
+的思路对齐原子层，**净结果 20 → 25，其中原子层重写为 14 个**：
+
+| 组 | 组件 | 变化 |
+|---|---|---|
+| 布局（5） | Div / Stack / Grid / Section / Card | 不动 |
+| 文字（2） | `Typography` / Link | **Heading + Text 合并**为 Typography（`type: h1–h4/body/caption` 一个属性表达标签与字号档） |
+| 操作（1） | Button | 不动 |
+| 录入（5） | Input / TextArea / Select / Checkbox / Switch | **全部新增**，依赖回写通道（§12.15.2） |
+| 展示（6） | Tag / Divider / Image / Progress / Empty / Alert | `Badge → Tag` 改名；Progress / Empty / Alert 新增 |
+| 区块（6） | Navbar / Hero / FeatureCard / Stat / CodeBlock / Footer | 不动（定位是「页面模板」，面板压在最下面） |
+
+**删掉的**：`Icon`（只是往 span 里打一个字符，真图标要图标集，假 Icon 比没有更
+误导）、`Spacer`（`style.margin` 就能表达）。
+
+**改名**：`Badge → Tag` —— 它做的是分类/状态标签（antd 的 Tag）；Badge 在业界指
+数字角标，不是同一个东西。
+
+style 上对应改了 `materials/src/styles.css`：`lc-heading--*` → `lc-typo--*`、
+`lc-badge--*` → `lc-tag--*`（补 warning / error 两档）、新增 `lc-input / lc-select /
+lc-textarea / lc-checkbox / lc-switch / lc-progress / lc-empty / lc-alert`，
+聚焦环统一 `--lc-focus-ring`（box-shadow，不吃圆角）。
+
+#### 12.15.2 录入回写通道：Symbol 方案的失败与 Context 定稿
+
+录入组件（Input/Select/…）的值属于 schema（`props.value`），但 `renderTree` 是
+纯函数（schema → 视图），组件打字后**谁写回 schema**？链路：
+
+```
+组件 onChange → 回写函数 → document.setProps(id, {prop: value})
+                            └─ 走 command，undo/redo / 属性面板同步全部免费
+```
+
+**第一版（已废）：driver 往 props 塞 `Symbol.for('lowcode-next.prop-setter')`。**
+protocol 导出 symbol，driver 注入，物料 `getPropSetter(props)` 读。三个坑：
+
+1. `Record<string, unknown>` 的 string 索引不接受 symbol 键，`Props` 加 symbol
+   槽位后 weak-type 检测（TS2322 "no properties in common"）会让业务组件的具体
+   props 接口接不进 `ReactBindings`；
+2. 这些都能绕，但真正致命的是 **React 19 的 `createElement` 用 `for...in` 拷贝
+   config —— symbol 键被静默丢弃**。实测 `createElement(Comp, {[SYM]: fn})`
+   渲染后组件拿到的 props 里 symbol 消失（CDP fiber 探针证实）。字符串键能活，
+   但函数值经业务组件的 `{...rest}` 透传会漏到 DOM 属性上，dev 刷警告。
+
+**定稿：React Context。** `materials-react` 导出 `PropSetterProvider` /
+`usePropSetter(props)`；driver 不认识 context —— `ReactDriverOptions.wrapRoot`
+只提供「renderRoot 产出过一道」的包装点，由知道 materials-react 的 `renderTree`
+把树包进 Provider：
+
+- node id 由物料自己从 `props['data-node-id']` 读（字符串键，createElement 不丢）；
+- 没包 Provider（纯预览）→ `usePropSetter` 返回 undefined → 组件退回内部 state，
+  可以交互但不落库。两条路读同一个 `props.value`，编辑所见即线上初始值；
+- Vue 侧 driver 保留 props 注入（`h()` 直接保留 props 对象引用，symbol 能活），
+  materials-vue 实现录入组件时用 `getPropSetter()` 读取即可。
+
+#### 12.15.3 验证（实测）
+
+- `tsc -b` + 两 app `--noEmit` 0 错误、`vitest` 130/130、`pnpm build` 通过；
+- **CDP 可信输入（`Input.insertText`）**：编辑态画布 Input 打字 →
+  `document.setProps('form_name', {value})` → `__editor.getSchema()` 读到新值 ✓；
+  Switch 点击 → `checked: false` 进 schema ✓；
+- 教训一条：**验证 React 受控输入不能用合成 `dispatchEvent(new Event('input'))`**
+  —— React 的受控恢复机制会在处理器读到值之前把 DOM value 拉回 props.value，
+  合成事件拿到的永远是旧值。真实打字（可信事件）没问题，这是测试工具的限制
+  不是产品缺陷；
+- `/render` 冒烟：21 个物料（含全部新组件）渲染成功，0「未注册物料」兜底；
+- `page.json` 加了「表单演示」区块（Input/TextArea/Select/Checkbox/Switch/
+  Progress/Alert），作为回写通道的常驻示例。
+
+#### 12.15.4 还没做
+
+1. **Vue 物料仍是 3 个**（Div/Typography/Button），录入与展示组件待补；
+   Vue 的 `render-vue` 同 §12.14.7。
+2. **Table / Form** 属复合组件，需要数据源或校验机制，不在原子层。
+3. **Icon** 若要回来，正确做法是接一个图标集把 `name` 映射到组件，属于独立决策。

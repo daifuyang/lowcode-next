@@ -11,8 +11,8 @@ import type { PageSchema } from '@lowcode-next/protocol';
 
 const PROTOCOL_SNIPPET = `componentsTree: {
   id: 'hero_title',
-  componentName: 'Heading',
-  props: { level: 1, tone: 'gradient' },
+  componentName: 'Typography',
+  props: { type: 'h1', tone: 'gradient' },
   children: ['把页面的结构，还给数据'],
 }`;
 
@@ -24,11 +24,11 @@ export const landingSchema: PageSchema = {
     { componentName: 'Grid', package: '@lowcode-next/renderer', exportName: 'Grid' },
     { componentName: 'Section', package: '@lowcode-next/renderer', exportName: 'Section' },
     { componentName: 'Card', package: '@lowcode-next/renderer', exportName: 'Card' },
-    { componentName: 'Heading', package: '@lowcode-next/renderer', exportName: 'Heading' },
-    { componentName: 'Text', package: '@lowcode-next/renderer', exportName: 'Text' },
+    { componentName: 'Typography', package: '@lowcode-next/renderer', exportName: 'Typography' },
+    { componentName: 'Typography', package: '@lowcode-next/renderer', exportName: 'Typography' },
     { componentName: 'Button', package: '@lowcode-next/renderer', exportName: 'Button' },
     { componentName: 'Link', package: '@lowcode-next/renderer', exportName: 'Link' },
-    { componentName: 'Badge', package: '@lowcode-next/renderer', exportName: 'Badge' },
+    { componentName: 'Tag', package: '@lowcode-next/renderer', exportName: 'Tag' },
     { componentName: 'Divider', package: '@lowcode-next/renderer', exportName: 'Divider' },
     { componentName: 'Navbar', package: '@lowcode-next/renderer', exportName: 'Navbar' },
     { componentName: 'Hero', package: '@lowcode-next/renderer', exportName: 'Hero' },
@@ -97,19 +97,19 @@ export const landingSchema: PageSchema = {
             children: [
               {
                 id: 'hero_badge',
-                componentName: 'Badge',
+                componentName: 'Tag',
                 props: { tone: 'invert' },
                 children: ['v1.0 · M0–M5 已跑通'],
               },
               {
                 id: 'hero_title',
-                componentName: 'Heading',
-                props: { level: 1, tone: 'gradient', align: 'center' },
+                componentName: 'Typography',
+                props: { type: 'h1', tone: 'gradient', align: 'center' },
                 children: ['把页面的结构，还给数据'],
               },
               {
                 id: 'hero_desc',
-                componentName: 'Text',
+                componentName: 'Typography',
                 props: {
                   size: 'lg',
                   tone: 'invert',
@@ -200,20 +200,20 @@ export const landingSchema: PageSchema = {
                 children: [
                   {
                     id: 'features_badge',
-                    componentName: 'Badge',
+                    componentName: 'Tag',
                     props: { tone: 'accent' },
                     children: ['核心能力'],
                   },
                   {
                     id: 'features_title',
-                    componentName: 'Heading',
-                    props: { level: 2, align: 'center' },
+                    componentName: 'Typography',
+                    props: { type: 'h2', align: 'center' },
                     children: ['六个不打算妥协的地方'],
                   },
                   {
                     id: 'features_desc',
-                    componentName: 'Text',
-                    props: { size: 'lg', tone: 'muted', align: 'center', style: { maxWidth: 560 } },
+                    componentName: 'Typography',
+                    props: { type: 'body', tone: 'muted', align: 'center', style: { maxWidth: 560 } },
                     children: ['低代码引擎的难点不在渲染，在几何、状态和可回溯性。'],
                   },
                 ],
@@ -302,20 +302,20 @@ export const landingSchema: PageSchema = {
                 children: [
                   {
                     id: 'packages_badge',
-                    componentName: 'Badge',
+                    componentName: 'Tag',
                     props: { tone: 'neutral' },
                     children: ['架构'],
                   },
                   {
                     id: 'packages_title',
-                    componentName: 'Heading',
-                    props: { level: 2 },
+                    componentName: 'Typography',
+                    props: { type: 'h2' },
                     children: ['五个包，一条单向依赖链'],
                   },
                   {
                     id: 'packages_desc',
-                    componentName: 'Text',
-                    props: { size: 'lg', tone: 'muted', style: { maxWidth: 600 } },
+                    componentName: 'Typography',
+                    props: { type: 'body', tone: 'muted', style: { maxWidth: 600 } },
                     children: [
                       '依赖只允许从右往左：designer 认识所有层，drag 谁都不认识，所以它能脱离低代码场景单独用。',
                     ],
@@ -339,20 +339,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_protocol_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'primary', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'primary', mono: true },
                             children: ['01'],
                           },
                           {
                             id: 'pkg_protocol_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['protocol'],
                           },
                           {
                             id: 'pkg_protocol_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['schema、物料协议与 zod 校验。校验失败摊平成可读路径，不是一句 Invalid input。'],
                           },
                         ],
@@ -371,20 +371,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_model_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'primary', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'primary', mono: true },
                             children: ['02'],
                           },
                           {
                             id: 'pkg_model_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['model'],
                           },
                           {
                             id: 'pkg_model_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['可变节点树、选区与命令模式。变更通过 subscribe 广播，不依赖任何框架。'],
                           },
                         ],
@@ -403,20 +403,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_renderer_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'primary', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'primary', mono: true },
                             children: ['03'],
                           },
                           {
                             id: 'pkg_renderer_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['renderer'],
                           },
                           {
                             id: 'pkg_renderer_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['Evaluator 纯函数 + 物料注册表 + Driver。整个系统只有 Driver 认识 React。'],
                           },
                         ],
@@ -435,20 +435,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_drag_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'primary', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'primary', mono: true },
                             children: ['04'],
                           },
                           {
                             id: 'pkg_drag_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['drag'],
                           },
                           {
                             id: 'pkg_drag_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['Locator、RectCache、Overlay、DragManager、AutoScroller。只认 id 与矩形。'],
                           },
                         ],
@@ -467,20 +467,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_designer_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'primary', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'primary', mono: true },
                             children: ['05'],
                           },
                           {
                             id: 'pkg_designer_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['designer'],
                           },
                           {
                             id: 'pkg_designer_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['落点规则、物料面板、画布、选中与删除。把上面四层组装成能用界面。'],
                           },
                         ],
@@ -499,20 +499,20 @@ export const landingSchema: PageSchema = {
                         children: [
                           {
                             id: 'pkg_next_no',
-                            componentName: 'Text',
-                            props: { size: 'xs', tone: 'subtle', mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'subtle', mono: true },
                             children: ['next'],
                           },
                           {
                             id: 'pkg_next_name',
-                            componentName: 'Heading',
-                            props: { level: 4, mono: true },
+                            componentName: 'Typography',
+                            props: { type: 'h4', mono: true },
                             children: ['history'],
                           },
                           {
                             id: 'pkg_next_desc',
-                            componentName: 'Text',
-                            props: { size: 'sm', tone: 'muted' },
+                            componentName: 'Typography',
+                            props: { type: 'caption', tone: 'muted' },
                             children: ['命令已经可回滚，接上 History 栈就是撤销重做。'],
                           },
                         ],
@@ -544,19 +544,19 @@ export const landingSchema: PageSchema = {
                 children: [
                   {
                     id: 'schema_badge',
-                    componentName: 'Badge',
+                    componentName: 'Tag',
                     props: { tone: 'invert' },
                     children: ['协议'],
                   },
                   {
                     id: 'schema_title',
-                    componentName: 'Heading',
-                    props: { level: 2, tone: 'invert' },
+                    componentName: 'Typography',
+                    props: { type: 'h2', tone: 'invert' },
                     children: ['schema 是唯一事实来源'],
                   },
                   {
                     id: 'schema_desc',
-                    componentName: 'Text',
+                    componentName: 'Typography',
                     props: { tone: 'invert' },
                     children: [
                       '页面就是一个 JSON 树。渲染器、拖拽引擎、将来的导出器都只读它，没有第二份状态。',
@@ -569,28 +569,28 @@ export const landingSchema: PageSchema = {
                     children: [
                       {
                         id: 'schema_point_1',
-                        componentName: 'Text',
-                        props: { size: 'sm', tone: 'invert' },
+                        componentName: 'Typography',
+                        props: { type: 'caption', tone: 'invert' },
                         children: ['· 文本是 children 里的字符串项，不塞进 props.children'],
                       },
                       {
                         id: 'schema_point_2',
-                        componentName: 'Text',
-                        props: { size: 'sm', tone: 'invert' },
+                        componentName: 'Typography',
+                        props: { type: 'caption', tone: 'invert' },
                         children: ['· condition / loop 是节点级指令，不混进 props'],
                       },
                       {
                         id: 'schema_point_3',
-                        componentName: 'Text',
-                        props: { size: 'sm', tone: 'invert' },
+                        componentName: 'Typography',
+                        props: { type: 'caption', tone: 'invert' },
                         children: ['· 每个节点有全局唯一 id，拖拽靠它定位'],
                       },
                     ],
                   },
                   {
                     id: 'schema_note',
-                    componentName: 'Text',
-                    props: { size: 'sm', tone: 'subtle' },
+                    componentName: 'Typography',
+                    props: { type: 'caption', tone: 'subtle' },
                     children: ['右边这一版，就是本页首屏标题的真实节点。'],
                   },
                 ],
@@ -618,14 +618,14 @@ export const landingSchema: PageSchema = {
             children: [
               {
                 id: 'cta_title',
-                componentName: 'Heading',
-                props: { level: 2, align: 'center' },
+                componentName: 'Typography',
+                props: { type: 'h2', align: 'center' },
                 children: ['现在就可以拖着试'],
               },
               {
                 id: 'cta_desc',
-                componentName: 'Text',
-                props: { size: 'lg', tone: 'muted', align: 'center', style: { maxWidth: 560 } },
+                componentName: 'Typography',
+                props: { type: 'body', tone: 'muted', align: 'center', style: { maxWidth: 560 } },
                 children: [
                   '左边 20 个物料，拖到画布上松手就插入。画布内按住节点可以重排，拖出画布松手会取消。',
                 ],

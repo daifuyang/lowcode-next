@@ -13,7 +13,23 @@
  * 框架出口，必须切干净。React 侧一行 cast 收在自己的包里（`toStyle`）。
  */
 
+import { PROP_SETTER } from '@lowcode-next/protocol';
+import type { PropSetter } from '@lowcode-next/protocol';
+
 export type Props = Record<string, unknown>;
+
+/**
+ * 读出 driver 注入的单 prop 回写函数（§12.15）。
+ *
+ * 之所以用函数而不是让 `Props` 直接声明 symbol 槽位：带 symbol 成员的
+ * 接口会触发 weak-type 检测（TS2322 "no properties in common"），业务组件
+ * 自己的具体 props 接口就接不进 `ReactBindings` 了 —— 试过，报错在
+ * `apps/playground-react/src/main.tsx`。收口成一个函数，symbol 只在这一处
+ * 被 cast。
+ */
+export function getPropSetter(props: Props): PropSetter | undefined {
+  return (props as { [PROP_SETTER]?: PropSetter })[PROP_SETTER];
+}
 
 /** schema 里 style 的形状：camelCase 键 + 字符串/数值 */
 export type StyleObject = Record<string, string | number | undefined>;

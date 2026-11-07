@@ -39,6 +39,18 @@ export interface ReactDriverOptions {
    * 缺省按 `editorPlaceholder` 推断：开了占位就是编辑态。
    */
   mode?: RenderMode;
+  /**
+   * 根级包装（§12.15）：renderRoot 的产出在返回给调用方之前过这道，
+   * 用于把整棵树包进回写通道的 Provider（React Context）。
+   *
+   * **为什么走 Context 而不是往 props 里塞回调**：React 19 的 createElement
+   * 用 `for...in` 拷贝 config，**symbol 键（以及一切不可枚举键）会被丢弃**
+   * ——实测 `createElement(Component, { [PROP_SETTER]: fn })` 渲染后组件拿不到。
+   * 字符串键能活下来，但函数值经业务组件的 `{...rest}` 透传会漏到 DOM 属性上，
+   * dev 模式刷警告。Context 两头都干净：driver 不认识物料，物料不认识节点，
+   * node id 由物料自己从 `props['data-node-id']` 读（字符串键，能活着传下来）。
+   */
+  wrapRoot?: (nodes: ReactNode) => ReactNode;
 }
 
 const PLACEHOLDER_CLASS = 'lc-container-placeholder';
@@ -102,7 +114,8 @@ export function createReactDriver(
   return {
     render,
     renderRoot(nodes) {
-      return nodes.map((node) => (typeof node === 'string' ? node : render(node)));
+      const out = nodes.map((node) => (typeof node === 'string' ? node : render(node)));
+      return options.wrapRoot ? options.wrapRoot(out) : out;
     },
   };
 }

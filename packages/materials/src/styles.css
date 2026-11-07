@@ -105,50 +105,52 @@
   color: #f2f5ff;
 }
 
-/* ---------- 标题 ---------- */
-
-.lc-heading {
-  margin: 0;
-  font-family: var(--lc-font);
-  font-weight: 660;
-  line-height: 1.2;
-  letter-spacing: -0.022em;
-  color: var(--lc-fg);
-}
-
-.lc-heading--1 {
-  font-size: 46px;
-  line-height: 1.14;
-  letter-spacing: -0.03em;
-}
-.lc-heading--2 {
-  font-size: 31px;
-  line-height: 1.22;
-}
-.lc-heading--3 {
-  font-size: 19px;
-  line-height: 1.36;
-}
-.lc-heading--4 {
-  font-size: 15.5px;
-  line-height: 1.44;
-  letter-spacing: -0.01em;
-}
-
-.lc-heading--gradient {
+/* 渐变文字：tone 体系里最特殊的一个，只能靠 background-clip 实现 */
+.lc-tone--gradient {
   background: linear-gradient(96deg, #ffffff 8%, #cdd7ff 44%, #7be3f5 82%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.lc-heading--invert {
-  color: #f4f7ff;
+/* ---------- 文字（Typography） ---------- */
+
+.lc-typo {
+  margin: 0;
+  font-family: var(--lc-font);
+  line-height: 1.72;
 }
 
-.lc-heading--mono {
-  font-family: var(--lc-mono);
+/* 标题档：继承原 Heading 的字号与间距 */
+.lc-typo--h1 {
+  font-size: 46px;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+}
+.lc-typo--h2 {
+  font-size: 31px;
+  line-height: 1.22;
+}
+.lc-typo--h3 {
+  font-size: 19px;
+  line-height: 1.36;
+}
+.lc-typo--h4 {
+  font-size: 15.5px;
+  line-height: 1.44;
   letter-spacing: -0.01em;
+}
+
+/* 正文 / 辅助文字档：继承原 Text 的字号 */
+.lc-typo--body {
+  font-size: 14.5px;
+  color: var(--lc-fg-soft);
+  letter-spacing: 0.002em;
+}
+.lc-typo--caption {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lc-muted);
 }
 
 /* ---------- 按钮 ---------- */
@@ -263,7 +265,7 @@
 
 /* ---------- 标签 ---------- */
 
-.lc-badge {
+.lc-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -281,38 +283,34 @@
   white-space: nowrap;
 }
 
-.lc-badge--accent {
+.lc-tag--accent {
   background: var(--lc-accent-soft);
   color: var(--lc-accent-strong);
 }
-.lc-badge--neutral {
+.lc-tag--neutral {
   background: #f1f3f8;
   color: #4b5565;
 }
-.lc-badge--success {
+.lc-tag--success {
   background: #e7f8ef;
   color: #067647;
 }
-.lc-badge--invert {
+.lc-tag--warning {
+  background: #fef3e2;
+  color: #b45309;
+}
+.lc-tag--error {
+  background: #fdecec;
+  color: #b91c1c;
+}
+.lc-tag--invert {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.16);
   color: #c9d4f5;
 }
-.lc-badge--outline {
+.lc-tag--outline {
   border-color: var(--lc-line);
   color: var(--lc-muted);
-}
-
-/* ---------- 图标字 ---------- */
-
-.lc-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--lc-mono);
-  font-size: 18px;
-  line-height: 1;
-  color: var(--lc-accent);
 }
 
 /* ---------- 分割线 ---------- */
@@ -351,15 +349,6 @@
   color: var(--lc-subtle);
   font-family: var(--lc-font);
   font-size: 12px;
-}
-
-/* ---------- 撑开 ---------- */
-
-.lc-spacer {
-  flex: 0 0 auto;
-}
-.lc-spacer--grow {
-  flex: 1 1 auto;
 }
 
 /* ---------- 布局容器 ---------- */
@@ -724,4 +713,360 @@
   gap: 18px;
   margin-left: auto;
   min-width: 0;
+}
+
+/* ---------- 录入：通用 ---------- */
+/*
+ * 录入组件共用一套框体语言（高度档 / 边框 / 聚焦环），保证 Input、
+ * TextArea、Select 放在一行时对得齐。`--lc-focus-ring` 用 box-shadow
+ * 而不是 outline：outline 不吃圆角，聚焦时会破相。
+ */
+
+:root {
+  --lc-field-border: #d6dbe6;
+  --lc-field-bg: #ffffff;
+  --lc-field-placeholder: #9aa3b5;
+  --lc-focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.16);
+}
+
+.lc-field--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lc-field__label {
+  font-family: var(--lc-font);
+  font-size: 13.5px;
+  color: var(--lc-fg-soft);
+  user-select: none;
+}
+
+/* ---------- 输入框 ---------- */
+
+.lc-input,
+.lc-textarea,
+.lc-select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--lc-field-border);
+  border-radius: 8px;
+  background: var(--lc-field-bg);
+  font-family: var(--lc-font);
+  font-size: 13.5px;
+  color: var(--lc-fg);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lc-input::placeholder,
+.lc-textarea::placeholder {
+  color: var(--lc-field-placeholder);
+}
+
+.lc-input:focus,
+.lc-textarea:focus,
+.lc-select:focus {
+  border-color: var(--lc-accent);
+  box-shadow: var(--lc-focus-ring);
+}
+
+.lc-input:disabled,
+.lc-textarea:disabled,
+.lc-select:disabled {
+  background: var(--lc-bg-muted);
+  cursor: not-allowed;
+}
+
+/* 高度档：sm/md/lg，语义与按钮一致 */
+.lc-input,
+.lc-select {
+  height: 36px;
+}
+.lc-input--sm,
+.lc-select--sm {
+  height: 30px;
+  font-size: 12.5px;
+}
+.lc-input--lg,
+.lc-select--lg {
+  height: 42px;
+  font-size: 14.5px;
+}
+
+.lc-textarea {
+  padding: 9px 12px;
+  line-height: 1.65;
+  resize: vertical;
+  min-height: 0;
+}
+
+/* ---------- 下拉选择 ---------- */
+
+.lc-select {
+  appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235a6478' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  cursor: pointer;
+}
+
+.lc-select:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------- 多选框 ---------- */
+
+.lc-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  width: fit-content;
+}
+
+.lc-checkbox input {
+  /* 视觉隐藏但保留可聚焦：键盘 Tab 仍能到达，聚焦环画在盒子上 */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.lc-checkbox__box {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--lc-field-border);
+  border-radius: 4px;
+  background: var(--lc-field-bg);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.lc-checkbox input:checked + .lc-checkbox__box {
+  background: var(--lc-accent);
+  border-color: var(--lc-accent);
+  /* 对勾用 mask 画，颜色跟背景走 */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l2.6 2.6L9 1' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.lc-checkbox input:focus-visible + .lc-checkbox__box {
+  box-shadow: var(--lc-focus-ring);
+}
+
+/* ---------- 开关 ---------- */
+
+.lc-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.lc-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.lc-switch__track {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: #ccd2de;
+  padding: 2px;
+  box-sizing: border-box;
+  transition: background 0.15s ease;
+}
+
+.lc-switch__thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(7, 11, 24, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.lc-switch input:checked + .lc-switch__track {
+  background: var(--lc-accent);
+}
+.lc-switch input:checked + .lc-switch__track .lc-switch__thumb {
+  transform: translateX(16px);
+}
+
+.lc-switch input:focus-visible + .lc-switch__track {
+  box-shadow: var(--lc-focus-ring);
+}
+
+/* ---------- 进度条 ---------- */
+
+.lc-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  font-family: var(--lc-font);
+}
+
+.lc-progress__track {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 999px;
+  background: #edf0f6;
+  overflow: hidden;
+}
+
+.lc-progress__bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--lc-accent);
+  transition: width 0.25s ease;
+}
+
+.lc-progress__bar--success {
+  background: #10b981;
+}
+.lc-progress__bar--warning {
+  background: #f59e0b;
+}
+.lc-progress__bar--error {
+  background: #ef4444;
+}
+
+.lc-progress__text {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--lc-muted);
+}
+
+/* ---------- 空状态 ---------- */
+
+.lc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 34px 16px;
+  font-family: var(--lc-font);
+}
+
+.lc-empty__figure {
+  position: relative;
+  width: 52px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--lc-bg-muted);
+  border: 1px solid var(--lc-line);
+}
+
+/* 两根抽象「数据线」，比纯色块多一点点可读性 */
+.lc-empty__figure span {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  border-radius: 2px;
+  background: #dfe4ee;
+}
+.lc-empty__figure span:first-child {
+  top: 12px;
+  right: 22px;
+}
+.lc-empty__figure span:last-child {
+  bottom: 12px;
+  left: 22px;
+}
+
+.lc-empty__text {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--lc-subtle);
+}
+
+/* ---------- 提示条 ---------- */
+
+.lc-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: var(--lc-font);
+}
+
+.lc-alert__icon {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.lc-alert__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lc-alert__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.lc-alert__desc {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  opacity: 0.85;
+}
+
+.lc-alert__close {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  margin-left: 4px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.lc-alert__close:hover {
+  opacity: 1;
+}
+
+.lc-alert--info {
+  background: var(--lc-accent-soft);
+  border-color: #dfe3ff;
+  color: var(--lc-accent-strong);
+}
+.lc-alert--success {
+  background: #e7f8ef;
+  border-color: #cdeedd;
+  color: #067647;
+}
+.lc-alert--warning {
+  background: #fef3e2;
+  border-color: #f6e3c4;
+  color: #b45309;
+}
+.lc-alert--error {
+  background: #fdecec;
+  border-color: #f6d5d5;
+  color: #b91c1c;
 }

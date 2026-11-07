@@ -11,7 +11,7 @@ import { createDesigner } from './materials';
  * 没有分支、没有动态 `import()`：这里不存在「另一套编辑器」可以选；画布与预览
  * 也各自是独立 HTML 入口，不在这里分流。
  *
- * **默认页是「最小示例」而不是落地页**：Vue 侧目前只实现了 Div / Heading / Button
+ * **默认页是「最小示例」而不是落地页**：Vue 侧目前只实现了 Div / Typography / Button
  * 三个物料，打开落地页会大面积落到「未注册物料」兜底块。想对照时用 `?page=landing`，
  * 那一片红框就是缺口清单。
  */

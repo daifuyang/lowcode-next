@@ -2,35 +2,31 @@ import { defineMaterial, propOptions } from '@lowcode-next/protocol';
 import type { ComponentMeta } from '@lowcode-next/protocol';
 
 /**
- * 基础物料的描述（9 个）：文字、按钮、链接、标签、图标、分割线、图片、间距。
+ * 原子物料的描述（14 个，2026-11-07 按 lowcode 基础示例对齐）。
  *
- * 常量一律导出 —— 两套视图层的实现都 import 它们做 `pick()` 校验，与 meta 里的
- * `propOptions()` 共用同一个数组。字段顺序刻意与 props 的展示顺序一致，
- * 改动会直接改变属性面板的行序。
+ * 分组顺序即物料面板顺序：文字 → 操作 → 录入 → 展示。
+ *
+ * **这里的取舍**
+ *
+ * - `Typography` 合并了原来的 `Heading` + `Text`：两者的 tone / align / weight /
+ *   mono 逐项相同，只差标签，合成一个 `type` 属性（h1–h4 / body / caption）更贴近
+ *   antd 的 `Typography`，面板也少一栏让人犹豫的选择。
+ * - `Tag` 由 `Badge` 改名：它做的是分类/状态标签，业界（antd Tag）都这么叫；
+ *   Badge 指的是数字角标（未读数那种），不是同一个东西。
+ * - 删掉 `Icon` 与 `Spacer`：前者是"往 span 里打一个字符"，不是图标组件 ——
+ *   真图标要图标集，而物料包不该依赖它；后者 `style.margin` 就能表达，
+ *   留着只会让 schema 堆满无意义节点。
+ *
+ * 常量一律导出 —— 两套视图层的实现 import 它们做 `pick()` 校验，与 meta 的
+ * `propOptions()` 共用同一个数组，面板下拉和画布渲染不可能抄漏一个选项。
  */
 
-export const TEXT_SIZES = ['xs', 'sm', 'base', 'lg', 'xl'] as const;
-export const TONES = ['default', 'muted', 'subtle', 'primary', 'invert', 'invert-strong'] as const;
+/* ------------------------------------------------------------------ */
+/* 共用枚举                                                            */
+/* ------------------------------------------------------------------ */
+
 export const ALIGNS = ['left', 'center', 'right'] as const;
 export const WEIGHTS = ['normal', 'medium', 'semibold', 'bold'] as const;
-
-export const TEXT_SIZE_LABEL: Record<string, string> = {
-  xs: '极小',
-  sm: '小',
-  base: '常规',
-  lg: '大',
-  xl: '特大',
-};
-
-export const TONE_LABEL: Record<string, string> = {
-  default: '默认',
-  muted: '次要',
-  subtle: '弱化',
-  primary: '主色',
-  invert: '反色',
-  'invert-strong': '反色强调',
-  gradient: '渐变',
-};
 
 export const ALIGN_LABEL: Record<string, string> = { left: '左', center: '中', right: '右' };
 
@@ -50,78 +46,72 @@ export const WEIGHT_VALUE: Record<(typeof WEIGHTS)[number], number> = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Heading                                                            */
+/* Typography —— 原 Heading + Text 合并                                */
 /* ------------------------------------------------------------------ */
 
-export const HEADING_TONES = ['default', 'invert', 'gradient'] as const;
-export const HEADING_LEVELS = [1, 2, 3, 4] as const;
+export const TYPOGRAPHY_TYPES = ['h1', 'h2', 'h3', 'h4', 'body', 'caption'] as const;
 
-export const headingMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Heading',
-  title: '标题',
-  group: '基础',
+/** `type` 同时决定"渲染成哪个标签"和"默认多大字号"，实现里查这张表 */
+export const TYPOGRAPHY_TAG: Record<(typeof TYPOGRAPHY_TYPES)[number], string> = {
+  h1: 'h1',
+  h2: 'h2',
+  h3: 'h3',
+  h4: 'h4',
+  body: 'p',
+  caption: 'span',
+};
+
+/**
+ * 色调取两个旧枚举的并集。
+ *
+ * `gradient` 只在标题上有意义，但不禁用 —— 正文用渐变文字是排版上的合法选择，
+ * 物料层不该替用户做审美判断。
+ */
+export const TYPOGRAPHY_TONES = [
+  'default',
+  'muted',
+  'subtle',
+  'primary',
+  'invert',
+  'invert-strong',
+  'gradient',
+] as const;
+
+export const TYPOGRAPHY_TYPE_LABEL: Record<string, string> = {
+  h1: '大标题',
+  h2: '标题',
+  h3: '小标题',
+  h4: '次标题',
+  body: '正文',
+  caption: '辅助文字',
+};
+
+export const TONE_LABEL: Record<string, string> = {
+  default: '默认',
+  muted: '次要',
+  subtle: '弱化',
+  primary: '主色',
+  invert: '反色',
+  'invert-strong': '反色强调',
+  gradient: '渐变',
+};
+
+export const typographyMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Typography',
+  title: '文字',
+  group: '文字',
   props: {
-    level: {
-      title: '层级',
-      type: 'number',
-      defaultValue: 2,
-      options: propOptions(HEADING_LEVELS, { 1: 'H1', 2: 'H2', 3: 'H3', 4: 'H4' }),
+    type: {
+      title: '类型',
+      type: 'string',
+      defaultValue: 'body',
+      options: propOptions(TYPOGRAPHY_TYPES, TYPOGRAPHY_TYPE_LABEL),
     },
     tone: {
       title: '色调',
       type: 'string',
       defaultValue: 'default',
-      options: propOptions(HEADING_TONES, TONE_LABEL),
-    },
-    align: {
-      title: '对齐',
-      type: 'string',
-      defaultValue: 'left',
-      options: propOptions(ALIGNS, ALIGN_LABEL),
-    },
-    weight: {
-      title: '字重',
-      type: 'string',
-      defaultValue: 'semibold',
-      options: propOptions(WEIGHTS, WEIGHT_LABEL),
-    },
-    mono: { title: '等宽', type: 'bool', defaultValue: false },
-    style: { title: '样式', type: 'object' },
-  },
-  configure: {
-    component: {},
-    supports: { style: true, condition: true, loop: true },
-  },
-  defaultSchema: {
-    componentName: 'Heading',
-    props: { level: 2, tone: 'default' },
-    children: ['标题'],
-  },
-});
-
-/* ------------------------------------------------------------------ */
-/* Text                                                               */
-/* ------------------------------------------------------------------ */
-
-/** Text 的 `as` 允许的标签 —— 单独导出，实现与 meta 共用 */
-export const TEXT_TAGS = ['p', 'span', 'div'] as const;
-
-export const textMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Text',
-  title: '文本',
-  group: '基础',
-  props: {
-    size: {
-      title: '字号',
-      type: 'string',
-      defaultValue: 'base',
-      options: propOptions(TEXT_SIZES, TEXT_SIZE_LABEL),
-    },
-    tone: {
-      title: '色调',
-      type: 'string',
-      defaultValue: 'default',
-      options: propOptions(TONES, TONE_LABEL),
+      options: propOptions(TYPOGRAPHY_TONES, TONE_LABEL),
     },
     align: {
       title: '对齐',
@@ -135,14 +125,6 @@ export const textMaterial: ComponentMeta = defineMaterial({
       defaultValue: 'normal',
       options: propOptions(WEIGHTS, WEIGHT_LABEL),
     },
-    // 实现里读了 props.as，meta 一直没写 —— 面板按 meta 生成控件，
-    // 漏写的 prop 就是不可编辑的死字段
-    as: {
-      title: '标签',
-      type: 'string',
-      defaultValue: 'p',
-      options: propOptions(TEXT_TAGS),
-    },
     mono: { title: '等宽', type: 'bool', defaultValue: false },
     style: { title: '样式', type: 'object' },
   },
@@ -151,9 +133,40 @@ export const textMaterial: ComponentMeta = defineMaterial({
     supports: { style: true, condition: true, loop: true },
   },
   defaultSchema: {
-    componentName: 'Text',
-    props: { size: 'base', tone: 'muted' },
+    componentName: 'Typography',
+    props: { type: 'body', tone: 'default' },
     children: ['在这里写一段说明文字。'],
+  },
+});
+
+/* ------------------------------------------------------------------ */
+/* Link                                                               */
+/* ------------------------------------------------------------------ */
+
+export const LINK_TONES = ['default', 'invert', 'muted'] as const;
+
+export const linkMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Link',
+  title: '链接',
+  group: '文字',
+  props: {
+    href: { title: '地址', type: 'string', defaultValue: '#' },
+    tone: {
+      title: '色调',
+      type: 'string',
+      defaultValue: 'default',
+      options: propOptions(LINK_TONES, { default: '默认', invert: '反色', muted: '次要' }),
+    },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Link',
+    props: { href: '#' },
+    children: ['链接'],
   },
 });
 
@@ -176,7 +189,7 @@ export const BUTTON_SIZE_LABEL: Record<string, string> = { sm: '小', md: '中',
 export const buttonMaterial: ComponentMeta = defineMaterial({
   componentName: 'Button',
   title: '按钮',
-  group: '基础',
+  group: '操作',
   props: {
     variant: {
       title: '风格',
@@ -205,23 +218,34 @@ export const buttonMaterial: ComponentMeta = defineMaterial({
 });
 
 /* ------------------------------------------------------------------ */
-/* Link                                                               */
+/* 录入：Input / TextArea / Select / Checkbox / Switch                 */
 /* ------------------------------------------------------------------ */
 
-export const LINK_TONES = ['default', 'invert', 'muted'] as const;
+/** 录入类共用尺寸档，语义与 Button 的 sm/md/lg 一致 */
+export const FIELD_SIZES = ['sm', 'md', 'lg'] as const;
+export const FIELD_SIZE_LABEL: Record<string, string> = { sm: '小', md: '中', lg: '大' };
 
-export const linkMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Link',
-  title: '链接',
-  group: '基础',
+/**
+ * 录入类组件都**受控**：值为 `props.value`，改动经 `PROP_SETTER` 回写。
+ *
+ * 编辑态有 setter，打字即改 schema；运行态没有 setter，组件退回内部 state
+ * （见 `materials-react` 的 `useFieldValue`）。两条路读的都是同一个 `props.value`，
+ * 所以编辑器里看到的值就是线上初始值。
+ */
+export const inputMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Input',
+  title: '输入框',
+  group: '录入',
   props: {
-    href: { title: '地址', type: 'string', defaultValue: '#' },
-    tone: {
-      title: '色调',
+    value: { title: '值', type: 'string', defaultValue: '' },
+    placeholder: { title: '占位提示', type: 'string', defaultValue: '请输入' },
+    size: {
+      title: '尺寸',
       type: 'string',
-      defaultValue: 'default',
-      options: propOptions(LINK_TONES, { default: '默认', invert: '反色', muted: '次要' }),
+      defaultValue: 'md',
+      options: propOptions(FIELD_SIZES, FIELD_SIZE_LABEL),
     },
+    disabled: { title: '禁用', type: 'bool', defaultValue: false },
     style: { title: '样式', type: 'object' },
   },
   configure: {
@@ -229,34 +253,138 @@ export const linkMaterial: ComponentMeta = defineMaterial({
     supports: { style: true, condition: true },
   },
   defaultSchema: {
-    componentName: 'Link',
-    props: { href: '#' },
-    children: ['链接'],
+    componentName: 'Input',
+    props: { value: '', placeholder: '请输入' },
+  },
+});
+
+export const textAreaMaterial: ComponentMeta = defineMaterial({
+  componentName: 'TextArea',
+  title: '多行输入',
+  group: '录入',
+  props: {
+    value: { title: '值', type: 'string', defaultValue: '' },
+    placeholder: { title: '占位提示', type: 'string', defaultValue: '请输入' },
+    // 长文本属性面板用多行控件，单行输入写到一半就看不见前面了
+    rows: { title: '行数', type: 'number', defaultValue: 3 },
+    disabled: { title: '禁用', type: 'bool', defaultValue: false },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'TextArea',
+    props: { value: '', placeholder: '请输入', rows: 3 },
+  },
+});
+
+export const selectMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Select',
+  title: '下拉选择',
+  group: '录入',
+  props: {
+    value: { title: '值', type: 'string', defaultValue: '' },
+    // 选项走 JSON 控件：属性面板里是 ["选项一","选项二"]，改完立刻反映到画布
+    options: {
+      title: '选项',
+      type: 'array',
+      defaultValue: ['选项一', '选项二', '选项三'],
+    },
+    size: {
+      title: '尺寸',
+      type: 'string',
+      defaultValue: 'md',
+      options: propOptions(FIELD_SIZES, FIELD_SIZE_LABEL),
+    },
+    disabled: { title: '禁用', type: 'bool', defaultValue: false },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Select',
+    props: { value: '', options: ['选项一', '选项二', '选项三'] },
+  },
+});
+
+export const checkboxMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Checkbox',
+  title: '多选框',
+  group: '录入',
+  props: {
+    label: { title: '文案', type: 'string', defaultValue: '选项' },
+    checked: { title: '选中', type: 'bool', defaultValue: true },
+    disabled: { title: '禁用', type: 'bool', defaultValue: false },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Checkbox',
+    props: { label: '选项', checked: true },
+  },
+});
+
+export const switchMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Switch',
+  title: '开关',
+  group: '录入',
+  props: {
+    label: { title: '文案', type: 'string' },
+    checked: { title: '开启', type: 'bool', defaultValue: true },
+    disabled: { title: '禁用', type: 'bool', defaultValue: false },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Switch',
+    props: { checked: true },
   },
 });
 
 /* ------------------------------------------------------------------ */
-/* Badge                                                              */
+/* 展示：Tag / Divider / Image / Progress / Empty / Alert              */
 /* ------------------------------------------------------------------ */
 
-export const BADGE_TONES = ['accent', 'neutral', 'success', 'invert', 'outline'] as const;
+export const TAG_TONES = [
+  'accent',
+  'neutral',
+  'success',
+  'warning',
+  'error',
+  'invert',
+  'outline',
+] as const;
 
-export const badgeMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Badge',
+export const TAG_TONE_LABEL: Record<string, string> = {
+  accent: '强调',
+  neutral: '中性',
+  success: '成功',
+  warning: '警告',
+  error: '错误',
+  invert: '反色',
+  outline: '描边',
+};
+
+export const tagMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Tag',
   title: '标签',
-  group: '基础',
+  group: '展示',
   props: {
     tone: {
       title: '色调',
       type: 'string',
       defaultValue: 'accent',
-      options: propOptions(BADGE_TONES, {
-        accent: '强调',
-        neutral: '中性',
-        success: '成功',
-        invert: '反色',
-        outline: '描边',
-      }),
+      options: propOptions(TAG_TONES, TAG_TONE_LABEL),
     },
     style: { title: '样式', type: 'object' },
   },
@@ -265,43 +393,16 @@ export const badgeMaterial: ComponentMeta = defineMaterial({
     supports: { style: true, condition: true },
   },
   defaultSchema: {
-    componentName: 'Badge',
+    componentName: 'Tag',
     props: { tone: 'accent' },
     children: ['新'],
   },
 });
 
-/* ------------------------------------------------------------------ */
-/* Icon                                                               */
-/* ------------------------------------------------------------------ */
-
-export const iconMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Icon',
-  title: '图标',
-  group: '基础',
-  props: {
-    name: { title: '字符', type: 'string', defaultValue: '◆' },
-    size: { title: '大小', type: 'number', defaultValue: 18 },
-    style: { title: '样式', type: 'object' },
-  },
-  configure: {
-    component: {},
-    supports: { style: true, condition: true },
-  },
-  defaultSchema: {
-    componentName: 'Icon',
-    props: { name: '◆', size: 18 },
-  },
-});
-
-/* ------------------------------------------------------------------ */
-/* Divider                                                            */
-/* ------------------------------------------------------------------ */
-
 export const dividerMaterial: ComponentMeta = defineMaterial({
   componentName: 'Divider',
   title: '分割线',
-  group: '基础',
+  group: '展示',
   props: {
     spacing: { title: '上下间距', type: 'number', defaultValue: 0 },
     invert: { title: '反色', type: 'bool', defaultValue: false },
@@ -317,14 +418,10 @@ export const dividerMaterial: ComponentMeta = defineMaterial({
   },
 });
 
-/* ------------------------------------------------------------------ */
-/* Image                                                              */
-/* ------------------------------------------------------------------ */
-
 export const imageMaterial: ComponentMeta = defineMaterial({
   componentName: 'Image',
   title: '图片',
-  group: '基础',
+  group: '展示',
   props: {
     src: { title: '图片地址', type: 'string' },
     alt: { title: '替代文本', type: 'string' },
@@ -341,17 +438,29 @@ export const imageMaterial: ComponentMeta = defineMaterial({
   },
 });
 
-/* ------------------------------------------------------------------ */
-/* Spacer                                                             */
-/* ------------------------------------------------------------------ */
+export const PROGRESS_TONES = ['default', 'success', 'warning', 'error'] as const;
 
-export const spacerMaterial: ComponentMeta = defineMaterial({
-  componentName: 'Spacer',
-  title: '间距',
-  group: '基础',
+export const PROGRESS_TONE_LABEL: Record<string, string> = {
+  default: '主色',
+  success: '成功',
+  warning: '警告',
+  error: '错误',
+};
+
+export const progressMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Progress',
+  title: '进度条',
+  group: '展示',
   props: {
-    size: { title: '高度', type: 'number', defaultValue: 16 },
-    grow: { title: '撑满剩余', type: 'bool', defaultValue: false },
+    percent: { title: '进度', type: 'number', defaultValue: 40 },
+    tone: {
+      title: '色调',
+      type: 'string',
+      defaultValue: 'default',
+      options: propOptions(PROGRESS_TONES, PROGRESS_TONE_LABEL),
+    },
+    showText: { title: '显示百分比', type: 'bool', defaultValue: true },
+    height: { title: '粗细', type: 'number', defaultValue: 8 },
     style: { title: '样式', type: 'object' },
   },
   configure: {
@@ -359,7 +468,65 @@ export const spacerMaterial: ComponentMeta = defineMaterial({
     supports: { style: true, condition: true },
   },
   defaultSchema: {
-    componentName: 'Spacer',
-    props: { size: 16 },
+    componentName: 'Progress',
+    props: { percent: 40, tone: 'default' },
+  },
+});
+
+export const emptyMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Empty',
+  title: '空状态',
+  group: '展示',
+  props: {
+    text: { title: '说明', type: 'string', defaultValue: '暂无数据' },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Empty',
+    props: { text: '暂无数据' },
+  },
+});
+
+export const ALERT_TYPES = ['info', 'success', 'warning', 'error'] as const;
+
+export const ALERT_TYPE_LABEL: Record<string, string> = {
+  info: '提示',
+  success: '成功',
+  warning: '警告',
+  error: '错误',
+};
+
+export const alertMaterial: ComponentMeta = defineMaterial({
+  componentName: 'Alert',
+  title: '提示条',
+  group: '展示',
+  props: {
+    type: {
+      title: '类型',
+      type: 'string',
+      defaultValue: 'info',
+      options: propOptions(ALERT_TYPES, ALERT_TYPE_LABEL),
+    },
+    title: { title: '标题', type: 'string', defaultValue: '提示' },
+    description: {
+      title: '描述',
+      type: 'string',
+      defaultValue: '这里是一段补充说明。',
+      setter: 'TextAreaSetter',
+    },
+    closable: { title: '可关闭', type: 'bool', defaultValue: false },
+    style: { title: '样式', type: 'object' },
+  },
+  configure: {
+    component: {},
+    supports: { style: true, condition: true },
+  },
+  defaultSchema: {
+    componentName: 'Alert',
+    props: { type: 'info', title: '提示', description: '这里是一段补充说明。' },
   },
 });
